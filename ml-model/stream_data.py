@@ -4,11 +4,11 @@ import requests
 from datetime import datetime
 
 # Backend API URL
-API_URL = "http://localhost:5000/api/stream"
+API_URL = "http://localhost:5000/api/reactors/stream"
 
 reactors = ['A', 'B', 'C', 'D', 'E']
 
-# Current state of each reactor
+# Initial state of each reactor
 reactor_states = {
     'A': {'temp': 115, 'pressure': 3.8, 'cooling': 0.92, 'state': 'SAFE'},
     'B': {'temp': 118, 'pressure': 4.0, 'cooling': 0.89, 'state': 'SAFE'},
@@ -17,71 +17,110 @@ reactor_states = {
     'E': {'temp': 116, 'pressure': 3.9, 'cooling': 0.90, 'state': 'SAFE'},
 }
 
+
 def update_reactor(reactor_id):
     state = reactor_states[reactor_id]
-    
+
+    # SAFE STATE
     if state['state'] == 'SAFE':
         state['temp'] += random.uniform(-0.5, 0.8)
         state['pressure'] += random.uniform(-0.05, 0.08)
         state['cooling'] += random.uniform(-0.01, 0.01)
+
         state['cooling'] = min(0.97, max(0.80, state['cooling']))
-        
+
         if state['temp'] > 135:
             state['state'] = 'WARNING'
-            
+
+    # WARNING STATE
     elif state['state'] == 'WARNING':
         state['temp'] += random.uniform(0.5, 2.0)
         state['pressure'] += random.uniform(0.05, 0.2)
         state['cooling'] -= random.uniform(0.005, 0.01)
+
         state['cooling'] = max(0.50, state['cooling'])
-        
+
         if state['temp'] > 162:
             state['state'] = 'CRITICAL'
+
         elif state['temp'] < 130:
             state['state'] = 'SAFE'
-            
+
+    # CRITICAL STATE
     elif state['state'] == 'CRITICAL':
         state['temp'] += random.uniform(2.0, 5.0)
         state['pressure'] += random.uniform(0.2, 0.5)
         state['cooling'] -= random.uniform(0.01, 0.02)
+
         state['cooling'] = max(0.10, state['cooling'])
-        
-        # Reset after extreme temp for demo purposes
+
+        # Reset for demo
         if state['temp'] > 400:
+            print(f"🔥 Reactor {reactor_id} RESETTING TO SAFE")
+
             state['temp'] = 115
             state['pressure'] = 3.8
             state['cooling'] = 0.92
             state['state'] = 'SAFE'
 
     reading = {
-        'reactor_id': reactor_id,
-        'temperature': round(state['temp'], 2),
-        'pressure': round(state['pressure'], 2),
-        'reaction_rate': round(random.uniform(0.4, 1.0), 2),
-        'cooling_efficiency': round(state['cooling'], 2),
-        'temp_rate_of_change': round(state['temp'] - 115, 3),
-        'label': state['state'],
-        'timestamp': datetime.now().isoformat()
+        "reactor_id": reactor_id,
+        "temperature": round(state['temp'], 2),
+        "pressure": round(state['pressure'], 2),
+        "reaction_rate": round(random.uniform(0.4, 1.0), 2),
+        "cooling_efficiency": round(state['cooling'], 2),
+        "temp_rate_of_change": round(state['temp'] - 115, 3),
+        "label": state['state'],
+        "timestamp": datetime.now().isoformat()
     }
+
     return reading
 
-print("🚀 Starting live reactor data stream...")
-print("Streaming to:", API_URL)
-print("Press Ctrl+C to stop\n")
+
+print("\n🚀 Starting ThermalAI Live Reactor Stream")
+print("📡 Sending data to:", API_URL)
+print("🛑 Press CTRL + C to stop\n")
 
 cycle = 0
+
 while True:
     cycle += 1
-    print(f"--- Cycle {cycle} ---")
-    
+
+    print(f"\n================ CYCLE {cycle} ================\n")
+
     for reactor_id in reactors:
+
         reading = update_reactor(reactor_id)
-        print(f"Reactor {reactor_id}: {reading['label']} | Temp: {reading['temperature']}°C | Pressure: {reading['pressure']} bar")
-        
+
+        print(
+            f"⚛️ Reactor {reactor_id} | "
+            f"{reading['label']} | "
+            f"Temp: {reading['temperature']}°C | "
+            f"Pressure: {reading['pressure']} bar"
+        )
+
         try:
-            requests.post(API_URL, json=reading, timeout=2)
-        except:
-            pass  # Backend not ready yet — that's ok
-    
-    print()
+            response = requests.post(
+                API_URL,
+                json=reading,
+                timeout=5
+            )
+
+            print(
+                f"✅ Sent to backend | "
+                f"Status: {response.status_code}"
+            )
+
+            if response.text:
+                print("📨 Response:", response.text)
+
+        except requests.exceptions.ConnectionError:
+            print("❌ Connection Error: Backend not running on port 5000")
+
+        except requests.exceptions.Timeout:
+            print("⏰ Request Timeout")
+
+        except Exception as e:
+            print("🔥 Error:", str(e))
+
     time.sleep(2)
