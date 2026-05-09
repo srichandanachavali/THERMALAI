@@ -1,13 +1,31 @@
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { SocketProvider } from "./context/SocketContext";
+import Sidebar from "./components/Sidebar";
+import Home from "./pages/Home";
+import ReactorDetail from "./pages/ReactorDetail";
+import Alerts from "./pages/Alerts";
+import Analytics from "./pages/Analytics";
+
 function App() {
   return (
-    <div className="bg-gray-900 min-h-screen flex items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold text-green-400">ThermalAI 🔥</h1>
-        <p className="text-gray-400 mt-2">
-          Thermal Runaway Prevention Platform
-        </p>
-      </div>
-    </div>
+    <SocketProvider>
+      <Router>
+        <div className="flex bg-gray-900 min-h-screen">
+          <Sidebar />
+          <div className="flex-1 ml-64 p-6">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/reactor/:id" element={<ReactorDetail />} />
+              <Route path="/alerts" element={<Alerts />} />
+              <Route path="/analytics" element={<Analytics />} />
+              <Route path="/analytics/:id" element={<Analytics />} />
+            </Routes>
+          </div>
+        </div>
+      </Router>
+    </SocketProvider>
   );
 }
+
 export default App;
