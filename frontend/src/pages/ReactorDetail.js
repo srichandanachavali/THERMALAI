@@ -15,25 +15,25 @@ import { getReactorHistory } from "../services/api";
 
 function ReactorDetail() {
   const { id } = useParams();
+  const reactorId = id ? id.split(":")[0] : id;
   const navigate = useNavigate();
   const { reactors } = useSocket();
   const [history, setHistory] = useState([]);
 
-  const reactor = reactors.find((r) => r.reactor_id === id);
+  const reactor = reactors.find((r) => r.reactor_id === reactorId);
 
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const data = await getReactorHistory(id);
+        const data = await getReactorHistory(reactorId);
         setHistory(data.reverse());
       } catch (err) {
         console.log("History not available yet");
       }
     };
     fetchHistory();
-  }, [id]);
+  }, [reactorId]);
 
-  // Add live reading to history
   useEffect(() => {
     if (reactor) {
       setHistory((prev) => {
@@ -54,7 +54,7 @@ function ReactorDetail() {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <p className="text-gray-400 text-xl">
-            Waiting for Reactor {id} data...
+            Waiting for Reactor {reactorId} data...
           </p>
           <p className="text-gray-500 text-sm mt-2">
             Make sure the data stream is running
@@ -76,7 +76,7 @@ function ReactorDetail() {
             ← Back to Overview
           </button>
           <h1 className="text-3xl font-bold text-white">
-            Reactor {id} — Live Monitor
+            Reactor {reactorId} — Live Monitor
           </h1>
           <p className="text-gray-400 mt-1">
             Real-time sensor readings + AI prediction
@@ -85,10 +85,17 @@ function ReactorDetail() {
 
         {/* Simulate Runaway Button */}
         <button
-          onClick={() => {
-            alert(
-              `🚨 SIMULATING THERMAL RUNAWAY on Reactor ${id}!\nWatch the risk score climb...`,
-            );
+          onClick={async () => {
+            try {
+              const response = await fetch(
+                `http://localhost:5000/api/simulate/${reactorId}`,
+                { method: "POST" },
+              );
+              const data = await response.json();
+              console.log("Simulation triggered:", data);
+            } catch (err) {
+              console.log("Simulation error:", err);
+            }
           }}
           className="bg-red-600 hover:bg-red-500 text-white font-bold px-6 py-3 rounded-lg transition-all animate-pulse"
         >
@@ -98,7 +105,6 @@ function ReactorDetail() {
 
       {/* Top Row — Gauge + Current Stats */}
       <div className="grid grid-cols-3 gap-6 mb-8">
-        {/* AI Risk Gauge */}
         <div className="bg-gray-800 rounded-lg col-span-1">
           <RiskGauge
             score={reactor.risk_score || 0}
@@ -106,7 +112,6 @@ function ReactorDetail() {
           />
         </div>
 
-        {/* Current readings */}
         <div className="col-span-2 grid grid-cols-2 gap-4">
           <div className="bg-gray-800 rounded-lg p-6">
             <p className="text-gray-400 text-sm uppercase tracking-wide">
@@ -157,7 +162,6 @@ function ReactorDetail() {
 
       {/* Live Charts */}
       <div className="grid grid-cols-2 gap-6 mb-8">
-        {/* Temperature Chart */}
         <div className="bg-gray-800 rounded-lg p-6">
           <h3 className="text-white font-semibold mb-4">
             🌡️ Temperature (°C) — Live
@@ -185,7 +189,6 @@ function ReactorDetail() {
           </ResponsiveContainer>
         </div>
 
-        {/* Pressure Chart */}
         <div className="bg-gray-800 rounded-lg p-6">
           <h3 className="text-white font-semibold mb-4">
             💨 Pressure (bar) — Live
@@ -213,7 +216,6 @@ function ReactorDetail() {
           </ResponsiveContainer>
         </div>
 
-        {/* Risk Score Chart */}
         <div className="bg-gray-800 rounded-lg p-6">
           <h3 className="text-white font-semibold mb-4">
             🤖 AI Risk Score — Live
@@ -245,7 +247,6 @@ function ReactorDetail() {
           </ResponsiveContainer>
         </div>
 
-        {/* Cooling Efficiency Chart */}
         <div className="bg-gray-800 rounded-lg p-6">
           <h3 className="text-white font-semibold mb-4">
             ❄️ Cooling Efficiency — Live
@@ -277,7 +278,7 @@ function ReactorDetail() {
       {/* View Analytics Button */}
       <div className="flex justify-end">
         <button
-          onClick={() => navigate(`/analytics/${id}`)}
+          onClick={() => navigate(`/analytics/${reactorId}`)}
           className="bg-blue-600 hover:bg-blue-500 text-white font-bold px-6 py-3 rounded-lg transition-all"
         >
           📊 View Full History →
