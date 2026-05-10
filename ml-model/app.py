@@ -195,7 +195,66 @@ def explain():
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-    
+
+@app.route('/predict-time', methods=['POST'])
+def predict_time():
+    try:
+        data = request.get_json()
+        temp = data['temperature']
+        temp_roc = data.get('temp_rate_of_change', 0)
+        cooling = data['cooling_efficiency']
+        risk_score = data.get('risk_score', 0)
+        status = data.get('status', 'SAFE')
+
+        # Critical threshold
+        CRITICAL_TEMP = 162
+
+        # Calculate minutes to critical
+        if status == 'CRITICAL':
+            minutes = 0
+            message = "🔴 CRITICAL — Thermal runaway in progress!"
+            urgency = "CRITICAL"
+
+        elif status == 'WARNING' and temp_roc > 0:
+            # How many degrees until critical
+            degrees_remaining = CRITICAL_TEMP - temp
+            
+            if degrees_remaining <= 0:
+                minutes = 0
+                message = "🔴 CRITICAL — Thermal runaway in progress!"
+                urgency = "CRITICAL"
+            else:
+                # Each cycle = 2 seconds, temp_roc = degrees per cycle
+                cycles_remaining = degrees_remaining / temp_roc
+                minutes = round((cycles_remaining * 2) / 60, 1)
+                
+                if minutes < 5:
+                    message = f"🔴 CRITICAL in {minutes} minutes — Immediate action required!"
+                    urgency = "CRITICAL"
+                elif minutes < 15:
+                    message = f"⚠️ Estimated critical in {minutes} minutes — Act now!"
+                    urgency = "WARNING"
+                else:
+                    message = f"⚠️ Estimated critical in {minutes} minutes — Monitor closely"
+                    urgency = "CAUTION"
+        else:
+            minutes = None
+            message = "✅ Reactor operating safely — no imminent danger"
+            urgency = "SAFE"
+
+        return jsonify({
+            'success': True,
+            'minutes_to_critical': minutes,
+            'message': message,
+            'urgency': urgency,
+            'current_temp': temp,
+            'temp_rate_of_change': temp_roc,
+            'status': status
+        })
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+      
 if __name__ == '__main__':
     print("🚀 Starting ThermalAI ML API on port 5001...")
     app.run(port=5001, debug=True)

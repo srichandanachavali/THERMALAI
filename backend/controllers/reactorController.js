@@ -58,10 +58,33 @@ const streamReading = async (req, res) => {
     }
 
     // Combine reading with AI result
+    // Get prediction time
+    let timeResult = {
+      minutes_to_critical: null,
+      message: "",
+      urgency: "SAFE",
+    };
+    try {
+      const timeResponse = await axios.post(
+        "http://localhost:5001/predict-time",
+        {
+          ...reading,
+          risk_score: riskResult.risk_score,
+          status: riskResult.status,
+        },
+      );
+      timeResult = timeResponse.data;
+    } catch (err) {
+      console.log("⚠️ Time prediction not available");
+    }
+
     const enrichedReading = {
       ...reading,
       risk_score: riskResult.risk_score,
       status: riskResult.status,
+      minutes_to_critical: timeResult.minutes_to_critical,
+      time_message: timeResult.message,
+      time_urgency: timeResult.urgency,
       timestamp: new Date(),
     };
 

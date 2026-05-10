@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useSocket } from "../context/SocketContext";
 import RiskGauge from "../components/RiskGauge";
 import ExplainPanel from "../components/ExplainPanel";
+import CountdownTimer from "../components/CountdownTimer";
 import {
   LineChart,
   Line,
@@ -83,7 +84,10 @@ function ReactorDetail() {
             Real-time sensor readings + AI prediction
           </p>
         </div>
-
+        {/* Countdown Timer */}
+        <div className="mb-6">
+          <CountdownTimer reactor={reactor} />
+        </div>
         {/* Simulate Runaway Button */}
         <button
           onClick={async () => {
