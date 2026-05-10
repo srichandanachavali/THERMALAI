@@ -1,5 +1,6 @@
 const Alert = require('../models/Alert');
 const nodemailer = require('nodemailer');
+const twilio = require('twilio');
 
 // Email transporter setup
 const transporter = nodemailer.createTransport({
@@ -9,6 +10,26 @@ const transporter = nodemailer.createTransport({
     pass: process.env.EMAIL_PASS
   }
 });
+
+// Twilio setup
+const twilioClient = twilio(
+  process.env.TWILIO_ACCOUNT_SID,
+  process.env.TWILIO_AUTH_TOKEN
+);
+
+// Send SMS alert
+const sendSMSAlert = async (alert) => {
+  try {
+    await twilioClient.messages.create({
+      body: `🚨 ThermalAI ALERT\nReactor ${alert.reactor_id}: ${alert.alert_type}\nRisk Score: ${alert.risk_score}%\nTemp: ${alert.temperature}°C\nImmediate action required!`,
+      from: process.env.TWILIO_PHONE,
+      to: process.env.ALERT_PHONE
+    });
+    console.log(`📱 SMS alert sent for Reactor ${alert.reactor_id}`);
+  } catch (error) {
+    console.log('❌ SMS error:', error.message);
+  }
+};
 
 // Send email alert
 const sendEmailAlert = async (alert) => {
@@ -53,7 +74,6 @@ const sendEmailAlert = async (alert) => {
         </div>
       `
     };
-
     await transporter.sendMail(mailOptions);
     console.log(`📧 Email alert sent for Reactor ${alert.reactor_id}`);
   } catch (error) {
@@ -93,5 +113,6 @@ const resolveAlert = async (req, res) => {
 module.exports = {
   getAllAlerts,
   resolveAlert,
-  sendEmailAlert
+  sendEmailAlert,
+  sendSMSAlert
 };

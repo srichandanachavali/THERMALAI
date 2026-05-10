@@ -1,7 +1,7 @@
 const Reactor = require("../models/Reactor");
 const Alert = require("../models/Alert");
 const axios = require("axios");
-const { sendEmailAlert } = require("./alertController");
+const { sendEmailAlert, sendSMSAlert } = require("./alertController");
 
 // Store latest reading per reactor in memory
 let latestReadings = {};
@@ -107,6 +107,7 @@ const streamReading = async (req, res) => {
       });
       await alert.save();
       await sendEmailAlert(alert);
+      await sendSMSAlert(alert);
       // Broadcast alert via WebSocket
       req.io.emit("new_alert", alert);
     }
