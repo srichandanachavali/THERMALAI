@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
 function ExplainPanel({ reactor }) {
   const [explanation, setExplanation] = useState(null);
@@ -15,18 +15,18 @@ function ExplainPanel({ reactor }) {
     setLoading(true);
     try {
       const response = await axios.post(
-        'http://localhost:5000/api/reactors/explain',
+        "http://localhost:5000/api/reactors/explain",
         {
           temperature: reactor.temperature,
           pressure: reactor.pressure,
           cooling_efficiency: reactor.cooling_efficiency,
           risk_score: reactor.risk_score,
-          temp_rate_of_change: reactor.temp_rate_of_change
-        }
+          temp_rate_of_change: reactor.temp_rate_of_change,
+        },
       );
       setExplanation(response.data);
     } catch (err) {
-      console.log('Explanation error:', err);
+      console.log("Explanation error:", err);
     }
     setLoading(false);
   };
@@ -45,22 +45,37 @@ function ExplainPanel({ reactor }) {
   if (!explanation) return null;
 
   const getBorderColor = () => {
-    if (explanation.risk_score >= 70) return 'border-red-500';
-    if (explanation.risk_score >= 30) return 'border-yellow-500';
-    return 'border-green-500';
+    if (explanation.risk_score >= 70) return "border-red-500";
+    if (explanation.risk_score >= 30) return "border-yellow-500";
+    return "border-green-500";
   };
 
   return (
-    <div className={`bg-gray-800 rounded-lg p-6 border-l-4 ${getBorderColor()}`}>
+    <div
+      className={`bg-gray-800 rounded-lg p-6 border-l-4 ${getBorderColor()}`}
+    >
       <h3 className="text-white font-semibold text-lg mb-2">
         🧠 AI Explanation
       </h3>
-      
+
+      {/* LSTM Badge */}
+      <div className="flex items-center gap-2 mb-3">
+        <span className="bg-purple-500/20 border border-purple-500/30 text-purple-400 text-xs font-bold px-3 py-1 rounded-full">
+          🧠 LSTM + Random Forest Ensemble
+        </span>
+        <span className="text-gray-500 text-xs">dual AI analysis</span>
+      </div>
+
       {/* Overall assessment */}
-      <div className={`text-sm font-bold mb-4 ${
-        explanation.risk_score >= 70 ? 'text-red-400' :
-        explanation.risk_score >= 30 ? 'text-yellow-400' : 'text-green-400'
-      }`}>
+      <div
+        className={`text-sm font-bold mb-4 ${
+          explanation.risk_score >= 70
+            ? "text-red-400"
+            : explanation.risk_score >= 30
+              ? "text-yellow-400"
+              : "text-green-400"
+        }`}
+      >
         {explanation.overall}
       </div>
 

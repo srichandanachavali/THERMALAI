@@ -14,6 +14,8 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { getReactorHistory } from "../services/api";
+import AIComparison from "../components/AIComparison";
+import PredictionTimeline from "../components/PredictionTimeline";
 
 function ReactorDetail() {
   const { id } = useParams();
@@ -283,6 +285,16 @@ function ReactorDetail() {
             </LineChart>
           </ResponsiveContainer>
         </div>
+      </div>
+
+      {/* AI Model Comparison */}
+      <div className="mb-8">
+        <AIComparison reactor={reactor} />
+      </div>
+
+      {/* LSTM Prediction Timeline */}
+      <div className="mb-8">
+        <PredictionTimeline reactor={reactor} />
       </div>
 
       {/* AI Explanation Panel */}

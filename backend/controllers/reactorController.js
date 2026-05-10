@@ -51,21 +51,34 @@ const streamReading = async (req, res) => {
     const reading = req.body;
 
     // Call Flask AI model for risk score
-    let riskResult = {
-      risk_score: 0,
-      status: "SAFE",
-    };
+  // Random Forest prediction
+let riskResult = { risk_score: 0, status: 'SAFE' };
+try {
+  const aiResponse = await axios.post('http://localhost:5001/predict', reading);
+  riskResult = aiResponse.data;
+} catch (err) {
+  console.log('⚠️ RF model not available');
+}
 
-    try {
-      const aiResponse = await axios.post(
-        "http://localhost:5001/predict",
-        reading
-      );
+// LSTM prediction
+let lstmResult = { lstm_risk_score: 0, lstm_prediction: 'SAFE', lstm_confidence: 0 };
+try {
+  const lstmResponse = await axios.post('http://localhost:5001/predict-lstm', reading);
+  if (lstmResponse.data.success) {
+    lstmResult = lstmResponse.data;
+  }
+} catch (err) {
+  console.log('⚠️ LSTM model not available');
+}
 
-      riskResult = aiResponse.data;
-    } catch (err) {
-      console.log("⚠️ AI service not available");
-    }
+// Ensemble — RF 40% + LSTM 60%
+const ensembleScore = Math.round(
+  (riskResult.risk_score * 0.4) + (lstmResult.lstm_risk_score * 0.6)
+);
+
+let ensembleStatus = 'SAFE';
+if (ensembleScore >= 70) ensembleStatus = 'CRITICAL';
+else if (ensembleScore >= 30) ensembleStatus = 'WARNING';
 
     // Get prediction time
     let timeResult = {
@@ -88,18 +101,20 @@ const streamReading = async (req, res) => {
     } catch (err) {
       console.log("⚠️ Time prediction not available");
     }
-
-    // Combine reading with AI result
-    const enrichedReading = {
-      ...reading,
-      risk_score: riskResult.risk_score,
-      status: riskResult.status,
-      minutes_to_critical: timeResult.minutes_to_critical,
-      time_message: timeResult.message,
-      time_urgency: timeResult.urgency,
-      timestamp: new Date(),
-    };
-
+    
+const enrichedReading = {
+  ...reading,
+  risk_score: ensembleScore,
+  rf_score: riskResult.risk_score,
+  lstm_score: lstmResult.lstm_risk_score,
+  lstm_confidence: lstmResult.lstm_confidence,
+  lstm_prediction: lstmResult.lstm_prediction,
+  status: ensembleStatus,
+  minutes_to_critical: timeResult.minutes_to_critical,
+  time_message: timeResult.message,
+  time_urgency: timeResult.urgency,
+  timestamp: new Date(),
+};
     // Update in-memory store
     latestReadings[reading.reactor_id] = enrichedReading;
 
