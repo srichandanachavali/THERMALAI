@@ -101,10 +101,21 @@ const streamReading = async (req, res) => {
   }
 };
 
+const getExplanation = async (req, res) => {
+  try {
+    const reading = req.body;
+    const response = await axios.post("http://localhost:5001/explain", reading);
+    res.json(response.data);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   getAllReactors,
   getReactorById,
   streamReading,
   getReactorHistory,
+  getExplanation,
   getLatestReadings: () => latestReadings,
 };

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useSocket } from "../context/SocketContext";
 import RiskGauge from "../components/RiskGauge";
+import ExplainPanel from "../components/ExplainPanel";
 import {
   LineChart,
   Line,
@@ -273,6 +274,11 @@ function ReactorDetail() {
             </LineChart>
           </ResponsiveContainer>
         </div>
+      </div>
+
+      {/* AI Explanation Panel */}
+      <div className="mb-8">
+        <ExplainPanel reactor={reactor} />
       </div>
 
       {/* View Analytics Button */}

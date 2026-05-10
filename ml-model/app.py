@@ -119,6 +119,83 @@ def predict_batch():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/explain', methods=['POST'])
+def explain():
+    try:
+        data = request.get_json()
+        temp = data['temperature']
+        pressure = data['pressure']
+        cooling = data['cooling_efficiency']
+        risk_score = data.get('risk_score', 0)
+        temp_roc = data.get('temp_rate_of_change', 0)
+
+        reasons = []
+        recommendations = []
+
+        # Temperature analysis
+        if temp > 200:
+            reasons.append(f"🌡️ Temperature critically high at {temp}°C — safe limit is 135°C")
+            recommendations.append("Immediately reduce reaction rate")
+        elif temp > 160:
+            reasons.append(f"🌡️ Temperature dangerously elevated at {temp}°C")
+            recommendations.append("Increase cooling flow rate")
+        elif temp > 135:
+            reasons.append(f"🌡️ Temperature above safe threshold at {temp}°C")
+            recommendations.append("Monitor temperature closely")
+
+        # Rate of change analysis
+        if temp_roc > 5:
+            reasons.append(f"⚡ Temperature accelerating rapidly — rising {round(temp_roc, 1)}°C per cycle")
+            recommendations.append("Emergency cooling activation required")
+        elif temp_roc > 2:
+            reasons.append(f"⚡ Temperature rising faster than normal — {round(temp_roc, 1)}°C per cycle")
+            recommendations.append("Reduce heat input immediately")
+
+        # Cooling analysis
+        if cooling < 0.3:
+            reasons.append(f"❄️ Cooling system critically failing — only {round(cooling*100)}% efficiency")
+            recommendations.append("Switch to backup cooling system")
+        elif cooling < 0.5:
+            reasons.append(f"❄️ Cooling efficiency dangerously low at {round(cooling*100)}%")
+            recommendations.append("Inspect and repair cooling system")
+        elif cooling < 0.7:
+            reasons.append(f"❄️ Cooling efficiency below normal at {round(cooling*100)}%")
+            recommendations.append("Check cooling system performance")
+
+        # Pressure analysis
+        if pressure > 8:
+            reasons.append(f"💨 Pressure critically high at {pressure} bar — safe limit is 4.5 bar")
+            recommendations.append("Open pressure relief valve immediately")
+        elif pressure > 6:
+            reasons.append(f"💨 Pressure elevated at {pressure} bar")
+            recommendations.append("Reduce reaction rate to lower pressure")
+        elif pressure > 4.5:
+            reasons.append(f"💨 Pressure above safe threshold at {pressure} bar")
+            recommendations.append("Monitor pressure closely")
+
+        # Overall assessment
+        if risk_score >= 70:
+            overall = "IMMEDIATE ACTION REQUIRED — Thermal runaway imminent"
+        elif risk_score >= 30:
+            overall = "CAUTION — Reactor showing signs of instability"
+        else:
+            overall = "Reactor operating within safe parameters"
+
+        if not reasons:
+            reasons.append("✅ All parameters within safe operating range")
+            recommendations.append("Continue normal operations")
+
+        return jsonify({
+            'success': True,
+            'overall': overall,
+            'reasons': reasons,
+            'recommendations': recommendations,
+            'risk_score': risk_score
+        })
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
 if __name__ == '__main__':
     print("🚀 Starting ThermalAI ML API on port 5001...")
     app.run(port=5001, debug=True)

@@ -1,15 +1,17 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 const {
   getAllReactors,
   getReactorById,
   streamReading,
-  getReactorHistory
-} = require('../controllers/reactorController');
+  getReactorHistory,
+  getExplanation,
+} = require("../controllers/reactorController");
 
-router.get('/', getAllReactors);
-router.get('/:id', getReactorById);
-router.post('/stream', streamReading);
-router.get('/:id/history', getReactorHistory);
+router.get("/", getAllReactors);
+router.post("/stream", streamReading);
+router.post("/explain", getExplanation);
+router.get("/:id/history", getReactorHistory);
+router.get("/:id", getReactorById);
 
 module.exports = router;
