@@ -80,8 +80,10 @@ app.post("/api/simulate/:id", async (req, res) => {
 // Other routes AFTER simulate
 const reactorRoutes = require("./routes/reactorRoutes");
 const alertRoutes = require("./routes/alertRoutes");
+const authRoutes = require("./routes/authRoutes");
 app.use("/api/reactors", reactorRoutes);
 app.use("/api/alerts", alertRoutes);
+app.use("/api/auth", authRoutes);
 
 io.on("connection", (socket) => {
   console.log("🔌 Dashboard connected:", socket.id);

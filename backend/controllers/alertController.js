@@ -1,20 +1,20 @@
-const Alert = require('../models/Alert');
-const nodemailer = require('nodemailer');
-const twilio = require('twilio');
+const Alert = require("../models/Alert");
+const nodemailer = require("nodemailer");
+const twilio = require("twilio");
 
 // Email transporter setup
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  service: "gmail",
   auth: {
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
+    pass: process.env.EMAIL_PASS,
+  },
 });
 
 // Twilio setup
 const twilioClient = twilio(
   process.env.TWILIO_ACCOUNT_SID,
-  process.env.TWILIO_AUTH_TOKEN
+  process.env.TWILIO_AUTH_TOKEN,
 );
 
 // Send SMS alert
@@ -23,11 +23,11 @@ const sendSMSAlert = async (alert) => {
     await twilioClient.messages.create({
       body: `🚨 ThermalAI ALERT\nReactor ${alert.reactor_id}: ${alert.alert_type}\nRisk Score: ${alert.risk_score}%\nTemp: ${alert.temperature}°C\nImmediate action required!`,
       from: process.env.TWILIO_PHONE,
-      to: process.env.ALERT_PHONE
+      to: process.env.ALERT_PHONE,
     });
     console.log(`📱 SMS alert sent for Reactor ${alert.reactor_id}`);
   } catch (error) {
-    console.log('❌ SMS error:', error.message);
+    console.log("❌ SMS error:", error.message);
   }
 };
 
@@ -40,7 +40,7 @@ const sendEmailAlert = async (alert) => {
       subject: `🚨 ThermalAI ALERT — Reactor ${alert.reactor_id} ${alert.alert_type}`,
       html: `
         <div style="font-family: Arial, sans-serif; padding: 20px; background: #1a1a1a; color: white;">
-          <h1 style="color: ${alert.alert_type === 'CRITICAL' ? '#ff4444' : '#ffaa00'};">
+          <h1 style="color: ${alert.alert_type === "CRITICAL" ? "#ff4444" : "#ffaa00"};">
             ⚠️ ${alert.alert_type} ALERT
           </h1>
           <h2>Reactor ${alert.reactor_id}</h2>
@@ -72,21 +72,19 @@ const sendEmailAlert = async (alert) => {
             ⚡ Immediate action required — ThermalAI Prevention System
           </p>
         </div>
-      `
+      `,
     };
     await transporter.sendMail(mailOptions);
     console.log(`📧 Email alert sent for Reactor ${alert.reactor_id}`);
   } catch (error) {
-    console.log('❌ Email error:', error.message);
+    console.log("❌ Email error:", error.message);
   }
 };
 
 // GET all alerts — newest first
 const getAllAlerts = async (req, res) => {
   try {
-    const alerts = await Alert.find()
-      .sort({ timestamp: -1 })
-      .limit(50);
+    const alerts = await Alert.find().sort({ timestamp: -1 }).limit(50);
     res.json(alerts);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -99,10 +97,10 @@ const resolveAlert = async (req, res) => {
     const alert = await Alert.findByIdAndUpdate(
       req.params.id,
       { resolved: true },
-      { new: true }
+      { new: true },
     );
     if (!alert) {
-      return res.status(404).json({ error: 'Alert not found' });
+      return res.status(404).json({ error: "Alert not found" });
     }
     res.json({ success: true, alert });
   } catch (error) {
@@ -114,5 +112,5 @@ module.exports = {
   getAllAlerts,
   resolveAlert,
   sendEmailAlert,
-  sendSMSAlert
+  sendSMSAlert,
 };

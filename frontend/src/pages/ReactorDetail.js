@@ -21,6 +21,7 @@ function ReactorDetail() {
   const navigate = useNavigate();
   const { reactors } = useSocket();
   const [history, setHistory] = useState([]);
+  const user = JSON.parse(localStorage.getItem("thermalai_user") || "{}");
 
   const reactor = reactors.find((r) => r.reactor_id === reactorId);
 
@@ -69,7 +70,7 @@ function ReactorDetail() {
   return (
     <div>
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-4">
         <div>
           <button
             onClick={() => navigate("/")}
@@ -84,28 +85,32 @@ function ReactorDetail() {
             Real-time sensor readings + AI prediction
           </p>
         </div>
-        {/* Countdown Timer */}
-        <div className="mb-6">
-          <CountdownTimer reactor={reactor} />
-        </div>
-        {/* Simulate Runaway Button */}
-        <button
-          onClick={async () => {
-            try {
-              const response = await fetch(
-                `http://localhost:5000/api/simulate/${reactorId}`,
-                { method: "POST" },
-              );
-              const data = await response.json();
-              console.log("Simulation triggered:", data);
-            } catch (err) {
-              console.log("Simulation error:", err);
-            }
-          }}
-          className="bg-red-600 hover:bg-red-500 text-white font-bold px-6 py-3 rounded-lg transition-all animate-pulse"
-        >
-          🔥 Simulate Runaway
-        </button>
+
+        {/* Admin only simulate button */}
+        {user.role === "admin" && (
+          <button
+            onClick={async () => {
+              try {
+                const response = await fetch(
+                  `http://localhost:5000/api/simulate/${reactorId}`,
+                  { method: "POST" },
+                );
+                const data = await response.json();
+                console.log("Simulation triggered:", data);
+              } catch (err) {
+                console.log("Simulation error:", err);
+              }
+            }}
+            className="bg-red-600 hover:bg-red-500 text-white font-bold px-6 py-3 rounded-lg transition-all animate-pulse"
+          >
+            🔥 Simulate Runaway
+          </button>
+        )}
+      </div>
+
+      {/* Countdown Timer */}
+      <div className="mb-6">
+        <CountdownTimer reactor={reactor} />
       </div>
 
       {/* Top Row — Gauge + Current Stats */}
