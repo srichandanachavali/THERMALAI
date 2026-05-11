@@ -81,9 +81,11 @@ app.post("/api/simulate/:id", async (req, res) => {
 const reactorRoutes = require("./routes/reactorRoutes");
 const alertRoutes = require("./routes/alertRoutes");
 const authRoutes = require("./routes/authRoutes");
+const plantRoutes = require("./routes/plantRoutes");
 app.use("/api/reactors", reactorRoutes);
 app.use("/api/alerts", alertRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/plants", plantRoutes);
 
 io.on("connection", (socket) => {
   console.log("🔌 Dashboard connected:", socket.id);

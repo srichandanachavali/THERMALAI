@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 
 function Login() {
@@ -8,25 +8,25 @@ function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
+  const plant = location.state?.plant;
 
   const handleLogin = async () => {
     if (!username || !password) {
       setError('Please enter username and password');
       return;
     }
-
     setLoading(true);
     setError('');
-
     try {
       const response = await axios.post('http://localhost:5000/api/auth/login', {
         username,
         password
       });
-
       if (response.data.success) {
         localStorage.setItem('thermalai_token', response.data.token);
         localStorage.setItem('thermalai_user', JSON.stringify(response.data.user));
+        localStorage.setItem('thermalai_plant', JSON.stringify(plant));
         navigate('/');
       }
     } catch (err) {
@@ -35,16 +35,39 @@ function Login() {
     setLoading(false);
   };
 
+  const getTypeIcon = (type) => {
+    if (!type) return '🏭';
+    if (type.includes('Chemical')) return '⚗️';
+    if (type.includes('Pharma')) return '💊';
+    if (type.includes('Refinery')) return '🛢️';
+    return '🏭';
+  };
+
   return (
     <div className="min-h-screen bg-gray-900 flex items-center justify-center">
       <div className="bg-gray-800 rounded-2xl p-10 w-full max-w-md shadow-2xl">
 
         {/* Logo */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-6">
           <h1 className="text-4xl font-bold text-green-400">ThermalAI 🔥</h1>
-          <p className="text-gray-400 mt-2">Thermal Runaway Prevention Platform</p>
-          <p className="text-gray-500 text-sm mt-1">Industrial Safety Intelligence</p>
+          <p className="text-gray-400 mt-2">Industrial Safety Intelligence</p>
         </div>
+
+        {/* Plant info */}
+        {plant && (
+          <div className="bg-gray-700/50 border border-gray-600 rounded-xl p-4 mb-6">
+            <div className="flex items-center gap-3">
+              <span className="text-3xl">{getTypeIcon(plant.type)}</span>
+              <div>
+                <p className="text-white font-bold">{plant.name}</p>
+                <p className="text-gray-400 text-sm">
+                  📍 {plant.city}, {plant.state}
+                </p>
+                <p className="text-gray-500 text-xs mt-1">{plant.type}</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Role cards */}
         <div className="grid grid-cols-2 gap-3 mb-6">
@@ -76,7 +99,6 @@ function Login() {
             placeholder="Enter username"
             className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-green-400 mb-4"
           />
-
           <label className="text-gray-400 text-sm uppercase tracking-wide mb-2 block">
             Password
           </label>
@@ -102,29 +124,13 @@ function Login() {
           >
             {loading ? 'Logging in...' : 'Login 🔐'}
           </button>
-        </div>
 
-        {/* Credentials hint */}
-        <div className="mt-6 p-4 bg-gray-700/50 rounded-lg">
-          <p className="text-gray-400 text-xs text-center font-bold mb-2">
-            Demo Credentials
-          </p>
-          <div className="grid grid-cols-2 gap-2 text-xs text-center">
-            <div>
-              <p className="text-purple-400">Admin</p>
-              <p className="text-gray-500">admin / admin123</p>
-            </div>
-            <div>
-              <p className="text-blue-400">Operator</p>
-              <p className="text-gray-500">operator / op123</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-4 text-center">
-          <p className="text-gray-600 text-xs">
-            ThermalAI v1.0 — Hackathon Edition
-          </p>
+          <button
+            onClick={() => navigate('/')}
+            className="w-full mt-3 text-gray-400 hover:text-white py-2 transition-all text-sm"
+          >
+            ← Back to plant selection
+          </button>
         </div>
       </div>
     </div>
