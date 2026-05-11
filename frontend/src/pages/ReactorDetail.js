@@ -16,6 +16,7 @@ import {
 import { getReactorHistory } from "../services/api";
 import AIComparison from "../components/AIComparison";
 import PredictionTimeline from "../components/PredictionTimeline";
+import MaintenancePanel from "../components/MaintenancePanel";
 
 function ReactorDetail() {
   const { id } = useParams();
@@ -300,6 +301,10 @@ function ReactorDetail() {
       {/* AI Explanation Panel */}
       <div className="mb-8">
         <ExplainPanel reactor={reactor} />
+      </div>
+      {/* Predictive Maintenance */}
+      <div className="mb-8">
+        <MaintenancePanel reactor={reactor} />
       </div>
 
       {/* View Analytics Button */}

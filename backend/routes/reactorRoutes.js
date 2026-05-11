@@ -1,4 +1,4 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
 const {
   getAllReactors,
@@ -6,12 +6,14 @@ const {
   streamReading,
   getReactorHistory,
   getExplanation,
-} = require("../controllers/reactorController");
+  getMaintenancePrediction
+} = require('../controllers/reactorController');
 
-router.get("/", getAllReactors);
-router.post("/stream", streamReading);
-router.post("/explain", getExplanation);
-router.get("/:id/history", getReactorHistory);
-router.get("/:id", getReactorById);
+router.get('/', getAllReactors);
+router.post('/stream', streamReading);
+router.post('/explain', getExplanation);
+router.get('/:id/history', getReactorHistory);
+router.get('/:id/maintenance', getMaintenancePrediction);
+router.get('/:id', getReactorById);
 
 module.exports = router;
