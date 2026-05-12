@@ -1,3 +1,4 @@
+import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import pandas as pd
@@ -413,5 +414,6 @@ def maintenance_bulk():
         return jsonify({'error': str(e)}), 500
     
 if __name__ == '__main__':
-    print("🚀 Starting ThermalAI ML API on port 5001...")
-    app.run(port=5001, debug=True)
+    print("🚀 Starting ThermalAI ML API...")
+    port = int(os.environ.get('PORT', 5001))
+    app.run(host='0.0.0.0', port=port, debug=False)
