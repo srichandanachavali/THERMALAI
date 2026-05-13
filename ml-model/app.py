@@ -11,18 +11,24 @@ from sklearn.linear_model import LinearRegression
 app = Flask(__name__)
 CORS(app)
 
-# Load Random Forest Model
-with open('saved-models/rf_model.pkl', 'rb') as f:
-    model = pickle.load(f)
-print("✅ ThermalAI RF model loaded!")
+# Models are lazy-loaded on first request so the app starts instantly
+model = None
+lstm_model = None
+lstm_scaler = None
+lstm_le = None
 
-# Load LSTM Model
-lstm_model = tf.keras.models.load_model('saved-models/lstm_model.h5')
-with open('saved-models/lstm_scaler.pkl', 'rb') as f:
-    lstm_scaler = pickle.load(f)
-with open('saved-models/lstm_label_encoder.pkl', 'rb') as f:
-    lstm_le = pickle.load(f)
-print("✅ LSTM model loaded and ready!")
+def load_models():
+    global model, lstm_model, lstm_scaler, lstm_le
+    if model is not None:
+        return
+    with open('saved-models/rf_model.pkl', 'rb') as f:
+        model = pickle.load(f)
+    lstm_model = tf.keras.models.load_model('saved-models/lstm_model.h5')
+    with open('saved-models/lstm_scaler.pkl', 'rb') as f:
+        lstm_scaler = pickle.load(f)
+    with open('saved-models/lstm_label_encoder.pkl', 'rb') as f:
+        lstm_le = pickle.load(f)
+    print("✅ All models loaded!")
 
 # Buffers
 SEQUENCE_LENGTH = 10
@@ -170,6 +176,7 @@ def home():
 @app.route('/predict', methods=['POST'])
 def predict():
     try:
+        load_models()
         data = request.get_json()
         if not data:
             return jsonify({'error': 'No data provided'}), 400
@@ -188,6 +195,7 @@ def predict():
 @app.route('/predict-lstm', methods=['POST'])
 def predict_lstm():
     try:
+        load_models()
         data = request.get_json()
         reactor_id = data.get('reactor_id', 'unknown')
         temp = data['temperature']
@@ -240,6 +248,7 @@ def predict_lstm():
 @app.route('/predict/batch', methods=['POST'])
 def predict_batch():
     try:
+        load_models()
         readings = request.get_json()
         results = []
         for reading in readings:
@@ -355,6 +364,7 @@ def explain():
 @app.route('/predict-maintenance', methods=['POST'])
 def predict_maintenance_endpoint():
     try:
+        load_models()
         data = request.get_json()
         reactor_id = data.get('reactor_id', 'unknown')
         if reactor_id not in maintenance_buffers:
@@ -385,6 +395,7 @@ def predict_maintenance_endpoint():
 @app.route('/maintenance-bulk', methods=['POST'])
 def maintenance_bulk():
     try:
+        load_models()
         data = request.get_json()
         reactor_id = data.get('reactor_id')
         readings = data.get('readings', [])
