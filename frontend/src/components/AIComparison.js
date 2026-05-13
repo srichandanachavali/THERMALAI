@@ -1,5 +1,6 @@
 import React from 'react';
 
+
 function AIComparison({ reactor }) {
   if (!reactor || !reactor.rf_score) return null;
 

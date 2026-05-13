@@ -1,21 +1,21 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 
-// Default users — no database needed for hackathon
-const DEFAULT_USERS = [
-  {
-    username: 'admin',
-    password: 'admin123',
-    role: 'admin',
-    name: 'Plant Administrator'
-  },
-  {
-    username: 'operator',
-    password: 'op123',
-    role: 'operator',
-    name: 'Plant Operator'
+// Seed default users into MongoDB on first startup
+const seedDefaultUsers = async () => {
+  try {
+    const count = await User.countDocuments();
+    if (count > 0) return;
+
+    await User.create([
+      { username: 'admin', password: 'admin123', role: 'admin', name: 'Plant Administrator' },
+      { username: 'operator', password: 'op123', role: 'operator', name: 'Plant Operator' }
+    ]);
+    console.log('✅ Default users seeded into MongoDB');
+  } catch (error) {
+    console.log('⚠️  User seed error:', error.message);
   }
-];
+};
 
 // Login with username and password
 const login = async (req, res) => {
@@ -26,16 +26,16 @@ const login = async (req, res) => {
       return res.status(400).json({ error: 'Username and password required' });
     }
 
-    // Find user in default users
-    const user = DEFAULT_USERS.find(
-      u => u.username === username && u.password === password
-    );
-
+    const user = await User.findOne({ username });
     if (!user) {
       return res.status(401).json({ error: 'Invalid username or password' });
     }
 
-    // Generate JWT token
+    const match = await user.comparePassword(password);
+    if (!match) {
+      return res.status(401).json({ error: 'Invalid username or password' });
+    }
+
     const token = jwt.sign(
       { username: user.username, role: user.role, name: user.name },
       process.env.JWT_SECRET,
@@ -47,12 +47,32 @@ const login = async (req, res) => {
     res.json({
       success: true,
       token,
-      user: {
-        username: user.username,
-        name: user.name,
-        role: user.role
-      }
+      user: { username: user.username, name: user.name, role: user.role }
     });
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Register a new user (admin only)
+const register = async (req, res) => {
+  try {
+    const { username, password, role, name } = req.body;
+
+    if (!username || !password) {
+      return res.status(400).json({ error: 'Username and password required' });
+    }
+
+    const existing = await User.findOne({ username });
+    if (existing) {
+      return res.status(409).json({ error: 'Username already exists' });
+    }
+
+    const user = await User.create({ username, password, role: role || 'operator', name: name || username });
+
+    console.log(`✅ User registered: ${user.username} (${user.role})`);
+    res.status(201).json({ success: true, user: { username: user.username, role: user.role, name: user.name } });
 
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -84,8 +104,4 @@ const adminOnly = (req, res, next) => {
   next();
 };
 
-module.exports = {
-  login,
-  verifyToken,
-  adminOnly
-};
+module.exports = { login, register, verifyToken, adminOnly, seedDefaultUsers };

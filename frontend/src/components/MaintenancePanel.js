@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
+const API =
+  process.env.REACT_APP_API_URL?.replace('/api', '') ||
+  'http://localhost:5000';
+
 function MaintenancePanel({ reactor }) {
   const [maintenance, setMaintenance] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -15,7 +19,7 @@ function MaintenancePanel({ reactor }) {
     setLoading(true);
     try {
       const response = await axios.get(
-        `http://localhost:5000/api/reactors/${reactor.reactor_id}/maintenance`
+        `${API}/api/reactors/${reactor.reactor_id}/maintenance`
       );
       if (response.data.success) {
         setMaintenance(response.data);

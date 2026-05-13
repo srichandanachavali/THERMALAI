@@ -1,6 +1,9 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 
+const API =
+  process.env.REACT_APP_API_URL?.replace('/api', '') ||
+  'http://localhost:5000';
 const SocketContext = createContext();
 
 export const SocketProvider = ({ children }) => {
@@ -10,7 +13,7 @@ export const SocketProvider = ({ children }) => {
   const [connected, setConnected] = useState(false);
 
   useEffect(() => {
-    const newSocket = io('http://localhost:5000');
+    const newSocket = io(API);
     setSocket(newSocket);
 
     newSocket.on('connect', () => {

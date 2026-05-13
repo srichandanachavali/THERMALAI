@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: thermalai-ml
+    env: python
+    rootDir: ml-model
+    buildCommand: pip install -r requirements-prod.txt
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --timeout 120 --workers 1
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.9.18
+
+  - type: web
+    name: thermalai-backend
+    env: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: ML_URL
+        value: https://thermalai-ml.onrender.com
+      - key: PORT
+        value: 5000

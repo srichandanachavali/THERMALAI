@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
+const API =
+  process.env.REACT_APP_API_URL?.replace('/api', '') ||
+  "http://localhost:5000";
+
 function ExplainPanel({ reactor }) {
   const [explanation, setExplanation] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -15,7 +19,7 @@ function ExplainPanel({ reactor }) {
     setLoading(true);
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/reactors/explain",
+        `${API}/api/reactors/explain`,
         {
           temperature: reactor.temperature,
           pressure: reactor.pressure,

@@ -8,6 +8,8 @@ const axios = require("axios");
 
 dotenv.config();
 
+const ML_URL = process.env.ML_URL || 'http://localhost:5001';
+
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -45,7 +47,7 @@ app.post("/api/simulate/:id", async (req, res) => {
   let riskResult = { risk_score: 99.5, status: "CRITICAL" };
   try {
     const aiResponse = await axios.post(
-      "http://localhost:5001/predict",
+      `${ML_URL}/predict`,
       criticalReading,
     );
     riskResult = aiResponse.data;
@@ -94,9 +96,14 @@ io.on("connection", (socket) => {
   });
 });
 
+const { seedDefaultUsers } = require("./controllers/authController");
+
 mongoose
   .connect(process.env.MONGO_URI)
-  .then(() => console.log("✅ Connected to MongoDB!"))
+  .then(async () => {
+    console.log("✅ Connected to MongoDB!");
+    await seedDefaultUsers();
+  })
   .catch((err) => console.log("❌ MongoDB Error:", err));
 
 const PORT = process.env.PORT || 5000;

@@ -18,6 +18,10 @@ import AIComparison from "../components/AIComparison";
 import PredictionTimeline from "../components/PredictionTimeline";
 import MaintenancePanel from "../components/MaintenancePanel";
 
+const API =
+  process.env.REACT_APP_API_URL?.replace('/api', '') ||
+  'http://localhost:5000';
+  
 function ReactorDetail() {
   const { id } = useParams();
   const reactorId = id ? id.split(":")[0] : id;
@@ -95,7 +99,7 @@ function ReactorDetail() {
             onClick={async () => {
               try {
                 const response = await fetch(
-                  `http://localhost:5000/api/simulate/${reactorId}`,
+                  `${API}/api/simulate/${reactorId}`,
                   { method: "POST" },
                 );
                 const data = await response.json();

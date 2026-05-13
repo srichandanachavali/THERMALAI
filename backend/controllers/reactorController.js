@@ -3,6 +3,8 @@ const Alert = require('../models/Alert');
 const axios = require('axios');
 const { sendEmailAlert, sendSMSAlert } = require('./alertController');
 
+const ML_URL = process.env.ML_URL || '${ML_URL}';
+
 let latestReadings = {};
 
 if (!global.smsCooldown) global.smsCooldown = {};
@@ -43,7 +45,7 @@ const streamReading = async (req, res) => {
     // Random Forest prediction
     let riskResult = { risk_score: 0, status: 'SAFE' };
     try {
-      const aiResponse = await axios.post('http://localhost:5001/predict', reading);
+      const aiResponse = await axios.post('${ML_URL}/predict', reading);
       riskResult = aiResponse.data;
     } catch (err) {
       console.log('⚠️ RF model not available');
@@ -52,7 +54,7 @@ const streamReading = async (req, res) => {
     // LSTM prediction
     let lstmResult = { lstm_risk_score: 0, lstm_prediction: 'SAFE', lstm_confidence: 0 };
     try {
-      const lstmResponse = await axios.post('http://localhost:5001/predict-lstm', reading);
+      const lstmResponse = await axios.post('${ML_URL}/predict-lstm', reading);
       if (lstmResponse.data.success) lstmResult = lstmResponse.data;
     } catch (err) {
       console.log('⚠️ LSTM model not available');
@@ -69,7 +71,7 @@ const streamReading = async (req, res) => {
     // Predict time to critical
     let timeResult = { minutes_to_critical: null, message: '', urgency: 'SAFE' };
     try {
-      const timeResponse = await axios.post('http://localhost:5001/predict-time', {
+      const timeResponse = await axios.post('${ML_URL}/predict-time', {
         ...reading,
         risk_score: ensembleScore,
         status: ensembleStatus
@@ -132,7 +134,7 @@ const streamReading = async (req, res) => {
 const getExplanation = async (req, res) => {
   try {
     const reading = req.body;
-    const response = await axios.post('http://localhost:5001/explain', reading);
+    const response = await axios.post('${ML_URL}/explain', reading);
     res.json(response.data);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -162,7 +164,7 @@ const getMaintenancePrediction = async (req, res) => {
     }));
 
     const response = await axios.post(
-      'http://localhost:5001/maintenance-bulk',
+      '${ML_URL}/maintenance-bulk',
       { reactor_id: id, readings }
     );
 

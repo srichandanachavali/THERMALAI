@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSocket } from "../context/SocketContext";
-import { getAlerts } from "../services/api";
+import { getAlerts, resolveAlert } from "../services/api";
+
 
 function Alerts() {
   const { alerts } = useSocket();
@@ -34,6 +35,19 @@ function Alerts() {
     }
   }, [alerts]);
 
+  const handleResolve = async (e, alertId) => {
+    e.stopPropagation();
+    try {
+      await resolveAlert(alertId);
+      setAllAlerts((prev) =>
+        prev.map((a) => (a._id === alertId ? { ...a, resolved: true } : a))
+      );
+    } catch (err) {
+      console.log("Could not resolve alert");
+    }
+  };
+
+  const unresolvedAlerts = allAlerts.filter((a) => !a.resolved);
   const criticalCount = allAlerts.filter(
     (a) => a.alert_type === "CRITICAL",
   ).length;
@@ -81,6 +95,9 @@ function Alerts() {
           <p className="text-4xl font-bold text-blue-400 mt-2">
             {allAlerts.length}
           </p>
+          <p className="text-gray-500 text-xs mt-1">
+            {unresolvedAlerts.length} unresolved
+          </p>
         </div>
       </div>
 
@@ -100,27 +117,35 @@ function Alerts() {
               <div
                 key={index}
                 onClick={() => navigate(`/reactor/${alert.reactor_id}`)}
-                className={`border-l-4 ${getAlertStyle(alert.alert_type)} rounded-r-lg p-4 cursor-pointer hover:opacity-80 transition-all`}
+                className={`border-l-4 ${
+                  alert.resolved
+                    ? "border-gray-600 bg-gray-700/30 opacity-60"
+                    : getAlertStyle(alert.alert_type)
+                } rounded-r-lg p-4 cursor-pointer hover:opacity-80 transition-all`}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <span
                       className={`text-xs font-bold px-3 py-1 rounded-full ${
-                        alert.alert_type === "CRITICAL"
+                        alert.resolved
+                          ? "bg-gray-600 text-gray-400"
+                          : alert.alert_type === "CRITICAL"
                           ? "bg-red-500 text-white"
                           : "bg-yellow-500 text-black"
                       }`}
                     >
-                      {alert.alert_type}
+                      {alert.resolved ? "RESOLVED" : alert.alert_type}
                     </span>
-                    <span className="text-white font-semibold">
+                    <span className={`font-semibold ${alert.resolved ? "text-gray-500 line-through" : "text-white"}`}>
                       Reactor {alert.reactor_id}
                     </span>
                   </div>
                   <div className="flex items-center gap-4">
                     <span
                       className={`font-bold text-lg ${
-                        alert.alert_type === "CRITICAL"
+                        alert.resolved
+                          ? "text-gray-500"
+                          : alert.alert_type === "CRITICAL"
                           ? "text-red-400"
                           : "text-yellow-400"
                       }`}
@@ -130,6 +155,14 @@ function Alerts() {
                     <span className="text-gray-500 text-sm">
                       {new Date(alert.timestamp).toLocaleString()}
                     </span>
+                    {!alert.resolved && (
+                      <button
+                        onClick={(e) => handleResolve(e, alert._id)}
+                        className="bg-green-600 hover:bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-lg transition-all"
+                      >
+                        ✓ Resolve
+                      </button>
+                    )}
                   </div>
                 </div>
                 <p className="text-gray-400 text-sm mt-2">{alert.message}</p>
@@ -140,9 +173,11 @@ function Alerts() {
                   <span className="text-gray-500 text-xs">
                     💨 {alert.pressure} bar
                   </span>
-                  <span className="text-blue-400 text-xs">
-                    Click to view reactor →
-                  </span>
+                  {!alert.resolved && (
+                    <span className="text-blue-400 text-xs">
+                      Click to view reactor →
+                    </span>
+                  )}
                 </div>
               </div>
             ))}

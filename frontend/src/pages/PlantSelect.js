@@ -2,6 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
+const API =
+  process.env.REACT_APP_API_URL?.replace('/api', '') ||
+  'http://localhost:5000';
+  
 function PlantSelect() {
   const [plants, setPlants] = useState([]);
   const navigate = useNavigate();
@@ -12,7 +16,7 @@ function PlantSelect() {
 
   const fetchPlants = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/plants');
+      const response = await axios.get(`${API}/api/plants`);
       setPlants(response.data);
     } catch (err) {
       console.log('Error fetching plants:', err);

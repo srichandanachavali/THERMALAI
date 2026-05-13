@@ -2,6 +2,10 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 
+const API =
+  process.env.REACT_APP_API_URL?.replace('/api', '') ||
+  'http://localhost:5000';
+  
 function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -19,7 +23,7 @@ function Login() {
     setLoading(true);
     setError('');
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/login', {
+      const response = await axios.post(`${API}/api/auth/login`, {
         username,
         password
       });
