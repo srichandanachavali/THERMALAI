@@ -4,14 +4,17 @@ const jwt = require('jsonwebtoken');
 // Seed default users into MongoDB on first startup
 const seedDefaultUsers = async () => {
   try {
-    const count = await User.countDocuments();
-    if (count > 0) return;
+    const admin = await User.findOne({ username: 'admin' });
 
-    await User.create([
-      { username: 'admin', password: 'admin123', role: 'admin', name: 'Plant Administrator' },
-      { username: 'operator', password: 'op123', role: 'operator', name: 'Plant Operator' }
-    ]);
-    console.log('✅ Default users seeded into MongoDB');
+    // Reseed if missing or password isn't bcrypt hashed (plaintext from old run)
+    if (!admin || !admin.password.startsWith('$2b$')) {
+      await User.deleteMany({});
+      await User.create([
+        { username: 'admin', password: 'admin123', role: 'admin', name: 'Plant Administrator' },
+        { username: 'operator', password: 'op123', role: 'operator', name: 'Plant Operator' }
+      ]);
+      console.log('✅ Default users seeded into MongoDB');
+    }
   } catch (error) {
     console.log('⚠️  User seed error:', error.message);
   }
