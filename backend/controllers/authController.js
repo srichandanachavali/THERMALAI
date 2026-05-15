@@ -1,26 +1,34 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 
-// Seed default users into MongoDB on first startup
 const seedDefaultUsers = async () => {
   try {
-    const admin = await User.findOne({ username: 'admin' });
+    // Drop stale phone index if it exists
+    try { await User.collection.dropIndex('phone_1'); } catch(e) {}
 
-    // Reseed if missing or password isn't bcrypt hashed (plaintext from old run)
+    // Check and seed admin
+    const admin = await User.findOne({ username: 'admin' });
     if (!admin || !admin.password.startsWith('$2b$')) {
-      await User.deleteMany({});
-      await User.create([
-        { username: 'admin', password: 'admin123', role: 'admin', name: 'Plant Administrator' },
-        { username: 'operator', password: 'op123', role: 'operator', name: 'Plant Operator' }
-      ]);
-      console.log('✅ Default users seeded into MongoDB');
+      await User.deleteOne({ username: 'admin' });
+      const adminUser = new User({ username: 'admin', password: 'admin123', role: 'admin', name: 'Plant Administrator' });
+      await adminUser.save();
+      console.log('✅ Admin user seeded');
     }
+
+    // Check and seed operator
+    const operator = await User.findOne({ username: 'operator' });
+    if (!operator || !operator.password.startsWith('$2b$')) {
+      await User.deleteOne({ username: 'operator' });
+      const operatorUser = new User({ username: 'operator', password: 'op123', role: 'operator', name: 'Plant Operator' });
+      await operatorUser.save();
+      console.log('✅ Operator user seeded');
+    }
+
   } catch (error) {
     console.log('⚠️  User seed error:', error.message);
   }
 };
 
-// Login with username and password
 const login = async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -58,7 +66,6 @@ const login = async (req, res) => {
   }
 };
 
-// Register a new user (admin only)
 const register = async (req, res) => {
   try {
     const { username, password, role, name } = req.body;
@@ -72,7 +79,8 @@ const register = async (req, res) => {
       return res.status(409).json({ error: 'Username already exists' });
     }
 
-    const user = await User.create({ username, password, role: role || 'operator', name: name || username });
+    const user = new User({ username, password, role: role || 'operator', name: name || username });
+    await user.save();
 
     console.log(`✅ User registered: ${user.username} (${user.role})`);
     res.status(201).json({ success: true, user: { username: user.username, role: user.role, name: user.name } });
@@ -82,7 +90,6 @@ const register = async (req, res) => {
   }
 };
 
-// Verify JWT token middleware
 const verifyToken = (req, res, next) => {
   const token = req.headers.authorization?.split(' ')[1];
 
@@ -99,7 +106,6 @@ const verifyToken = (req, res, next) => {
   }
 };
 
-// Admin only middleware
 const adminOnly = (req, res, next) => {
   if (req.user.role !== 'admin') {
     return res.status(403).json({ error: 'Admin access required' });

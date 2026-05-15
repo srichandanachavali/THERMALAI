@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const PlantSchema = new mongoose.Schema({
   plant_id: { type: String, required: true, unique: true },
@@ -7,7 +7,7 @@ const PlantSchema = new mongoose.Schema({
   city: { type: String, required: true },
   type: { type: String, required: true },
   reactors: [{ type: String }],
-  createdAt: { type: Date, default: Date.now }
+  createdAt: { type: Date, default: Date.now },
 });
 
-module.exports = mongoose.model('Plant', PlantSchema);
+module.exports = mongoose.model("Plant", PlantSchema);
