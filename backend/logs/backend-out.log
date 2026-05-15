@@ -1,0 +1,36 @@
+2026-05-16 00:26:05 +05:30: ◇ injected env (12) from .env // tip: ◈ secrets for agents [www.dotenvx.com]
+2026-05-16 00:26:10 +05:30: ◇ injected env (12) from .env // tip: ⌘ override existing { override: true }
+2026-05-16 00:26:14 +05:30: ◇ injected env (12) from .env // tip: ◈ encrypted .env [www.dotenvx.com]
+2026-05-16 00:26:19 +05:30: ◇ injected env (12) from .env // tip: ◈ secrets for agents [www.dotenvx.com]
+2026-05-16 00:26:23 +05:30: ◇ injected env (12) from .env // tip: ⌘ custom filepath { path: '/custom/path/.env' }
+2026-05-16 00:26:27 +05:30: ◇ injected env (12) from .env // tip: ◈ encrypted .env [www.dotenvx.com]
+2026-05-16 00:26:32 +05:30: ◇ injected env (12) from .env // tip: ⌘ multiple files { path: ['.env.local', '.env'] }
+2026-05-16 00:26:36 +05:30: ◇ injected env (12) from .env // tip: ◈ secrets for agents [www.dotenvx.com]
+2026-05-16 00:26:40 +05:30: ◇ injected env (12) from .env // tip: ⌘ enable debugging { debug: true }
+2026-05-16 00:26:45 +05:30: ◇ injected env (12) from .env // tip: ⌘ override existing { override: true }
+2026-05-16 00:26:53 +05:30: ◇ injected env (12) from .env // tip: ◈ encrypted .env [www.dotenvx.com]
+2026-05-16 00:26:58 +05:30: ◇ injected env (12) from .env // tip: ⌘ multiple files { path: ['.env.local', '.env'] }
+2026-05-16 00:27:02 +05:30: ◇ injected env (12) from .env // tip: ◈ secrets for agents [www.dotenvx.com]
+2026-05-16 00:27:07 +05:30: ◇ injected env (12) from .env // tip: ⌘ multiple files { path: ['.env.local', '.env'] }
+2026-05-16 00:27:12 +05:30: ◇ injected env (12) from .env // tip: ◈ encrypted .env [www.dotenvx.com]
+2026-05-16 00:27:16 +05:30: ◇ injected env (12) from .env // tip: ◈ secrets for agents [www.dotenvx.com]
+2026-05-16 00:27:20 +05:30: ◇ injected env (12) from .env // tip: ⌘ override existing { override: true }
+2026-05-16 00:27:25 +05:30: ◇ injected env (12) from .env // tip: ⌁ auth for agents [www.vestauth.com]
+2026-05-16 00:27:29 +05:30: ◇ injected env (12) from .env // tip: ⌘ multiple files { path: ['.env.local', '.env'] }
+2026-05-16 00:27:34 +05:30: ◇ injected env (12) from .env // tip: ⌘ override existing { override: true }
+2026-05-16 00:31:58 +05:30: ◇ injected env (12) from .env // tip: ⌘ multiple files { path: ['.env.local', '.env'] }
+2026-05-16 00:31:59 +05:30: 🚀 Server running on port 5000
+2026-05-16 00:32:00 +05:30: ✅ Connected to MongoDB!
+2026-05-16 00:32:21 +05:30: ❌ SMS error: Authenticate
+2026-05-16 00:32:25 +05:30: 📧 Email alert sent for Reactor D
+2026-05-16 00:39:53 +05:30: ◇ injected env (12) from .env // tip: ⌘ override existing { override: true }
+2026-05-16 00:39:54 +05:30: 🚀 Server running on port 5000
+2026-05-16 00:39:56 +05:30: ✅ Connected to MongoDB!
+2026-05-16 00:40:00 +05:30: ❌ SMS error: Authenticate
+2026-05-16 00:40:04 +05:30: 📧 Email alert sent for Reactor D
+2026-05-16 00:40:19 +05:30: ❌ SMS error: Authenticate
+2026-05-16 00:40:22 +05:30: 📧 Email alert sent for Reactor E
+2026-05-16 00:40:26 +05:30: ❌ SMS error: Authenticate
+2026-05-16 00:40:29 +05:30: 📧 Email alert sent for Reactor A
+2026-05-16 00:40:53 +05:30: ❌ SMS error: Authenticate
+2026-05-16 00:40:56 +05:30: 📧 Email alert sent for Reactor C

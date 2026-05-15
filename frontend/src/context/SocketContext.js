@@ -11,6 +11,7 @@ export const SocketProvider = ({ children }) => {
   const [reactors, setReactors] = useState([]);
   const [alerts, setAlerts] = useState([]);
   const [connected, setConnected] = useState(false);
+  const [mlStatus, setMlStatus] = useState('ok'); // 'ok' | 'down' | 'recovered'
 
   useEffect(() => {
     const newSocket = io(API);
@@ -37,6 +38,17 @@ export const SocketProvider = ({ children }) => {
       setAlerts(prev => [alert, ...prev].slice(0, 50));
     });
 
+    // ── ML watchdog alerts from backend ──────────────────────────────
+    newSocket.on('system_alert', (data) => {
+      if (data.type === 'ML_DOWN') {
+        console.warn('🚨 ML service is DOWN:', data.message);
+        setMlStatus('down');
+      } else if (data.type === 'ML_RECOVERED') {
+        console.log('✅ ML service recovered');
+        setMlStatus('ok');
+      }
+    });
+
     newSocket.on('disconnect', () => {
       setConnected(false);
     });
@@ -45,7 +57,7 @@ export const SocketProvider = ({ children }) => {
   }, []);
 
   return (
-    <SocketContext.Provider value={{ socket, reactors, alerts, connected }}>
+    <SocketContext.Provider value={{ socket, reactors, alerts, connected, mlStatus }}>
       {children}
     </SocketContext.Provider>
   );

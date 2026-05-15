@@ -1,0 +1,379 @@
+2026-05-16 00:26:06 +05:30: Error: listen EADDRINUSE: address already in use :::5000
+2026-05-16 00:26:06 +05:30:     at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+2026-05-16 00:26:06 +05:30:     at listenInCluster (node:net:1996:12)
+2026-05-16 00:26:06 +05:30:     at Server.listen (node:net:2101:7)
+2026-05-16 00:26:06 +05:30:     at Object.<anonymous> (C:\Users\Orange\THERMALAI\backend\server.js:110:8)
+2026-05-16 00:26:06 +05:30:     at Module._compile (node:internal/modules/cjs/loader:1730:14)
+2026-05-16 00:26:06 +05:30:     at Object..js (node:internal/modules/cjs/loader:1895:10)
+2026-05-16 00:26:06 +05:30:     at Module.load (node:internal/modules/cjs/loader:1465:32)
+2026-05-16 00:26:06 +05:30:     at Function._load (node:internal/modules/cjs/loader:1282:12)
+2026-05-16 00:26:06 +05:30:     at Object.<anonymous> (C:\Users\Orange\AppData\Roaming\npm\node_modules\pm2\lib\ProcessContainerFork.js:32:23)
+2026-05-16 00:26:06 +05:30:     at Module._compile (node:internal/modules/cjs/loader:1730:14) {
+2026-05-16 00:26:06 +05:30:   code: 'EADDRINUSE',
+2026-05-16 00:26:06 +05:30:   errno: -4091,
+2026-05-16 00:26:06 +05:30:   syscall: 'listen',
+2026-05-16 00:26:06 +05:30:   address: '::',
+2026-05-16 00:26:06 +05:30:   port: 5000
+2026-05-16 00:26:06 +05:30: }
+2026-05-16 00:26:11 +05:30: Error: listen EADDRINUSE: address already in use :::5000
+2026-05-16 00:26:11 +05:30:     at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+2026-05-16 00:26:11 +05:30:     at listenInCluster (node:net:1996:12)
+2026-05-16 00:26:11 +05:30:     at Server.listen (node:net:2101:7)
+2026-05-16 00:26:11 +05:30:     at Object.<anonymous> (C:\Users\Orange\THERMALAI\backend\server.js:110:8)
+2026-05-16 00:26:11 +05:30:     at Module._compile (node:internal/modules/cjs/loader:1730:14)
+2026-05-16 00:26:11 +05:30:     at Object..js (node:internal/modules/cjs/loader:1895:10)
+2026-05-16 00:26:11 +05:30:     at Module.load (node:internal/modules/cjs/loader:1465:32)
+2026-05-16 00:26:11 +05:30:     at Function._load (node:internal/modules/cjs/loader:1282:12)
+2026-05-16 00:26:11 +05:30:     at Object.<anonymous> (C:\Users\Orange\AppData\Roaming\npm\node_modules\pm2\lib\ProcessContainerFork.js:32:23)
+2026-05-16 00:26:11 +05:30:     at Module._compile (node:internal/modules/cjs/loader:1730:14) {
+2026-05-16 00:26:11 +05:30:   code: 'EADDRINUSE',
+2026-05-16 00:26:11 +05:30:   errno: -4091,
+2026-05-16 00:26:11 +05:30:   syscall: 'listen',
+2026-05-16 00:26:11 +05:30:   address: '::',
+2026-05-16 00:26:11 +05:30:   port: 5000
+2026-05-16 00:26:11 +05:30: }
+2026-05-16 00:26:15 +05:30: Error: listen EADDRINUSE: address already in use :::5000
+2026-05-16 00:26:15 +05:30:     at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+2026-05-16 00:26:15 +05:30:     at listenInCluster (node:net:1996:12)
+2026-05-16 00:26:15 +05:30:     at Server.listen (node:net:2101:7)
+2026-05-16 00:26:15 +05:30:     at Object.<anonymous> (C:\Users\Orange\THERMALAI\backend\server.js:110:8)
+2026-05-16 00:26:15 +05:30:     at Module._compile (node:internal/modules/cjs/loader:1730:14)
+2026-05-16 00:26:15 +05:30:     at Object..js (node:internal/modules/cjs/loader:1895:10)
+2026-05-16 00:26:15 +05:30:     at Module.load (node:internal/modules/cjs/loader:1465:32)
+2026-05-16 00:26:15 +05:30:     at Function._load (node:internal/modules/cjs/loader:1282:12)
+2026-05-16 00:26:15 +05:30:     at Object.<anonymous> (C:\Users\Orange\AppData\Roaming\npm\node_modules\pm2\lib\ProcessContainerFork.js:32:23)
+2026-05-16 00:26:15 +05:30:     at Module._compile (node:internal/modules/cjs/loader:1730:14) {
+2026-05-16 00:26:15 +05:30:   code: 'EADDRINUSE',
+2026-05-16 00:26:15 +05:30:   errno: -4091,
+2026-05-16 00:26:15 +05:30:   syscall: 'listen',
+2026-05-16 00:26:15 +05:30:   address: '::',
+2026-05-16 00:26:15 +05:30:   port: 5000
+2026-05-16 00:26:15 +05:30: }
+2026-05-16 00:26:19 +05:30: Error: listen EADDRINUSE: address already in use :::5000
+2026-05-16 00:26:19 +05:30:     at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+2026-05-16 00:26:19 +05:30:     at listenInCluster (node:net:1996:12)
+2026-05-16 00:26:19 +05:30:     at Server.listen (node:net:2101:7)
+2026-05-16 00:26:19 +05:30:     at Object.<anonymous> (C:\Users\Orange\THERMALAI\backend\server.js:110:8)
+2026-05-16 00:26:19 +05:30:     at Module._compile (node:internal/modules/cjs/loader:1730:14)
+2026-05-16 00:26:19 +05:30:     at Object..js (node:internal/modules/cjs/loader:1895:10)
+2026-05-16 00:26:19 +05:30:     at Module.load (node:internal/modules/cjs/loader:1465:32)
+2026-05-16 00:26:19 +05:30:     at Function._load (node:internal/modules/cjs/loader:1282:12)
+2026-05-16 00:26:19 +05:30:     at Object.<anonymous> (C:\Users\Orange\AppData\Roaming\npm\node_modules\pm2\lib\ProcessContainerFork.js:32:23)
+2026-05-16 00:26:19 +05:30:     at Module._compile (node:internal/modules/cjs/loader:1730:14) {
+2026-05-16 00:26:19 +05:30:   code: 'EADDRINUSE',
+2026-05-16 00:26:19 +05:30:   errno: -4091,
+2026-05-16 00:26:19 +05:30:   syscall: 'listen',
+2026-05-16 00:26:19 +05:30:   address: '::',
+2026-05-16 00:26:19 +05:30:   port: 5000
+2026-05-16 00:26:19 +05:30: }
+2026-05-16 00:26:23 +05:30: Error: listen EADDRINUSE: address already in use :::5000
+2026-05-16 00:26:23 +05:30:     at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+2026-05-16 00:26:23 +05:30:     at listenInCluster (node:net:1996:12)
+2026-05-16 00:26:23 +05:30:     at Server.listen (node:net:2101:7)
+2026-05-16 00:26:23 +05:30:     at Object.<anonymous> (C:\Users\Orange\THERMALAI\backend\server.js:110:8)
+2026-05-16 00:26:23 +05:30:     at Module._compile (node:internal/modules/cjs/loader:1730:14)
+2026-05-16 00:26:23 +05:30:     at Object..js (node:internal/modules/cjs/loader:1895:10)
+2026-05-16 00:26:23 +05:30:     at Module.load (node:internal/modules/cjs/loader:1465:32)
+2026-05-16 00:26:23 +05:30:     at Function._load (node:internal/modules/cjs/loader:1282:12)
+2026-05-16 00:26:23 +05:30:     at Object.<anonymous> (C:\Users\Orange\AppData\Roaming\npm\node_modules\pm2\lib\ProcessContainerFork.js:32:23)
+2026-05-16 00:26:23 +05:30:     at Module._compile (node:internal/modules/cjs/loader:1730:14) {
+2026-05-16 00:26:23 +05:30:   code: 'EADDRINUSE',
+2026-05-16 00:26:23 +05:30:   errno: -4091,
+2026-05-16 00:26:23 +05:30:   syscall: 'listen',
+2026-05-16 00:26:23 +05:30:   address: '::',
+2026-05-16 00:26:23 +05:30:   port: 5000
+2026-05-16 00:26:23 +05:30: }
+2026-05-16 00:26:28 +05:30: Error: listen EADDRINUSE: address already in use :::5000
+2026-05-16 00:26:28 +05:30:     at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+2026-05-16 00:26:28 +05:30:     at listenInCluster (node:net:1996:12)
+2026-05-16 00:26:28 +05:30:     at Server.listen (node:net:2101:7)
+2026-05-16 00:26:28 +05:30:     at Object.<anonymous> (C:\Users\Orange\THERMALAI\backend\server.js:110:8)
+2026-05-16 00:26:28 +05:30:     at Module._compile (node:internal/modules/cjs/loader:1730:14)
+2026-05-16 00:26:28 +05:30:     at Object..js (node:internal/modules/cjs/loader:1895:10)
+2026-05-16 00:26:28 +05:30:     at Module.load (node:internal/modules/cjs/loader:1465:32)
+2026-05-16 00:26:28 +05:30:     at Function._load (node:internal/modules/cjs/loader:1282:12)
+2026-05-16 00:26:28 +05:30:     at Object.<anonymous> (C:\Users\Orange\AppData\Roaming\npm\node_modules\pm2\lib\ProcessContainerFork.js:32:23)
+2026-05-16 00:26:28 +05:30:     at Module._compile (node:internal/modules/cjs/loader:1730:14) {
+2026-05-16 00:26:28 +05:30:   code: 'EADDRINUSE',
+2026-05-16 00:26:28 +05:30:   errno: -4091,
+2026-05-16 00:26:28 +05:30:   syscall: 'listen',
+2026-05-16 00:26:28 +05:30:   address: '::',
+2026-05-16 00:26:28 +05:30:   port: 5000
+2026-05-16 00:26:28 +05:30: }
+2026-05-16 00:26:32 +05:30: Error: listen EADDRINUSE: address already in use :::5000
+2026-05-16 00:26:32 +05:30:     at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+2026-05-16 00:26:32 +05:30:     at listenInCluster (node:net:1996:12)
+2026-05-16 00:26:32 +05:30:     at Server.listen (node:net:2101:7)
+2026-05-16 00:26:32 +05:30:     at Object.<anonymous> (C:\Users\Orange\THERMALAI\backend\server.js:110:8)
+2026-05-16 00:26:32 +05:30:     at Module._compile (node:internal/modules/cjs/loader:1730:14)
+2026-05-16 00:26:32 +05:30:     at Object..js (node:internal/modules/cjs/loader:1895:10)
+2026-05-16 00:26:32 +05:30:     at Module.load (node:internal/modules/cjs/loader:1465:32)
+2026-05-16 00:26:32 +05:30:     at Function._load (node:internal/modules/cjs/loader:1282:12)
+2026-05-16 00:26:32 +05:30:     at Object.<anonymous> (C:\Users\Orange\AppData\Roaming\npm\node_modules\pm2\lib\ProcessContainerFork.js:32:23)
+2026-05-16 00:26:32 +05:30:     at Module._compile (node:internal/modules/cjs/loader:1730:14) {
+2026-05-16 00:26:32 +05:30:   code: 'EADDRINUSE',
+2026-05-16 00:26:32 +05:30:   errno: -4091,
+2026-05-16 00:26:32 +05:30:   syscall: 'listen',
+2026-05-16 00:26:32 +05:30:   address: '::',
+2026-05-16 00:26:32 +05:30:   port: 5000
+2026-05-16 00:26:32 +05:30: }
+2026-05-16 00:26:36 +05:30: Error: listen EADDRINUSE: address already in use :::5000
+2026-05-16 00:26:36 +05:30:     at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+2026-05-16 00:26:36 +05:30:     at listenInCluster (node:net:1996:12)
+2026-05-16 00:26:36 +05:30:     at Server.listen (node:net:2101:7)
+2026-05-16 00:26:36 +05:30:     at Object.<anonymous> (C:\Users\Orange\THERMALAI\backend\server.js:110:8)
+2026-05-16 00:26:36 +05:30:     at Module._compile (node:internal/modules/cjs/loader:1730:14)
+2026-05-16 00:26:36 +05:30:     at Object..js (node:internal/modules/cjs/loader:1895:10)
+2026-05-16 00:26:36 +05:30:     at Module.load (node:internal/modules/cjs/loader:1465:32)
+2026-05-16 00:26:36 +05:30:     at Function._load (node:internal/modules/cjs/loader:1282:12)
+2026-05-16 00:26:36 +05:30:     at Object.<anonymous> (C:\Users\Orange\AppData\Roaming\npm\node_modules\pm2\lib\ProcessContainerFork.js:32:23)
+2026-05-16 00:26:36 +05:30:     at Module._compile (node:internal/modules/cjs/loader:1730:14) {
+2026-05-16 00:26:36 +05:30:   code: 'EADDRINUSE',
+2026-05-16 00:26:36 +05:30:   errno: -4091,
+2026-05-16 00:26:36 +05:30:   syscall: 'listen',
+2026-05-16 00:26:36 +05:30:   address: '::',
+2026-05-16 00:26:36 +05:30:   port: 5000
+2026-05-16 00:26:36 +05:30: }
+2026-05-16 00:26:41 +05:30: Error: listen EADDRINUSE: address already in use :::5000
+2026-05-16 00:26:41 +05:30:     at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+2026-05-16 00:26:41 +05:30:     at listenInCluster (node:net:1996:12)
+2026-05-16 00:26:41 +05:30:     at Server.listen (node:net:2101:7)
+2026-05-16 00:26:41 +05:30:     at Object.<anonymous> (C:\Users\Orange\THERMALAI\backend\server.js:110:8)
+2026-05-16 00:26:41 +05:30:     at Module._compile (node:internal/modules/cjs/loader:1730:14)
+2026-05-16 00:26:41 +05:30:     at Object..js (node:internal/modules/cjs/loader:1895:10)
+2026-05-16 00:26:41 +05:30:     at Module.load (node:internal/modules/cjs/loader:1465:32)
+2026-05-16 00:26:41 +05:30:     at Function._load (node:internal/modules/cjs/loader:1282:12)
+2026-05-16 00:26:41 +05:30:     at Object.<anonymous> (C:\Users\Orange\AppData\Roaming\npm\node_modules\pm2\lib\ProcessContainerFork.js:32:23)
+2026-05-16 00:26:41 +05:30:     at Module._compile (node:internal/modules/cjs/loader:1730:14) {
+2026-05-16 00:26:41 +05:30:   code: 'EADDRINUSE',
+2026-05-16 00:26:41 +05:30:   errno: -4091,
+2026-05-16 00:26:41 +05:30:   syscall: 'listen',
+2026-05-16 00:26:41 +05:30:   address: '::',
+2026-05-16 00:26:41 +05:30:   port: 5000
+2026-05-16 00:26:41 +05:30: }
+2026-05-16 00:26:45 +05:30: Error: listen EADDRINUSE: address already in use :::5000
+2026-05-16 00:26:45 +05:30:     at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+2026-05-16 00:26:45 +05:30:     at listenInCluster (node:net:1996:12)
+2026-05-16 00:26:45 +05:30:     at Server.listen (node:net:2101:7)
+2026-05-16 00:26:45 +05:30:     at Object.<anonymous> (C:\Users\Orange\THERMALAI\backend\server.js:110:8)
+2026-05-16 00:26:45 +05:30:     at Module._compile (node:internal/modules/cjs/loader:1730:14)
+2026-05-16 00:26:45 +05:30:     at Object..js (node:internal/modules/cjs/loader:1895:10)
+2026-05-16 00:26:45 +05:30:     at Module.load (node:internal/modules/cjs/loader:1465:32)
+2026-05-16 00:26:45 +05:30:     at Function._load (node:internal/modules/cjs/loader:1282:12)
+2026-05-16 00:26:45 +05:30:     at Object.<anonymous> (C:\Users\Orange\AppData\Roaming\npm\node_modules\pm2\lib\ProcessContainerFork.js:32:23)
+2026-05-16 00:26:45 +05:30:     at Module._compile (node:internal/modules/cjs/loader:1730:14) {
+2026-05-16 00:26:45 +05:30:   code: 'EADDRINUSE',
+2026-05-16 00:26:45 +05:30:   errno: -4091,
+2026-05-16 00:26:45 +05:30:   syscall: 'listen',
+2026-05-16 00:26:45 +05:30:   address: '::',
+2026-05-16 00:26:45 +05:30:   port: 5000
+2026-05-16 00:26:45 +05:30: }
+2026-05-16 00:26:53 +05:30: Error: listen EADDRINUSE: address already in use :::5000
+2026-05-16 00:26:53 +05:30:     at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+2026-05-16 00:26:53 +05:30:     at listenInCluster (node:net:1996:12)
+2026-05-16 00:26:53 +05:30:     at Server.listen (node:net:2101:7)
+2026-05-16 00:26:53 +05:30:     at Object.<anonymous> (C:\Users\Orange\THERMALAI\backend\server.js:110:8)
+2026-05-16 00:26:53 +05:30:     at Module._compile (node:internal/modules/cjs/loader:1730:14)
+2026-05-16 00:26:53 +05:30:     at Object..js (node:internal/modules/cjs/loader:1895:10)
+2026-05-16 00:26:53 +05:30:     at Module.load (node:internal/modules/cjs/loader:1465:32)
+2026-05-16 00:26:53 +05:30:     at Function._load (node:internal/modules/cjs/loader:1282:12)
+2026-05-16 00:26:53 +05:30:     at Object.<anonymous> (C:\Users\Orange\AppData\Roaming\npm\node_modules\pm2\lib\ProcessContainerFork.js:32:23)
+2026-05-16 00:26:53 +05:30:     at Module._compile (node:internal/modules/cjs/loader:1730:14) {
+2026-05-16 00:26:53 +05:30:   code: 'EADDRINUSE',
+2026-05-16 00:26:53 +05:30:   errno: -4091,
+2026-05-16 00:26:53 +05:30:   syscall: 'listen',
+2026-05-16 00:26:53 +05:30:   address: '::',
+2026-05-16 00:26:53 +05:30:   port: 5000
+2026-05-16 00:26:53 +05:30: }
+2026-05-16 00:26:58 +05:30: Error: listen EADDRINUSE: address already in use :::5000
+2026-05-16 00:26:58 +05:30:     at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+2026-05-16 00:26:58 +05:30:     at listenInCluster (node:net:1996:12)
+2026-05-16 00:26:58 +05:30:     at Server.listen (node:net:2101:7)
+2026-05-16 00:26:58 +05:30:     at Object.<anonymous> (C:\Users\Orange\THERMALAI\backend\server.js:110:8)
+2026-05-16 00:26:58 +05:30:     at Module._compile (node:internal/modules/cjs/loader:1730:14)
+2026-05-16 00:26:58 +05:30:     at Object..js (node:internal/modules/cjs/loader:1895:10)
+2026-05-16 00:26:58 +05:30:     at Module.load (node:internal/modules/cjs/loader:1465:32)
+2026-05-16 00:26:58 +05:30:     at Function._load (node:internal/modules/cjs/loader:1282:12)
+2026-05-16 00:26:58 +05:30:     at Object.<anonymous> (C:\Users\Orange\AppData\Roaming\npm\node_modules\pm2\lib\ProcessContainerFork.js:32:23)
+2026-05-16 00:26:58 +05:30:     at Module._compile (node:internal/modules/cjs/loader:1730:14) {
+2026-05-16 00:26:58 +05:30:   code: 'EADDRINUSE',
+2026-05-16 00:26:58 +05:30:   errno: -4091,
+2026-05-16 00:26:58 +05:30:   syscall: 'listen',
+2026-05-16 00:26:58 +05:30:   address: '::',
+2026-05-16 00:26:58 +05:30:   port: 5000
+2026-05-16 00:26:58 +05:30: }
+2026-05-16 00:27:02 +05:30: Error: listen EADDRINUSE: address already in use :::5000
+2026-05-16 00:27:02 +05:30:     at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+2026-05-16 00:27:02 +05:30:     at listenInCluster (node:net:1996:12)
+2026-05-16 00:27:02 +05:30:     at Server.listen (node:net:2101:7)
+2026-05-16 00:27:02 +05:30:     at Object.<anonymous> (C:\Users\Orange\THERMALAI\backend\server.js:110:8)
+2026-05-16 00:27:02 +05:30:     at Module._compile (node:internal/modules/cjs/loader:1730:14)
+2026-05-16 00:27:02 +05:30:     at Object..js (node:internal/modules/cjs/loader:1895:10)
+2026-05-16 00:27:02 +05:30:     at Module.load (node:internal/modules/cjs/loader:1465:32)
+2026-05-16 00:27:02 +05:30:     at Function._load (node:internal/modules/cjs/loader:1282:12)
+2026-05-16 00:27:02 +05:30:     at Object.<anonymous> (C:\Users\Orange\AppData\Roaming\npm\node_modules\pm2\lib\ProcessContainerFork.js:32:23)
+2026-05-16 00:27:02 +05:30:     at Module._compile (node:internal/modules/cjs/loader:1730:14) {
+2026-05-16 00:27:02 +05:30:   code: 'EADDRINUSE',
+2026-05-16 00:27:02 +05:30:   errno: -4091,
+2026-05-16 00:27:02 +05:30:   syscall: 'listen',
+2026-05-16 00:27:02 +05:30:   address: '::',
+2026-05-16 00:27:02 +05:30:   port: 5000
+2026-05-16 00:27:02 +05:30: }
+2026-05-16 00:27:07 +05:30: Error: listen EADDRINUSE: address already in use :::5000
+2026-05-16 00:27:07 +05:30:     at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+2026-05-16 00:27:07 +05:30:     at listenInCluster (node:net:1996:12)
+2026-05-16 00:27:07 +05:30:     at Server.listen (node:net:2101:7)
+2026-05-16 00:27:07 +05:30:     at Object.<anonymous> (C:\Users\Orange\THERMALAI\backend\server.js:110:8)
+2026-05-16 00:27:07 +05:30:     at Module._compile (node:internal/modules/cjs/loader:1730:14)
+2026-05-16 00:27:07 +05:30:     at Object..js (node:internal/modules/cjs/loader:1895:10)
+2026-05-16 00:27:07 +05:30:     at Module.load (node:internal/modules/cjs/loader:1465:32)
+2026-05-16 00:27:07 +05:30:     at Function._load (node:internal/modules/cjs/loader:1282:12)
+2026-05-16 00:27:07 +05:30:     at Object.<anonymous> (C:\Users\Orange\AppData\Roaming\npm\node_modules\pm2\lib\ProcessContainerFork.js:32:23)
+2026-05-16 00:27:07 +05:30:     at Module._compile (node:internal/modules/cjs/loader:1730:14) {
+2026-05-16 00:27:07 +05:30:   code: 'EADDRINUSE',
+2026-05-16 00:27:07 +05:30:   errno: -4091,
+2026-05-16 00:27:07 +05:30:   syscall: 'listen',
+2026-05-16 00:27:07 +05:30:   address: '::',
+2026-05-16 00:27:07 +05:30:   port: 5000
+2026-05-16 00:27:07 +05:30: }
+2026-05-16 00:27:12 +05:30: Error: listen EADDRINUSE: address already in use :::5000
+2026-05-16 00:27:12 +05:30:     at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+2026-05-16 00:27:12 +05:30:     at listenInCluster (node:net:1996:12)
+2026-05-16 00:27:12 +05:30:     at Server.listen (node:net:2101:7)
+2026-05-16 00:27:12 +05:30:     at Object.<anonymous> (C:\Users\Orange\THERMALAI\backend\server.js:110:8)
+2026-05-16 00:27:12 +05:30:     at Module._compile (node:internal/modules/cjs/loader:1730:14)
+2026-05-16 00:27:12 +05:30:     at Object..js (node:internal/modules/cjs/loader:1895:10)
+2026-05-16 00:27:12 +05:30:     at Module.load (node:internal/modules/cjs/loader:1465:32)
+2026-05-16 00:27:12 +05:30:     at Function._load (node:internal/modules/cjs/loader:1282:12)
+2026-05-16 00:27:12 +05:30:     at Object.<anonymous> (C:\Users\Orange\AppData\Roaming\npm\node_modules\pm2\lib\ProcessContainerFork.js:32:23)
+2026-05-16 00:27:12 +05:30:     at Module._compile (node:internal/modules/cjs/loader:1730:14) {
+2026-05-16 00:27:12 +05:30:   code: 'EADDRINUSE',
+2026-05-16 00:27:12 +05:30:   errno: -4091,
+2026-05-16 00:27:12 +05:30:   syscall: 'listen',
+2026-05-16 00:27:12 +05:30:   address: '::',
+2026-05-16 00:27:12 +05:30:   port: 5000
+2026-05-16 00:27:12 +05:30: }
+2026-05-16 00:27:16 +05:30: Error: listen EADDRINUSE: address already in use :::5000
+2026-05-16 00:27:16 +05:30:     at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+2026-05-16 00:27:16 +05:30:     at listenInCluster (node:net:1996:12)
+2026-05-16 00:27:16 +05:30:     at Server.listen (node:net:2101:7)
+2026-05-16 00:27:16 +05:30:     at Object.<anonymous> (C:\Users\Orange\THERMALAI\backend\server.js:110:8)
+2026-05-16 00:27:16 +05:30:     at Module._compile (node:internal/modules/cjs/loader:1730:14)
+2026-05-16 00:27:16 +05:30:     at Object..js (node:internal/modules/cjs/loader:1895:10)
+2026-05-16 00:27:16 +05:30:     at Module.load (node:internal/modules/cjs/loader:1465:32)
+2026-05-16 00:27:16 +05:30:     at Function._load (node:internal/modules/cjs/loader:1282:12)
+2026-05-16 00:27:16 +05:30:     at Object.<anonymous> (C:\Users\Orange\AppData\Roaming\npm\node_modules\pm2\lib\ProcessContainerFork.js:32:23)
+2026-05-16 00:27:16 +05:30:     at Module._compile (node:internal/modules/cjs/loader:1730:14) {
+2026-05-16 00:27:16 +05:30:   code: 'EADDRINUSE',
+2026-05-16 00:27:16 +05:30:   errno: -4091,
+2026-05-16 00:27:16 +05:30:   syscall: 'listen',
+2026-05-16 00:27:16 +05:30:   address: '::',
+2026-05-16 00:27:16 +05:30:   port: 5000
+2026-05-16 00:27:16 +05:30: }
+2026-05-16 00:27:20 +05:30: Error: listen EADDRINUSE: address already in use :::5000
+2026-05-16 00:27:20 +05:30:     at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+2026-05-16 00:27:20 +05:30:     at listenInCluster (node:net:1996:12)
+2026-05-16 00:27:20 +05:30:     at Server.listen (node:net:2101:7)
+2026-05-16 00:27:20 +05:30:     at Object.<anonymous> (C:\Users\Orange\THERMALAI\backend\server.js:110:8)
+2026-05-16 00:27:20 +05:30:     at Module._compile (node:internal/modules/cjs/loader:1730:14)
+2026-05-16 00:27:20 +05:30:     at Object..js (node:internal/modules/cjs/loader:1895:10)
+2026-05-16 00:27:20 +05:30:     at Module.load (node:internal/modules/cjs/loader:1465:32)
+2026-05-16 00:27:20 +05:30:     at Function._load (node:internal/modules/cjs/loader:1282:12)
+2026-05-16 00:27:20 +05:30:     at Object.<anonymous> (C:\Users\Orange\AppData\Roaming\npm\node_modules\pm2\lib\ProcessContainerFork.js:32:23)
+2026-05-16 00:27:20 +05:30:     at Module._compile (node:internal/modules/cjs/loader:1730:14) {
+2026-05-16 00:27:20 +05:30:   code: 'EADDRINUSE',
+2026-05-16 00:27:20 +05:30:   errno: -4091,
+2026-05-16 00:27:20 +05:30:   syscall: 'listen',
+2026-05-16 00:27:20 +05:30:   address: '::',
+2026-05-16 00:27:20 +05:30:   port: 5000
+2026-05-16 00:27:20 +05:30: }
+2026-05-16 00:27:25 +05:30: Error: listen EADDRINUSE: address already in use :::5000
+2026-05-16 00:27:25 +05:30:     at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+2026-05-16 00:27:25 +05:30:     at listenInCluster (node:net:1996:12)
+2026-05-16 00:27:25 +05:30:     at Server.listen (node:net:2101:7)
+2026-05-16 00:27:25 +05:30:     at Object.<anonymous> (C:\Users\Orange\THERMALAI\backend\server.js:110:8)
+2026-05-16 00:27:25 +05:30:     at Module._compile (node:internal/modules/cjs/loader:1730:14)
+2026-05-16 00:27:25 +05:30:     at Object..js (node:internal/modules/cjs/loader:1895:10)
+2026-05-16 00:27:25 +05:30:     at Module.load (node:internal/modules/cjs/loader:1465:32)
+2026-05-16 00:27:25 +05:30:     at Function._load (node:internal/modules/cjs/loader:1282:12)
+2026-05-16 00:27:25 +05:30:     at Object.<anonymous> (C:\Users\Orange\AppData\Roaming\npm\node_modules\pm2\lib\ProcessContainerFork.js:32:23)
+2026-05-16 00:27:25 +05:30:     at Module._compile (node:internal/modules/cjs/loader:1730:14) {
+2026-05-16 00:27:25 +05:30:   code: 'EADDRINUSE',
+2026-05-16 00:27:25 +05:30:   errno: -4091,
+2026-05-16 00:27:25 +05:30:   syscall: 'listen',
+2026-05-16 00:27:25 +05:30:   address: '::',
+2026-05-16 00:27:25 +05:30:   port: 5000
+2026-05-16 00:27:25 +05:30: }
+2026-05-16 00:27:30 +05:30: Error: listen EADDRINUSE: address already in use :::5000
+2026-05-16 00:27:30 +05:30:     at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+2026-05-16 00:27:30 +05:30:     at listenInCluster (node:net:1996:12)
+2026-05-16 00:27:30 +05:30:     at Server.listen (node:net:2101:7)
+2026-05-16 00:27:30 +05:30:     at Object.<anonymous> (C:\Users\Orange\THERMALAI\backend\server.js:110:8)
+2026-05-16 00:27:30 +05:30:     at Module._compile (node:internal/modules/cjs/loader:1730:14)
+2026-05-16 00:27:30 +05:30:     at Object..js (node:internal/modules/cjs/loader:1895:10)
+2026-05-16 00:27:30 +05:30:     at Module.load (node:internal/modules/cjs/loader:1465:32)
+2026-05-16 00:27:30 +05:30:     at Function._load (node:internal/modules/cjs/loader:1282:12)
+2026-05-16 00:27:30 +05:30:     at Object.<anonymous> (C:\Users\Orange\AppData\Roaming\npm\node_modules\pm2\lib\ProcessContainerFork.js:32:23)
+2026-05-16 00:27:30 +05:30:     at Module._compile (node:internal/modules/cjs/loader:1730:14) {
+2026-05-16 00:27:30 +05:30:   code: 'EADDRINUSE',
+2026-05-16 00:27:30 +05:30:   errno: -4091,
+2026-05-16 00:27:30 +05:30:   syscall: 'listen',
+2026-05-16 00:27:30 +05:30:   address: '::',
+2026-05-16 00:27:30 +05:30:   port: 5000
+2026-05-16 00:27:30 +05:30: }
+2026-05-16 00:27:34 +05:30: Error: listen EADDRINUSE: address already in use :::5000
+2026-05-16 00:27:34 +05:30:     at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+2026-05-16 00:27:34 +05:30:     at listenInCluster (node:net:1996:12)
+2026-05-16 00:27:34 +05:30:     at Server.listen (node:net:2101:7)
+2026-05-16 00:27:34 +05:30:     at Object.<anonymous> (C:\Users\Orange\THERMALAI\backend\server.js:110:8)
+2026-05-16 00:27:34 +05:30:     at Module._compile (node:internal/modules/cjs/loader:1730:14)
+2026-05-16 00:27:34 +05:30:     at Object..js (node:internal/modules/cjs/loader:1895:10)
+2026-05-16 00:27:34 +05:30:     at Module.load (node:internal/modules/cjs/loader:1465:32)
+2026-05-16 00:27:34 +05:30:     at Function._load (node:internal/modules/cjs/loader:1282:12)
+2026-05-16 00:27:34 +05:30:     at Object.<anonymous> (C:\Users\Orange\AppData\Roaming\npm\node_modules\pm2\lib\ProcessContainerFork.js:32:23)
+2026-05-16 00:27:34 +05:30:     at Module._compile (node:internal/modules/cjs/loader:1730:14) {
+2026-05-16 00:27:34 +05:30:   code: 'EADDRINUSE',
+2026-05-16 00:27:34 +05:30:   errno: -4091,
+2026-05-16 00:27:34 +05:30:   syscall: 'listen',
+2026-05-16 00:27:34 +05:30:   address: '::',
+2026-05-16 00:27:34 +05:30:   port: 5000
+2026-05-16 00:27:34 +05:30: }
+2026-05-16 00:39:55 +05:30: 🚨 ML API is DOWN: Request failed with status code 404
+2026-05-16 00:39:55 +05:30: Failed to save ML down alert: ValidationError: Alert validation failed: pressure: Path `pressure` is required., temperature: Path `temperature` is required.
+2026-05-16 00:39:55 +05:30:     at model.validate (C:\Users\Orange\THERMALAI\backend\node_modules\mongoose\lib\document.js:2864:36)
+2026-05-16 00:39:55 +05:30:     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2026-05-16 00:39:55 +05:30:     at async model.$__save (C:\Users\Orange\THERMALAI\backend\node_modules\mongoose\lib\model.js:393:7)
+2026-05-16 00:39:55 +05:30:     at async model.save (C:\Users\Orange\THERMALAI\backend\node_modules\mongoose\lib\model.js:667:5)
+2026-05-16 00:39:55 +05:30:     at async checkMLHealth (C:\Users\Orange\THERMALAI\backend\server.js:139:7) {
+2026-05-16 00:39:55 +05:30:   errors: {
+2026-05-16 00:39:55 +05:30:     pressure: ValidatorError: Path `pressure` is required.
+2026-05-16 00:39:55 +05:30:         at SchemaNumber.doValidate (C:\Users\Orange\THERMALAI\backend\node_modules\mongoose\lib\schemaType.js:1517:13)
+2026-05-16 00:39:55 +05:30:         at model.validate (C:\Users\Orange\THERMALAI\backend\node_modules\mongoose\lib\document.js:2842:20)
+2026-05-16 00:39:55 +05:30:         at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2026-05-16 00:39:55 +05:30:         at async model.$__save (C:\Users\Orange\THERMALAI\backend\node_modules\mongoose\lib\model.js:393:7)
+2026-05-16 00:39:55 +05:30:         at async model.save (C:\Users\Orange\THERMALAI\backend\node_modules\mongoose\lib\model.js:667:5)
+2026-05-16 00:39:55 +05:30:         at async checkMLHealth (C:\Users\Orange\THERMALAI\backend\server.js:139:7) {
+2026-05-16 00:39:55 +05:30:       properties: [Object],
+2026-05-16 00:39:55 +05:30:       kind: 'required',
+2026-05-16 00:39:55 +05:30:       path: 'pressure',
+2026-05-16 00:39:55 +05:30:       value: undefined,
+2026-05-16 00:39:55 +05:30:       reason: undefined,
+2026-05-16 00:39:55 +05:30:       [Symbol(mongoose#validatorError)]: true
+2026-05-16 00:39:55 +05:30:     },
+2026-05-16 00:39:55 +05:30:     temperature: ValidatorError: Path `temperature` is required.
+2026-05-16 00:39:55 +05:30:         at SchemaNumber.doValidate (C:\Users\Orange\THERMALAI\backend\node_modules\mongoose\lib\schemaType.js:1517:13)
+2026-05-16 00:39:55 +05:30:         at model.validate (C:\Users\Orange\THERMALAI\backend\node_modules\mongoose\lib\document.js:2842:20)
+2026-05-16 00:39:55 +05:30:         at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2026-05-16 00:39:55 +05:30:         at async model.$__save (C:\Users\Orange\THERMALAI\backend\node_modules\mongoose\lib\model.js:393:7)
+2026-05-16 00:39:55 +05:30:         at async model.save (C:\Users\Orange\THERMALAI\backend\node_modules\mongoose\lib\model.js:667:5)
+2026-05-16 00:39:55 +05:30:         at async checkMLHealth (C:\Users\Orange\THERMALAI\backend\server.js:139:7) {
+2026-05-16 00:39:55 +05:30:       properties: [Object],
+2026-05-16 00:39:55 +05:30:       kind: 'required',
+2026-05-16 00:39:55 +05:30:       path: 'temperature',
+2026-05-16 00:39:55 +05:30:       value: undefined,
+2026-05-16 00:39:55 +05:30:       reason: undefined,
+2026-05-16 00:39:55 +05:30:       [Symbol(mongoose#validatorError)]: true
+2026-05-16 00:39:55 +05:30:     }
+2026-05-16 00:39:55 +05:30:   },
+2026-05-16 00:39:55 +05:30:   _message: 'Alert validation failed'
+2026-05-16 00:39:55 +05:30: }

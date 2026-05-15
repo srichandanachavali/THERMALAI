@@ -9,6 +9,13 @@ from collections import deque
 from sklearn.linear_model import LinearRegression
 
 app = Flask(__name__)
+@app.route('/health', methods=['GET'])
+def health():
+    return jsonify({
+        'status': 'ok',
+        'models_loaded': model is not None,
+        'reactor_buffers': len(reactor_buffers)
+    })
 CORS(app)
 
 # Models are lazy-loaded on first request so the app starts instantly

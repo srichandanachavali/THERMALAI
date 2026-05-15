@@ -88,6 +88,62 @@ app.use("/api/reactors", reactorRoutes);
 app.use("/api/alerts", alertRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/plants", plantRoutes);
+// ── Health check endpoint ──────────────────────────────────────────────
+app.get('/health', async (req, res) => {
+  const health = {
+    status: 'ok',
+    uptime: Math.floor(process.uptime()) + 's',
+    ml: 'unknown'
+  };
+  try {
+    await axios.get(`${ML_URL}/health`, { timeout: 3000 });
+    health.ml = 'ok';
+  } catch {
+    health.ml = 'down';
+  }
+  const code = health.ml === 'down' ? 503 : 200;
+  res.status(code).json(health);
+});
+
+// ── ML watchdog loop ───────────────────────────────────────────────────
+let mlDown = false;
+
+async function checkMLHealth() {
+  try {
+    await axios.get(`${ML_URL}/health`, { timeout: 5000 });
+    if (mlDown) {
+      console.log('✅ ML API recovered');
+      io.emit('system_alert', {
+        type: 'ML_RECOVERED',
+        message: 'ML prediction service has been restored'
+      });
+      mlDown = false;
+    }
+  } catch (err) {
+    if (!mlDown) {
+      console.error('🚨 ML API is DOWN:', err.message);
+      io.emit('system_alert', {
+        type: 'ML_DOWN',
+        message: 'ML prediction service is unavailable — risk scores may be inaccurate'
+      });
+      mlDown = true;
+
+      // Save a system alert to MongoDB so it appears in the alert center
+      const Alert = require('./models/Alert');
+      const sysAlert = new Alert({
+        reactor_id: 'SYSTEM',
+        alert_type: 'CRITICAL',
+        risk_score: 100,
+        message: '🚨 ML prediction service is DOWN. Risk scores may be inaccurate.',
+      });
+      await sysAlert.save().catch(e => console.error('Failed to save ML down alert:', e));
+    }
+  }
+}
+
+// Check every 30 seconds
+setInterval(checkMLHealth, 30000);
+checkMLHealth(); // also run immediately on startup
 
 io.on("connection", (socket) => {
   console.log("🔌 Dashboard connected:", socket.id);
