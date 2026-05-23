@@ -16,4 +16,13 @@ const ReactorSchema = new mongoose.Schema({
   timestamp: { type: Date, default: Date.now },
 });
 
+// TTL index: MongoDB automatically deletes documents 7 days after their
+// timestamp. Prevents unbounded collection growth (5 reactors × ~30 reads/min
+// = ~216,000 documents/day without this).
+ReactorSchema.index({ timestamp: 1 }, { expireAfterSeconds: 604800 });
+
+// Compound index for getReactorHistory — covers the { reactor_id } filter
+// and { timestamp: -1 } sort in a single index scan, avoiding a full collection scan.
+ReactorSchema.index({ reactor_id: 1, timestamp: -1 });
+
 module.exports = mongoose.model("Reactor", ReactorSchema);

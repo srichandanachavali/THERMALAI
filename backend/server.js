@@ -5,6 +5,7 @@ const dotenv = require("dotenv");
 const http = require("http");
 const { Server } = require("socket.io");
 const axios = require("axios");
+const logger = require("./logger");
 
 dotenv.config();
 
@@ -31,7 +32,7 @@ app.get("/", (req, res) => {
 // Simulate route FIRST before other routes
 app.post("/api/simulate/:id", async (req, res) => {
   const reactorId = req.params.id;
-  console.log("🔥 Simulate runaway triggered for reactor:", reactorId);
+  logger.info(`Simulate runaway triggered for reactor: ${reactorId}`);
 
   const criticalReading = {
     reactor_id: reactorId,
@@ -52,7 +53,7 @@ app.post("/api/simulate/:id", async (req, res) => {
     );
     riskResult = aiResponse.data;
   } catch (err) {
-    console.log("Using default critical values");
+    logger.warn("ML unavailable during simulate — using default critical values");
   }
 
   const enrichedReading = {
@@ -112,7 +113,7 @@ async function checkMLHealth() {
   try {
     await axios.get(`${ML_URL}/health`, { timeout: 5000 });
     if (mlDown) {
-      console.log('✅ ML API recovered');
+      logger.info('ML API recovered');
       io.emit('system_alert', {
         type: 'ML_RECOVERED',
         message: 'ML prediction service has been restored'
@@ -121,7 +122,7 @@ async function checkMLHealth() {
     }
   } catch (err) {
     if (!mlDown) {
-      console.error('🚨 ML API is DOWN:', err.message);
+      logger.error(`ML API is DOWN: ${err.message}`);
       io.emit('system_alert', {
         type: 'ML_DOWN',
         message: 'ML prediction service is unavailable — risk scores may be inaccurate'
@@ -136,7 +137,7 @@ async function checkMLHealth() {
         risk_score: 100,
         message: '🚨 ML prediction service is DOWN. Risk scores may be inaccurate.',
       });
-      await sysAlert.save().catch(e => console.error('Failed to save ML down alert:', e));
+      await sysAlert.save().catch(e => logger.error('Failed to save ML down alert:', e));
     }
   }
 }
@@ -146,9 +147,9 @@ setInterval(checkMLHealth, 30000);
 checkMLHealth(); // also run immediately on startup
 
 io.on("connection", (socket) => {
-  console.log("🔌 Dashboard connected:", socket.id);
+  logger.info(`Dashboard connected: ${socket.id}`);
   socket.on("disconnect", () => {
-    console.log("❌ Dashboard disconnected:", socket.id);
+    logger.info(`Dashboard disconnected: ${socket.id}`);
   });
 });
 
@@ -157,12 +158,12 @@ const { seedDefaultUsers } = require("./controllers/authController");
 mongoose
   .connect(process.env.MONGO_URI)
   .then(async () => {
-    console.log("✅ Connected to MongoDB!");
+    logger.info("Connected to MongoDB");
     await seedDefaultUsers();
   })
-  .catch((err) => console.log("❌ MongoDB Error:", err));
+  .catch((err) => logger.error("MongoDB connection error:", err));
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+  logger.info(`Server running on port ${PORT}`);
 });

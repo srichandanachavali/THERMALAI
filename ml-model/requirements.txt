@@ -1,9 +1,18 @@
-Flask==3.0.3
-gunicorn==22.0.0
-numpy==1.26.4
-pandas==2.2.2
-scikit-learn==1.4.2
-tensorflow-cpu==2.16.1
-joblib==1.4.2
-flask-cors==5.0.0
-python-dotenv==1.0.1
+# NOTE: tensorflow-cpu==2.16.1 is ~450 MB and will time out on Render free tier
+# during the build phase. Workaround options:
+#   1. Upgrade to a Render paid instance (recommended for production)
+#   2. Use Render's native ML service which pre-installs TensorFlow
+#   3. For local/Docker use only, this file works as-is
+#
+# All packages below are pinned for Python 3.11 compatibility.
+
+Flask==3.0.3               # HTTP server for ML prediction endpoints
+gunicorn==22.0.0           # WSGI server used in production and Docker
+numpy==1.26.4              # Array ops; required by sklearn, pandas, and TensorFlow
+pandas==2.2.2              # DataFrame construction for feature engineering
+scikit-learn==1.4.2        # Random Forest classifier (primary ML model)
+scipy==1.13.0              # Required by sklearn internals on Python 3.11
+tensorflow-cpu==2.16.1     # LSTM model inference (CPU-only build, no GPU needed)
+joblib==1.4.2              # Model serialization (.pkl files) and parallel sklearn ops
+flask-cors==5.0.0          # CORS headers so the Node backend can call the Flask API
+python-dotenv==1.0.1       # Loads .env for local development
