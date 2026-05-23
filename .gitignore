@@ -1,4 +1,43 @@
-.env
-*.env
-backend/.env
+# Node
 node_modules/
+npm-debug.log*
+yarn-debug.log*
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# Logs (NEVER commit runtime logs)
+*.log
+backend/logs/
+
+# Environment (secrets)
+.env
+.env.*
+!.env.example
+!.env.template
+
+# ML binary artifacts — use Git LFS
+*.h5
+*.pkl
+*.npy
+
+# Training data — use DVC or LFS
+ml-model/data/lstm/
+ml-model/data/*.csv
+
+# Build
+frontend/build/
+frontend/.cache/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
