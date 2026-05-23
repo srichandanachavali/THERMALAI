@@ -377,3 +377,42 @@
 2026-05-16 00:39:55 +05:30:   },
 2026-05-16 00:39:55 +05:30:   _message: 'Alert validation failed'
 2026-05-16 00:39:55 +05:30: }
+2026-05-22 00:42:20 +05:30: 🚨 ML API is DOWN: timeout of 5000ms exceeded
+2026-05-22 00:42:20 +05:30: Failed to save ML down alert: ValidationError: Alert validation failed: pressure: Path `pressure` is required., temperature: Path `temperature` is required.
+2026-05-22 00:42:20 +05:30:     at model.validate (C:\Users\Orange\THERMALAI\backend\node_modules\mongoose\lib\document.js:2864:36)
+2026-05-22 00:42:20 +05:30:     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2026-05-22 00:42:20 +05:30:     at async model.$__save (C:\Users\Orange\THERMALAI\backend\node_modules\mongoose\lib\model.js:393:7)
+2026-05-22 00:42:20 +05:30:     at async model.save (C:\Users\Orange\THERMALAI\backend\node_modules\mongoose\lib\model.js:667:5)
+2026-05-22 00:42:20 +05:30:     at async Timeout.checkMLHealth [as _onTimeout] (C:\Users\Orange\THERMALAI\backend\server.js:139:7) {
+2026-05-22 00:42:20 +05:30:   errors: {
+2026-05-22 00:42:20 +05:30:     pressure: ValidatorError: Path `pressure` is required.
+2026-05-22 00:42:20 +05:30:         at SchemaNumber.doValidate (C:\Users\Orange\THERMALAI\backend\node_modules\mongoose\lib\schemaType.js:1517:13)
+2026-05-22 00:42:20 +05:30:         at model.validate (C:\Users\Orange\THERMALAI\backend\node_modules\mongoose\lib\document.js:2842:20)
+2026-05-22 00:42:20 +05:30:         at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2026-05-22 00:42:20 +05:30:         at async model.$__save (C:\Users\Orange\THERMALAI\backend\node_modules\mongoose\lib\model.js:393:7)
+2026-05-22 00:42:20 +05:30:         at async model.save (C:\Users\Orange\THERMALAI\backend\node_modules\mongoose\lib\model.js:667:5)
+2026-05-22 00:42:20 +05:30:         at async Timeout.checkMLHealth [as _onTimeout] (C:\Users\Orange\THERMALAI\backend\server.js:139:7) {
+2026-05-22 00:42:20 +05:30:       properties: [Object],
+2026-05-22 00:42:20 +05:30:       kind: 'required',
+2026-05-22 00:42:20 +05:30:       path: 'pressure',
+2026-05-22 00:42:20 +05:30:       value: undefined,
+2026-05-22 00:42:20 +05:30:       reason: undefined,
+2026-05-22 00:42:20 +05:30:       [Symbol(mongoose#validatorError)]: true
+2026-05-22 00:42:20 +05:30:     },
+2026-05-22 00:42:20 +05:30:     temperature: ValidatorError: Path `temperature` is required.
+2026-05-22 00:42:20 +05:30:         at SchemaNumber.doValidate (C:\Users\Orange\THERMALAI\backend\node_modules\mongoose\lib\schemaType.js:1517:13)
+2026-05-22 00:42:20 +05:30:         at model.validate (C:\Users\Orange\THERMALAI\backend\node_modules\mongoose\lib\document.js:2842:20)
+2026-05-22 00:42:20 +05:30:         at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2026-05-22 00:42:20 +05:30:         at async model.$__save (C:\Users\Orange\THERMALAI\backend\node_modules\mongoose\lib\model.js:393:7)
+2026-05-22 00:42:20 +05:30:         at async model.save (C:\Users\Orange\THERMALAI\backend\node_modules\mongoose\lib\model.js:667:5)
+2026-05-22 00:42:20 +05:30:         at async Timeout.checkMLHealth [as _onTimeout] (C:\Users\Orange\THERMALAI\backend\server.js:139:7) {
+2026-05-22 00:42:20 +05:30:       properties: [Object],
+2026-05-22 00:42:20 +05:30:       kind: 'required',
+2026-05-22 00:42:20 +05:30:       path: 'temperature',
+2026-05-22 00:42:20 +05:30:       value: undefined,
+2026-05-22 00:42:20 +05:30:       reason: undefined,
+2026-05-22 00:42:20 +05:30:       [Symbol(mongoose#validatorError)]: true
+2026-05-22 00:42:20 +05:30:     }
+2026-05-22 00:42:20 +05:30:   },
+2026-05-22 00:42:20 +05:30:   _message: 'Alert validation failed'
+2026-05-22 00:42:20 +05:30: }
