@@ -1,0 +1,90 @@
+name: CI
+
+# Run on every push to every branch except main.
+# main is handled exclusively by deploy.yml so no job ever runs twice.
+on:
+  push:
+    branches-ignore:
+      - main
+
+# GitHub Actions does not have a top-level fail-fast for non-matrix jobs.
+# Independent parallel jobs (no `needs` relationship) already run to completion
+# regardless of each other — a failure in one never cancels the others.
+jobs:
+
+  # ── Backend: Jest ───────────────────────────────────────────────────────
+  backend-test:
+    name: Backend Tests (Jest)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          # Cache node_modules keyed on the lockfile so repeat runs are fast.
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install backend dependencies
+        run: npm ci
+        working-directory: backend
+
+      - name: Run Jest test suite
+        # --forceExit is already in the npm test script in backend/package.json,
+        # so no extra flag is needed here.
+        run: npm test
+        working-directory: backend
+
+  # ── Frontend: react-scripts ─────────────────────────────────────────────
+  frontend-test:
+    name: Frontend Tests (react-scripts)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci
+        working-directory: frontend
+
+      - name: Run React test suite
+        # CI=true forces react-scripts to run tests once and exit with a
+        # non-zero code on failure instead of keeping watch mode open.
+        run: CI=true npm test
+        working-directory: frontend
+
+  # ── ML model: pytest ────────────────────────────────────────────────────
+  ml-test:
+    name: ML Tests (pytest)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install test dependencies
+        # tensorflow is deliberately excluded — it is ~500 MB and not needed
+        # by the test suite (see .claude/known-issues.md for context).
+        run: pip install pytest numpy pandas scikit-learn
+        working-directory: ml-model
+
+      - name: Run pytest
+        run: pytest tests/ -v
+        working-directory: ml-model

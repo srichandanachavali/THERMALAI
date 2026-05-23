@@ -1,0 +1,82 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+
+  # ── Backend: Jest ───────────────────────────────────────────────────────────
+  backend-test:
+    name: Backend Tests (Jest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+        working-directory: backend
+      - run: npm test
+        working-directory: backend
+
+  # ── Frontend: react-scripts ─────────────────────────────────────────────────
+  frontend-test:
+    name: Frontend Tests (react-scripts)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+        working-directory: frontend
+      - run: CI=true npm test
+        working-directory: frontend
+
+  # ── ML model: pytest ────────────────────────────────────────────────────────
+  ml-test:
+    name: ML Tests (pytest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install pytest numpy pandas scikit-learn
+        working-directory: ml-model
+      - run: pytest tests/ -v
+        working-directory: ml-model
+
+  # ── Deploy to Render ────────────────────────────────────────────────────────
+  deploy:
+    name: Trigger Render Deploy
+    runs-on: ubuntu-latest
+    needs: [backend-test, frontend-test, ml-test]
+    if: success()
+    environment: production
+    steps:
+      - name: Fire Render deploy hook
+        run: curl -f -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
+
+  # ── Notify on failure ───────────────────────────────────────────────────────
+  notify-failure:
+    name: Comment on Failed Deploy
+    runs-on: ubuntu-latest
+    needs: [backend-test, frontend-test, ml-test]
+    if: failure()
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.repos.createCommitComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: context.sha,
+              body: '❌ Deploy blocked — one or more test suites failed. Fix tests before merging to `main`.'
+            });

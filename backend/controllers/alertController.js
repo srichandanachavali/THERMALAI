@@ -17,13 +17,21 @@ const twilioClient = twilio(
   process.env.TWILIO_AUTH_TOKEN,
 );
 
+// Per-plant contact overrides — falls back to shared env vars if not set
+const PLANT_CONTACTS = {
+  'plant-1': { phone: process.env.PLANT1_PHONE || process.env.ALERT_PHONE, email: process.env.PLANT1_EMAIL || process.env.EMAIL_USER },
+  'plant-2': { phone: process.env.PLANT2_PHONE || process.env.ALERT_PHONE, email: process.env.PLANT2_EMAIL || process.env.EMAIL_USER },
+  'plant-3': { phone: process.env.PLANT3_PHONE || process.env.ALERT_PHONE, email: process.env.PLANT3_EMAIL || process.env.EMAIL_USER },
+};
+
 // Send SMS alert
 const sendSMSAlert = async (alert) => {
+  const contact = PLANT_CONTACTS[alert.plant_id] || { phone: process.env.ALERT_PHONE };
   try {
     await twilioClient.messages.create({
       body: `🚨 ThermalAI ALERT\nReactor ${alert.reactor_id}: ${alert.alert_type}\nRisk Score: ${alert.risk_score}%\nTemp: ${alert.temperature}°C\nImmediate action required!`,
       from: process.env.TWILIO_PHONE,
-      to: process.env.ALERT_PHONE,
+      to: contact.phone,
     });
     console.log(`📱 SMS alert sent for Reactor ${alert.reactor_id}`);
   } catch (error) {
@@ -33,10 +41,11 @@ const sendSMSAlert = async (alert) => {
 
 // Send email alert
 const sendEmailAlert = async (alert) => {
+  const contact = PLANT_CONTACTS[alert.plant_id] || { email: process.env.EMAIL_USER };
   try {
     const mailOptions = {
       from: process.env.EMAIL_USER,
-      to: process.env.EMAIL_USER,
+      to: contact.email,
       subject: `🚨 ThermalAI ALERT — Reactor ${alert.reactor_id} ${alert.alert_type}`,
       html: `
         <div style="font-family: Arial, sans-serif; padding: 20px; background: #1a1a1a; color: white;">

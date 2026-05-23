@@ -1,0 +1,69 @@
+version: '3.9'
+
+networks:
+  thermalai:
+
+volumes:
+  backend-logs:
+
+services:
+
+  ml:
+    build: ./ml-model
+    container_name: thermalai-ml
+    ports:
+      - "5001:5001"
+    networks:
+      - thermalai
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5001/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  simulator:
+    build: ./ml-model
+    container_name: thermalai-simulator
+    command: python stream_data.py
+    environment:
+      - BACKEND_URL=http://backend:5000
+    networks:
+      - thermalai
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: on-failure
+
+  backend:
+    build: ./backend
+    container_name: thermalai-backend
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./backend/.env
+    environment:
+      - ML_URL=http://ml:5001
+    volumes:
+      - backend-logs:/app/logs
+    networks:
+      - thermalai
+    depends_on:
+      ml:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:5000/health', r => process.exit(r.statusCode === 200 ? 0 : 1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  frontend:
+    build: ./frontend
+    container_name: thermalai-frontend
+    ports:
+      - "3000:80"
+    networks:
+      - thermalai
+    depends_on:
+      - backend
