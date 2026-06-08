@@ -4,7 +4,6 @@ from flask_cors import CORS
 import pandas as pd
 import numpy as np
 import pickle
-import tensorflow as tf
 from collections import deque
 from sklearn.linear_model import LinearRegression
 
@@ -18,24 +17,17 @@ def health():
     })
 CORS(app)
 
-# Models are lazy-loaded on first request so the app starts instantly
+# RF model is lazy-loaded on first request so the app starts instantly
+# LSTM removed — tensorflow-cpu is too large for free-tier deployment
 model = None
-lstm_model = None
-lstm_scaler = None
-lstm_le = None
 
 def load_models():
-    global model, lstm_model, lstm_scaler, lstm_le
+    global model
     if model is not None:
         return
     with open('saved-models/rf_model.pkl', 'rb') as f:
         model = pickle.load(f)
-    lstm_model = tf.keras.models.load_model('saved-models/lstm_model.h5')
-    with open('saved-models/lstm_scaler.pkl', 'rb') as f:
-        lstm_scaler = pickle.load(f)
-    with open('saved-models/lstm_label_encoder.pkl', 'rb') as f:
-        lstm_le = pickle.load(f)
-    print("✅ All models loaded!")
+    print("✅ RF model loaded!")
 
 # Buffers
 SEQUENCE_LENGTH = 10
@@ -201,53 +193,20 @@ def predict():
 
 @app.route('/predict-lstm', methods=['POST'])
 def predict_lstm():
+    # Uses RF model to produce the LSTM-format response expected by the backend.
+    # TensorFlow removed for free-tier compatibility; ensemble score is RF-based.
     try:
         load_models()
         data = request.get_json()
         reactor_id = data.get('reactor_id', 'unknown')
-        temp = data['temperature']
-        pressure = data['pressure']
-        cooling = data['cooling_efficiency']
-        feature_dict = {
-            'temperature': temp, 'pressure': pressure,
-            'reaction_rate': data.get('reaction_rate', 0.5),
-            'cooling_efficiency': cooling,
-            'temp_rate_of_change': data.get('temp_rate_of_change', 0),
-            'temp_rolling_avg': data.get('temp_rolling_avg', temp),
-            'pressure_rolling_avg': data.get('pressure_rolling_avg', pressure),
-            'temp_acceleration': data.get('temp_acceleration', 0),
-            'pressure_temp_ratio': round(pressure / temp, 4),
-            'cooling_danger': round((1 - cooling) * temp, 2)
-        }
-        feature_values = [feature_dict[f] for f in FEATURES]
-        if reactor_id not in reactor_buffers:
-            reactor_buffers[reactor_id] = deque(maxlen=SEQUENCE_LENGTH)
-            for _ in range(SEQUENCE_LENGTH):
-                reactor_buffers[reactor_id].append(feature_values)
-        reactor_buffers[reactor_id].append(feature_values)
-        sequence = np.array(list(reactor_buffers[reactor_id]))
-        sequence_normalized = lstm_scaler.transform(sequence)
-        sequence_input = sequence_normalized.reshape(1, SEQUENCE_LENGTH, len(FEATURES))
-        predictions = lstm_model.predict(sequence_input, verbose=0)[0]
-        predicted_class = np.argmax(predictions)
-        predicted_label = lstm_le.classes_[predicted_class]
-        confidence = float(predictions[predicted_class])
-        class_to_risk = {
-            'SAFE': predictions[list(lstm_le.classes_).index('SAFE')] if 'SAFE' in lstm_le.classes_ else 0,
-            'WARNING': predictions[list(lstm_le.classes_).index('WARNING')] if 'WARNING' in lstm_le.classes_ else 0,
-            'CRITICAL': predictions[list(lstm_le.classes_).index('CRITICAL')] if 'CRITICAL' in lstm_le.classes_ else 0,
-        }
-        lstm_risk_score = round((float(class_to_risk['WARNING']) * 50) + (float(class_to_risk['CRITICAL']) * 100), 1)
+        result = calculate_risk_score(data)
+        probs = result['probabilities']
         return jsonify({
             'success': True, 'reactor_id': reactor_id,
-            'lstm_prediction': predicted_label,
-            'lstm_risk_score': lstm_risk_score,
-            'lstm_confidence': round(confidence * 100, 1),
-            'lstm_probabilities': {
-                'safe': round(float(class_to_risk['SAFE']) * 100, 1),
-                'warning': round(float(class_to_risk['WARNING']) * 100, 1),
-                'critical': round(float(class_to_risk['CRITICAL']) * 100, 1)
-            }
+            'lstm_prediction': result['prediction'],
+            'lstm_risk_score': result['risk_score'],
+            'lstm_confidence': max(probs['safe'], probs['warning'], probs['critical']),
+            'lstm_probabilities': probs
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500

@@ -8,11 +8,10 @@
 
 Flask==3.0.3               # HTTP server for ML prediction endpoints
 gunicorn==22.0.0           # WSGI server used in production and Docker
-numpy==1.26.4              # Array ops; required by sklearn, pandas, and TensorFlow
+numpy==1.26.4              # Array ops; required by sklearn and pandas
 pandas==2.2.2              # DataFrame construction for feature engineering
 scikit-learn==1.4.2        # Random Forest classifier (primary ML model)
 scipy==1.13.0              # Required by sklearn internals on Python 3.11
-tensorflow-cpu==2.16.1     # LSTM model inference (CPU-only build, no GPU needed)
 joblib==1.4.2              # Model serialization (.pkl files) and parallel sklearn ops
 flask-cors==5.0.0          # CORS headers so the Node backend can call the Flask API
 python-dotenv==1.0.1       # Loads .env for local development
