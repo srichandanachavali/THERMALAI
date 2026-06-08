@@ -1,75 +1,110 @@
-# ThermalAI 🔥 — Thermal Runaway Prevention Platform
+# ThermalAI
 
-> "Existing systems detect danger. ThermalAI prevents it."
+**AI-powered thermal runaway prevention for chemical and pharmaceutical plants.**
 
-## 🚨 The Problem
-Chemical and pharma plants currently monitor reactors manually with fixed threshold alarms. This means:
-- Late detection — alarms fire AFTER danger begins
-- False alarm fatigue — operators ignore warnings
-- Catastrophic consequences — explosions, fires, deaths
+![CI](https://github.com/srichandanachavali/THERMALAI/actions/workflows/ci.yml/badge.svg)
+![Version](https://img.shields.io/badge/version-1.0.0-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
 
-## 💡 Our Solution
-An AI-powered platform that predicts thermal runaway BEFORE it happens — giving operators 10-20 minutes to act instead of seconds.
+ThermalAI monitors industrial reactors in real time and predicts thermal runaway **10–20 minutes before it occurs** — giving operators time to intervene instead of seconds to react. It combines a Random Forest + LSTM ensemble with a live React dashboard, Socket.io push updates, and automatic SMS/email alerting.
 
-## 🎯 4 Unique Advantages
-1. **Prediction not detection** — warns before crisis, not after
-2. **Pattern-learning AI** — learns failure signatures over time
-3. **Time-series intelligence** — understands acceleration, not just current values
-4. **Multi-reactor command view** — all reactors ranked by risk simultaneously
+Built for chemical and pharmaceutical plant operators who need prediction, not just detection.
 
-## 🛠️ Tech Stack
-| Layer | Technology |
-|-------|-----------|
-| Frontend | React + Tailwind + Recharts |
-| Backend | Node.js + Express + Socket.io |
-| AI/ML | Python + XGBoost + Scikit-learn |
-| Database | MongoDB Atlas |
-| Alerts | Nodemailer (Email) |
+## ✨ Features
 
-## 🤖 AI Model Performance
-- Algorithm: Random Forest Classifier
-- Accuracy: 100% on test data
-- Features: 10 engineered features including rate of change and cooling danger score
-- Output: Risk score 0-100% + SAFE/WARNING/CRITICAL classification
+- 🔮 **Predictive ML ensemble** — RF × 0.40 + LSTM × 0.60 produces a 0–100 risk score; LSTM captures temporal acceleration that threshold alarms miss
+- ⚡ **Real-time dashboard** — Socket.io pushes every reactor reading to all connected clients with no polling
+- 🏭 **Multi-plant support** — 3 plants, 5 reactors (A–E), ranked by live risk score
+- 🧠 **AI explainability** — per-reading natural language breakdown of why a risk score was assigned
+- 🔧 **Predictive maintenance** — forecasts days-to-maintenance for 4 reactor components
+- 🚨 **Instant alerting** — Twilio SMS + Nodemailer email on WARNING or CRITICAL, per-plant contacts configurable
+- 🔐 **Role-based auth** — JWT-secured, `admin` (full access + simulate) and `operator` (monitor + resolve)
+- 🐳 **Docker-first** — single `docker-compose up` starts all 3 services with healthchecks
 
-## 📊 Key Features
-- ✅ Live multi-reactor monitoring dashboard
-- ✅ AI risk score per reactor (0-100%)
-- ✅ Thermal runaway prediction before critical failure
-- ✅ Smart alert system with email notification
-- ✅ Reactor heatmap — visual danger zones
-- ✅ Historical trend analysis
-- ✅ One-click thermal runaway simulation
+## 🏗️ Architecture
 
-## 🚀 How to Run
-
-### Prerequisites
-- Node.js, Python 3.x, MongoDB Atlas account
-
-### Start all services:
-
-**1. Flask AI Model:**
-```bash
-cd ml-model
-python app.py
+```
+┌─────────────────┐     WebSocket      ┌─────────────────────┐
+│  React 19       │ ◄────────────────► │  Node/Express 5     │
+│  Tailwind CSS   │   Socket.io push   │  Port 5000          │
+│  Port 3000      │                    │  JWT · Winston      │
+└─────────────────┘                    └──────────┬──────────┘
+                                                  │ HTTP
+                                       ┌──────────▼──────────┐
+                                       │  Flask ML API        │
+                                       │  Port 5001           │
+                                       │  Random Forest+LSTM  │
+                                       └──────────┬──────────┘
+                                                  │
+                                       ┌──────────▼──────────┐
+                                       │  MongoDB Atlas       │
+                                       │  7-day TTL · Atlas  │
+                                       └─────────────────────┘
 ```
 
-**2. Node.js Backend:**
+Sensor readings arrive every ~2 s via `stream_data.py` (or real hardware). The backend calls RF then LSTM, combines scores, saves to MongoDB, and broadcasts over Socket.io.
+
+## 🚀 Quick Start
+
 ```bash
-cd backend
-node server.js
+git clone https://github.com/srichandanachavali/THERMALAI
+cd THERMALAI
+cp backend/.env.example backend/.env   # fill in MONGO_URI + JWT_SECRET
+docker-compose up --build
 ```
 
-**3. Data Stream:**
-```bash
-cd ml-model
-python stream_data.py
+Open **http://localhost:3000**. The sensor simulator starts automatically. See [DEVELOPMENT.md](DEVELOPMENT.md) for manual setup and all environment variables.
+
+## 📊 ML Model
+
+| | Random Forest | LSTM |
+|---|---|---|
+| **Weight** | 0.40 | 0.60 |
+| **Strength** | Snapshot anomalies | Temporal acceleration |
+| **Input** | 10 engineered features | Sliding window (10 readings) |
+
+**Features:** `temperature`, `pressure`, `reaction_rate`, `cooling_efficiency`, `temp_rate_of_change` + derived: `temp_rolling_avg`, `pressure_rolling_avg`, `temp_acceleration`, `pressure_temp_ratio`, `cooling_danger`
+
+**Thresholds:** SAFE < 30 · WARNING 30–69 · CRITICAL ≥ 70. LSTM is weighted higher because thermal runaway is a temporal process — rising acceleration matters more than instantaneous values.
+
+## 🔐 Default Credentials
+
+> ⚠️ Development only — change before any real deployment.
+
+| Username | Password | Role |
+|----------|----------|------|
+| `admin` | `admin123` | Full access + simulate runaway |
+| `operator` | `op123` | Monitor + resolve alerts |
+
+## 🌐 Deployment
+
+[`render.yaml`](render.yaml) defines 3 Render services. Push to `main` → CI (3 parallel test suites) → Render deploy hook via GitHub Actions.
+
+> **Known issue:** `tensorflow-cpu` (~450 MB) times out on Render free tier. Upgrade the ML service to a paid instance. See [`.claude/known-issues.md`](.claude/known-issues.md).
+
+## 📁 Project Structure
+
+```
+THERMALAI/
+├── frontend/          # React 19 + Tailwind dashboard (port 3000)
+├── backend/           # Express API + Socket.io (port 5000)
+│   ├── controllers/   # reactorController, alertController, authController
+│   ├── models/        # Reactor, Alert, User
+│   └── tests/         # Jest + supertest
+├── ml-model/          # Flask ML API (port 5001)
+│   ├── app.py         # Prediction endpoints
+│   ├── risk_engine.py # Pure RF scoring logic
+│   └── tests/         # pytest (no TensorFlow required)
+├── .claude/           # AI assistant context files
+├── .github/workflows/ # ci.yml + deploy.yml
+├── docker-compose.yml
+└── render.yaml
 ```
 
-**4. React Frontend:**
-```bash
-cd frontend
-npm start
-```
+## 🤝 Contributing
 
-Open `http://localhost:3000`
+See [CONTRIBUTING.md](CONTRIBUTING.md) — branch naming, conventional commits, PR checklist.
+
+## 📄 License
+
+MIT

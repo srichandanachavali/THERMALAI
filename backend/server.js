@@ -135,6 +135,8 @@ async function checkMLHealth() {
         reactor_id: 'SYSTEM',
         alert_type: 'CRITICAL',
         risk_score: 100,
+        temperature: 0,
+        pressure: 0,
         message: '🚨 ML prediction service is DOWN. Risk scores may be inaccurate.',
       });
       await sysAlert.save().catch(e => logger.error('Failed to save ML down alert:', e));

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSocket } from '../context/SocketContext';
 import axios from 'axios';
+import config from '../config';
 
 function MultiPlant() {
   const [plants, setPlants] = useState([]);
@@ -14,7 +15,7 @@ function MultiPlant() {
 
   const fetchPlants = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/plants');
+      const response = await axios.get(`${config.API_URL}/plants`);
       setPlants(response.data);
     } catch (err) {
       console.log('Plants fetch error:', err);
