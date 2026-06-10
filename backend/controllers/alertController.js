@@ -1,6 +1,7 @@
 const Alert = require("../models/Alert");
 const nodemailer = require("nodemailer");
 const twilio = require("twilio");
+const logger = require("../logger");
 
 // Email transporter setup
 const transporter = nodemailer.createTransport({
@@ -19,9 +20,9 @@ const twilioClient = twilio(
 
 // Per-plant contact overrides — falls back to shared env vars if not set
 const PLANT_CONTACTS = {
-  'plant-1': { phone: process.env.PLANT1_PHONE || process.env.ALERT_PHONE, email: process.env.PLANT1_EMAIL || process.env.EMAIL_USER },
-  'plant-2': { phone: process.env.PLANT2_PHONE || process.env.ALERT_PHONE, email: process.env.PLANT2_EMAIL || process.env.EMAIL_USER },
-  'plant-3': { phone: process.env.PLANT3_PHONE || process.env.ALERT_PHONE, email: process.env.PLANT3_EMAIL || process.env.EMAIL_USER },
+  'PLANT_ALPHA': { phone: process.env.PLANT1_PHONE || process.env.ALERT_PHONE, email: process.env.PLANT1_EMAIL || process.env.EMAIL_USER },
+  'PLANT_BETA':  { phone: process.env.PLANT2_PHONE || process.env.ALERT_PHONE, email: process.env.PLANT2_EMAIL || process.env.EMAIL_USER },
+  'PLANT_GAMMA': { phone: process.env.PLANT3_PHONE || process.env.ALERT_PHONE, email: process.env.PLANT3_EMAIL || process.env.EMAIL_USER },
 };
 
 // Send SMS alert
@@ -33,9 +34,9 @@ const sendSMSAlert = async (alert) => {
       from: process.env.TWILIO_PHONE,
       to: contact.phone,
     });
-    console.log(`📱 SMS alert sent for Reactor ${alert.reactor_id}`);
+    logger.info(`SMS alert sent for Reactor ${alert.reactor_id}`);
   } catch (error) {
-    console.log("❌ SMS error:", error.message);
+    logger.error(`SMS error: ${error.message}`);
   }
 };
 
@@ -84,9 +85,9 @@ const sendEmailAlert = async (alert) => {
       `,
     };
     await transporter.sendMail(mailOptions);
-    console.log(`📧 Email alert sent for Reactor ${alert.reactor_id}`);
+    logger.info(`Email alert sent for Reactor ${alert.reactor_id}`);
   } catch (error) {
-    console.log("❌ Email error:", error.message);
+    logger.error(`Email error: ${error.message}`);
   }
 };
 

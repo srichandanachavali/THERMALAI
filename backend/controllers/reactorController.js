@@ -2,8 +2,15 @@ const Reactor = require('../models/Reactor');
 const Alert = require('../models/Alert');
 const axios = require('axios');
 const { sendEmailAlert, sendSMSAlert } = require('./alertController');
+const logger = require('../logger');
 
 const ML_URL = process.env.ML_URL || 'http://localhost:5001';
+
+const REACTOR_PLANT = {
+  A: 'PLANT_ALPHA', B: 'PLANT_ALPHA',
+  C: 'PLANT_BETA',  D: 'PLANT_BETA',
+  E: 'PLANT_GAMMA',
+};
 
 let latestReadings = {};
 
@@ -48,7 +55,7 @@ const streamReading = async (req, res) => {
       const aiResponse = await axios.post(`${ML_URL}/predict`, reading);
       riskResult = aiResponse.data;
     } catch (err) {
-      console.log('⚠️ RF model not available');
+      logger.warn('RF model not available');
     }
 
     // LSTM prediction
@@ -57,7 +64,7 @@ const streamReading = async (req, res) => {
       const lstmResponse = await axios.post(`${ML_URL}/predict-lstm`, reading);
       if (lstmResponse.data.success) lstmResult = lstmResponse.data;
     } catch (err) {
-      console.log('⚠️ LSTM model not available');
+      logger.warn('LSTM model not available');
     }
 
     // Ensemble RF 40% + LSTM 60%
@@ -78,7 +85,7 @@ const streamReading = async (req, res) => {
       });
       timeResult = timeResponse.data;
     } catch (err) {
-      console.log('⚠️ Time prediction not available');
+      logger.warn('Time prediction not available');
     }
 
     const enrichedReading = {
@@ -107,6 +114,7 @@ const streamReading = async (req, res) => {
     if (ensembleStatus === 'WARNING' || ensembleStatus === 'CRITICAL') {
       const alert = new Alert({
         reactor_id: reading.reactor_id,
+        plant_id: REACTOR_PLANT[reading.reactor_id],
         alert_type: ensembleStatus,
         risk_score: ensembleScore,
         temperature: reading.temperature,
