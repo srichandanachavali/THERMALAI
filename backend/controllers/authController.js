@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
+const logger = require('../logger');
 
 const seedDefaultUsers = async () => {
   try {
@@ -12,7 +13,7 @@ const seedDefaultUsers = async () => {
       await User.deleteOne({ username: 'admin' });
       const adminUser = new User({ username: 'admin', password: 'admin123', role: 'admin', name: 'Plant Administrator' });
       await adminUser.save();
-      console.log('✅ Admin user seeded');
+      logger.info('Admin user seeded');
     }
 
     // Check and seed operator
@@ -21,11 +22,11 @@ const seedDefaultUsers = async () => {
       await User.deleteOne({ username: 'operator' });
       const operatorUser = new User({ username: 'operator', password: 'op123', role: 'operator', name: 'Plant Operator' });
       await operatorUser.save();
-      console.log('✅ Operator user seeded');
+      logger.info('Operator user seeded');
     }
 
   } catch (error) {
-    console.log('⚠️  User seed error:', error.message);
+    logger.error(`User seed error: ${error.message}`);
   }
 };
 
@@ -53,7 +54,7 @@ const login = async (req, res) => {
       { expiresIn: '24h' }
     );
 
-    console.log(`✅ Login successful: ${user.name} (${user.role})`);
+    logger.info(`Login successful: ${user.name} (${user.role})`);
 
     res.json({
       success: true,
@@ -82,7 +83,7 @@ const register = async (req, res) => {
     const user = new User({ username, password, role: role || 'operator', name: name || username });
     await user.save();
 
-    console.log(`✅ User registered: ${user.username} (${user.role})`);
+    logger.info(`User registered: ${user.username} (${user.role})`);
     res.status(201).json({ success: true, user: { username: user.username, role: user.role, name: user.name } });
 
   } catch (error) {

@@ -11,10 +11,10 @@ reactors = ['A', 'B', 'C', 'D', 'E']
 # Initial state of each reactor
 reactor_states = {
     'A': {'temp': 115, 'pressure': 3.8, 'cooling': 0.92, 'state': 'SAFE'},
-    'B': {'temp': 118, 'pressure': 4.0, 'cooling': 0.89, 'state': 'SAFE'},
-    'C': {'temp': 112, 'pressure': 3.6, 'cooling': 0.94, 'state': 'SAFE'},
+    'B': {'temp': 148, 'pressure': 5.2, 'cooling': 0.65, 'state': 'WARNING'},
+    'C': {'temp': 168, 'pressure': 6.8, 'cooling': 0.35, 'state': 'CRITICAL'},
     'D': {'temp': 120, 'pressure': 4.1, 'cooling': 0.91, 'state': 'SAFE'},
-    'E': {'temp': 116, 'pressure': 3.9, 'cooling': 0.90, 'state': 'SAFE'},
+    'E': {'temp': 155, 'pressure': 5.8, 'cooling': 0.55, 'state': 'WARNING'},
 }
 
 
