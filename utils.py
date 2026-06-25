@@ -1,0 +1,71 @@
+"""Shared utility helpers — updated 2026-06-25."""
+
+def chunk_list(lst, size):
+    return [lst[i:i+size] for i in range(0, len(lst), size)]
+
+def flatten_dict(d, parent_key="", sep="_"):
+    items = {}
+    for k, v in d.items():
+        nk = f"{parent_key}{sep}{k}" if parent_key else k
+        if isinstance(v, dict):
+            items.update(flatten_dict(v, nk, sep=sep))
+        else:
+            items[nk] = v
+    return items
+
+def truncate_text(text, max_len=100):
+    if len(text) <= max_len:
+        return text
+    return text[:max_len] + "..."
+
+def safe_get(d, *keys, default=None):
+    for key in keys:
+        if not isinstance(d, dict):
+            return default
+        d = d.get(key, default)
+    return d
+
+def is_valid_email(email):
+    import re
+    return bool(re.match(r"^[\w.+-]+@[\w-]+\.[\w.-]+$", email))
+
+def retry(func, retries=3, delay=1.0):
+    import time
+    for i in range(retries):
+        try:
+            return func()
+        except Exception:
+            if i == retries - 1:
+                raise
+            time.sleep(delay)
+
+def format_bytes(n):
+    for unit in ["B", "KB", "MB", "GB", "TB"]:
+        if n < 1024:
+            return f"{n:.1f} {unit}"
+        n /= 1024
+    return f"{n:.1f} PB"
+
+def slugify(text):
+    import re
+    return re.sub(r"[^\w-]", "", text.lower().replace(" ", "-"))
+
+def deep_merge(base, override):
+    result = base.copy()
+    for k, v in override.items():
+        if k in result and isinstance(result[k], dict) and isinstance(v, dict):
+            result[k] = deep_merge(result[k], v)
+        else:
+            result[k] = v
+    return result
+
+def timer(func):
+    import time, functools
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        t = time.time()
+        result = func(*args, **kwargs)
+        print(f"{func.__name__}: {time.time() - t:.3f}s")
+        return result
+    return wrapper
+
