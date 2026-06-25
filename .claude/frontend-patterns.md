@@ -1,3 +1,10 @@
+---
+module: frontend-patterns
+scope: [frontend]
+concerns: [routing, components, socket-context, api-service, auth-pattern, layout]
+last-updated: 2026-06-26
+---
+
 # ThermalAI — Frontend Patterns
 
 ## Stack

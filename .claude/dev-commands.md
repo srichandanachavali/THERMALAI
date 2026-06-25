@@ -1,3 +1,10 @@
+---
+module: dev-commands
+scope: [backend, frontend, ml-model]
+concerns: [setup, start-order, testing, debugging, mongodb-queries, model-retraining, deployment]
+last-updated: 2026-06-26
+---
+
 # ThermalAI — Dev Commands
 
 ## Prerequisites

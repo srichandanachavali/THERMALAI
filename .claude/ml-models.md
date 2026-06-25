@@ -1,3 +1,10 @@
+---
+module: ml-models
+scope: [ml-model, backend]
+concerns: [feature-engineering, ensemble-formula, inference, time-to-critical, maintenance-prediction, explainability]
+last-updated: 2026-06-26
+---
+
 # ThermalAI — ML Models
 
 ## Feature Set (10 features, same for RF and LSTM)
