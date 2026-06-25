@@ -1,3 +1,10 @@
+---
+module: api-contracts
+scope: [backend, ml-model]
+concerns: [rest-endpoints, request-shapes, response-shapes, websocket-events, auth]
+last-updated: 2026-06-26
+---
+
 # ThermalAI — API Contracts
 
 ## Backend REST API (port 5000)

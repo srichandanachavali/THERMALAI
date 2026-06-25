@@ -1,3 +1,10 @@
+---
+module: architecture
+scope: [backend, frontend, ml-model]
+concerns: [service-topology, data-flow, ports, socket-events, deployment]
+last-updated: 2026-06-26
+---
+
 # ThermalAI — Service Architecture
 
 ## Service Topology

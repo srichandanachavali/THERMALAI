@@ -1,0 +1,45 @@
+#!/bin/sh
+# ThermalAI pre-commit checks
+# Enforces Critical Rules from CLAUDE.md.
+# To skip in an emergency: SKIP_THERMALAI_HOOKS=1 git commit
+
+if [ "$SKIP_THERMALAI_HOOKS" = "1" ]; then
+  echo "⚠️  ThermalAI hooks skipped (SKIP_THERMALAI_HOOKS=1)"
+  exit 0
+fi
+
+FAILED=0
+
+# 1. Block direct commits to main
+BRANCH=$(git symbolic-ref --short HEAD 2>/dev/null)
+if [ "$BRANCH" = "main" ]; then
+  echo "❌ Direct commits to main are forbidden."
+  echo "   Use a feature/* or fix/* branch and open a PR to main."
+  exit 1
+fi
+
+# 2. CommonJS rule — no ES module 'import' statements in backend JS files
+for f in $(git diff --cached --name-only | grep '^backend/.*\.js$'); do
+  if [ -f "$f" ] && grep -q '^import ' "$f" 2>/dev/null; then
+    echo "❌ ES module 'import' in $f — backend uses CommonJS (require/module.exports only)"
+    FAILED=1
+  fi
+done
+
+# 3. Logger rule — no console.log/warn/error in backend JS files
+for f in $(git diff --cached --name-only | grep '^backend/.*\.js$'); do
+  if [ -f "$f" ] && grep -qE 'console\.(log|warn|error)' "$f" 2>/dev/null; then
+    echo "❌ console.* in $f — use logger.info / logger.warn / logger.error instead"
+    FAILED=1
+  fi
+done
+
+if [ "$FAILED" = "1" ]; then
+  echo ""
+  echo "Fix the errors above, then re-stage and commit."
+  echo "Emergency bypass: SKIP_THERMALAI_HOOKS=1 git commit ..."
+  exit 1
+fi
+
+echo "✅ Pre-commit checks passed."
+exit 0

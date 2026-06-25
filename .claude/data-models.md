@@ -1,3 +1,10 @@
+---
+module: data-models
+scope: [backend]
+concerns: [mongodb-schemas, mongoose-models, collections, indexes, jwt-payload]
+last-updated: 2026-06-26
+---
+
 # ThermalAI — Data Models
 
 ## MongoDB Collections

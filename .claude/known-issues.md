@@ -1,3 +1,10 @@
+---
+module: known-issues
+scope: [backend, frontend, ml-model]
+concerns: [deployment-blockers, security-gaps, data-loss-risks, technical-debt]
+last-updated: 2026-06-26
+---
+
 # ThermalAI — Known Issues & Gaps
 
 ---
