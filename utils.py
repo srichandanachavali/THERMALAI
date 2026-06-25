@@ -31,7 +31,8 @@ def is_valid_email(email: str) -> bool:
     import re
     return bool(re.match(r"^[\w.+-]+@[\w-]+\.[\w.-]+$", email.strip()))
 
-def retry(func, retries=3, delay=1.0):
+def retry(func, retries: int = 3, delay: float = 1.0):
+    """Retry a callable on failure."""
     import time
     for i in range(retries):
         try:
