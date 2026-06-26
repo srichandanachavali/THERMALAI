@@ -55,7 +55,8 @@ def slugify(text: str) -> str:
     import re
     return re.sub(r"[^\w-]", "", text.lower().strip().replace(" ", "-"))
 
-def deep_merge(base, override):
+def deep_merge(base: dict, override: dict) -> dict:
+    """Recursively merge two dicts; override wins on conflict."""
     result = base.copy()
     for k, v in override.items():
         if k in result and isinstance(result[k], dict) and isinstance(v, dict):
