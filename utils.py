@@ -50,9 +50,10 @@ def format_bytes(n: float, decimals: int = 1) -> str:
         n /= 1024.0
     return f"{n:.{decimals}f} PB"
 
-def slugify(text):
+def slugify(text: str) -> str:
+    """Convert text to a URL-safe slug."""
     import re
-    return re.sub(r"[^\w-]", "", text.lower().replace(" ", "-"))
+    return re.sub(r"[^\w-]", "", text.lower().strip().replace(" ", "-"))
 
 def deep_merge(base, override):
     result = base.copy()
