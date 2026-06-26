@@ -1,4 +1,4 @@
-"""Shared utility helpers — updated 2026-06-25."""
+"""Shared utility helpers — updated 2026-06-26."""
 
 def chunk_list(lst, size):
     return [lst[i:i+size] for i in range(0, len(lst), size)]
@@ -42,12 +42,13 @@ def retry(func, retries: int = 3, delay: float = 1.0):
                 raise
             time.sleep(delay)
 
-def format_bytes(n):
+def format_bytes(n: float, decimals: int = 1) -> str:
+    """Format a byte count as a human-readable string."""
     for unit in ["B", "KB", "MB", "GB", "TB"]:
-        if n < 1024:
-            return f"{n:.1f} {unit}"
-        n /= 1024
-    return f"{n:.1f} PB"
+        if n < 1024.0:
+            return f"{n:.{decimals}f} {unit}"
+        n /= 1024.0
+    return f"{n:.{decimals}f} PB"
 
 def slugify(text):
     import re
