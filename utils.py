@@ -69,12 +69,16 @@ def slugify(text: str, sep: str = "-") -> str:
     text = re.sub(r"[^\w\s-]", "", text.lower().strip())
     return re.sub(r"[\s_-]+", sep, text).strip(sep)
 
-def deep_merge(base: dict, override: dict) -> dict:
-    """Recursively merge two dicts; override wins on conflict."""
+def deep_merge(base: dict, override: dict, *, extend_lists: bool = False) -> dict:
+    """Recursively merge two dicts; override wins on conflict.
+    Pass extend_lists=True to append lists instead of replacing them.
+    """
     result = base.copy()
     for k, v in override.items():
         if k in result and isinstance(result[k], dict) and isinstance(v, dict):
-            result[k] = deep_merge(result[k], v)
+            result[k] = deep_merge(result[k], v, extend_lists=extend_lists)
+        elif extend_lists and k in result and isinstance(result[k], list) and isinstance(v, list):
+            result[k] = result[k] + v
         else:
             result[k] = v
     return result
