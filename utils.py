@@ -1,4 +1,4 @@
-"""Shared utility helpers — updated 2026-06-26."""
+"""Shared utility helpers — updated 2026-06-27."""
 
 def chunk_list(lst, size):
     return [lst[i:i+size] for i in range(0, len(lst), size)]
@@ -66,12 +66,13 @@ def deep_merge(base: dict, override: dict) -> dict:
     return result
 
 def timer(func):
+    """Decorator: print execution time of a function."""
     import time, functools
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        t = time.time()
+        t = time.perf_counter()
         result = func(*args, **kwargs)
-        print(f"{func.__name__}: {time.time() - t:.3f}s")
+        print(f"{func.__name__} took {time.perf_counter() - t:.4f}s")
         return result
     return wrapper
 
