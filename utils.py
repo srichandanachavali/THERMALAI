@@ -15,10 +15,11 @@ def flatten_dict(d: dict, parent_key: str = "", sep: str = "_") -> dict:
             items[nk] = v
     return items
 
-def truncate_text(text, max_len=100):
+def truncate_text(text: str, max_len: int = 100, suffix: str = "...") -> str:
+    """Truncate text to at most max_len characters."""
     if len(text) <= max_len:
         return text
-    return text[:max_len] + "..."
+    return text[:max_len] + suffix
 
 def safe_get(d: dict, *keys, default=None):
     """Safely retrieve a value from a nested dictionary."""
