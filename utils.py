@@ -53,13 +53,15 @@ def retry(func, retries: int = 3, delay: float = 1.0, backoff: float = 1.5):
             time.sleep(wait)
             wait *= backoff
 
-def format_bytes(n: float, decimals: int = 1) -> str:
-    """Format a byte count as a human-readable string."""
-    for unit in ["B", "KB", "MB", "GB", "TB"]:
-        if n < 1024.0:
+def format_bytes(n: float, decimals: int = 1, binary: bool = True) -> str:
+    """Format a byte count as a human-readable string (IEC or SI)."""
+    div = 1024.0 if binary else 1000.0
+    units = ["B", "KiB", "MiB", "GiB", "TiB"] if binary else ["B", "KB", "MB", "GB", "TB"]
+    for unit in units:
+        if abs(n) < div:
             return f"{n:.{decimals}f} {unit}"
-        n /= 1024.0
-    return f"{n:.{decimals}f} PB"
+        n /= div
+    return f"{n:.{decimals}f} {units[-1]}"
 
 def slugify(text: str) -> str:
     """Convert text to a URL-safe slug."""
