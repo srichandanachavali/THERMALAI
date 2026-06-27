@@ -63,10 +63,11 @@ def format_bytes(n: float, decimals: int = 1, binary: bool = True) -> str:
         n /= div
     return f"{n:.{decimals}f} {units[-1]}"
 
-def slugify(text: str) -> str:
+def slugify(text: str, sep: str = "-") -> str:
     """Convert text to a URL-safe slug."""
     import re
-    return re.sub(r"[^\w-]", "", text.lower().strip().replace(" ", "-"))
+    text = re.sub(r"[^\w\s-]", "", text.lower().strip())
+    return re.sub(r"[\s_-]+", sep, text).strip(sep)
 
 def deep_merge(base: dict, override: dict) -> dict:
     """Recursively merge two dicts; override wins on conflict."""
