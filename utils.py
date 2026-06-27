@@ -4,8 +4,9 @@ def chunk_list(lst: list, size: int) -> list:
     """Split list into chunks of given size."""
     return [lst[i:i+size] for i in range(0, len(lst), size)]
 
-def flatten_dict(d, parent_key="", sep="_"):
-    items = {}
+def flatten_dict(d: dict, parent_key: str = "", sep: str = "_") -> dict:
+    """Flatten a nested dictionary into a single level."""
+    items: dict = {}
     for k, v in d.items():
         nk = f"{parent_key}{sep}{k}" if parent_key else k
         if isinstance(v, dict):
