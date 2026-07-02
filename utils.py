@@ -29,17 +29,12 @@ def truncate_text(text: str, max_len: int = 100, suffix: str = "...") -> str:
         cut = cut[:boundary]
     return cut + suffix
 
-def safe_get(d: dict, *keys, default=None):
-    """Safely traverse nested dict or list structures."""
-    cur = d
+def safe_get(d, *keys, default=None):
     for key in keys:
-        if isinstance(cur, dict):
-            cur = cur.get(key, default)
-        elif isinstance(cur, (list, tuple)) and isinstance(key, int):
-            cur = cur[key] if 0 <= key < len(cur) else default
-        else:
+        if not isinstance(d, dict):
             return default
-    return cur
+        d = d.get(key, default)
+    return d
 
 def is_valid_email(email: str) -> bool:
     """Return True if the email address is syntactically valid."""
