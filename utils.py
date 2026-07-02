@@ -57,11 +57,9 @@ def format_bytes(n):
         n /= 1024
     return f"{n:.1f} PB"
 
-def slugify(text: str, sep: str = "-") -> str:
-    """Convert text to a URL-safe slug."""
+def slugify(text):
     import re
-    text = re.sub(r"[^\w\s-]", "", text.lower().strip())
-    return re.sub(r"[\s_-]+", sep, text).strip(sep)
+    return re.sub(r"[^\w-]", "", text.lower().replace(" ", "-"))
 
 def deep_merge(base: dict, override: dict, *, extend_lists: bool = False) -> dict:
     """Recursively merge two dicts; override wins on conflict.
