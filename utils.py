@@ -20,10 +20,14 @@ def flatten_dict(d: dict, parent_key: str = "", sep: str = "_") -> dict:
     return items
 
 def truncate_text(text: str, max_len: int = 100, suffix: str = "...") -> str:
-    """Truncate text to at most max_len characters."""
-    if len(text) <= max_len:
+    """Truncate text to max_len, preserving word boundaries where possible."""
+    if not text or len(text) <= max_len:
         return text
-    return text[:max_len] + suffix
+    cut = text[:max_len - len(suffix)]
+    boundary = cut.rfind(" ")
+    if boundary > 0:
+        cut = cut[:boundary]
+    return cut + suffix
 
 def safe_get(d: dict, *keys, default=None):
     """Safely traverse nested dict or list structures."""
