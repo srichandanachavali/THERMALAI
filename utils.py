@@ -8,9 +8,11 @@ def chunk_list(lst: list, size: int) -> list:
 
 def flatten_dict(d: dict, parent_key: str = "", sep: str = "_") -> dict:
     """Flatten a nested dictionary into a single level."""
+    if not isinstance(d, dict):
+        raise TypeError("Input must be a dict")
     items: dict = {}
     for k, v in d.items():
-        nk = f"{parent_key}{sep}{k}" if parent_key else k
+        nk = f"{parent_key}{sep}{k}" if parent_key else str(k)
         if isinstance(v, dict):
             items.update(flatten_dict(v, nk, sep=sep))
         else:
