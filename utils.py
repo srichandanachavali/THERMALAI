@@ -36,12 +36,9 @@ def safe_get(d, *keys, default=None):
         d = d.get(key, default)
     return d
 
-def is_valid_email(email: str) -> bool:
-    """Return True if the email address is syntactically valid."""
+def is_valid_email(email):
     import re
-    if not email or "@" not in email:
-        return False
-    return bool(re.fullmatch(r"^[\w.+\-]+@[\w\-]+\.[\w.\-]+$", email.strip().lower()))
+    return bool(re.match(r"^[\w.+-]+@[\w-]+\.[\w.-]+$", email))
 
 def retry(func, retries: int = 3, delay: float = 1.0, backoff: float = 1.5):
     """Retry a callable with optional exponential backoff."""
