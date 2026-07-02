@@ -40,18 +40,15 @@ def is_valid_email(email):
     import re
     return bool(re.match(r"^[\w.+-]+@[\w-]+\.[\w.-]+$", email))
 
-def retry(func, retries: int = 3, delay: float = 1.0, backoff: float = 1.5):
-    """Retry a callable with optional exponential backoff."""
+def retry(func, retries=3, delay=1.0):
     import time
-    wait = delay
     for i in range(retries):
         try:
             return func()
         except Exception:
             if i == retries - 1:
                 raise
-            time.sleep(wait)
-            wait *= backoff
+            time.sleep(delay)
 
 def format_bytes(n: float, decimals: int = 1, binary: bool = True) -> str:
     """Format a byte count as a human-readable string (IEC or SI)."""
