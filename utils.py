@@ -1,7 +1,9 @@
-"""Shared utility helpers — updated 2026-06-27."""
+"""Shared utility helpers — updated 2026-07-02."""
 
 def chunk_list(lst: list, size: int) -> list:
     """Split list into chunks of given size."""
+    if size <= 0:
+        raise ValueError("size must be positive")
     return [lst[i:i+size] for i in range(0, len(lst), size)]
 
 def flatten_dict(d: dict, parent_key: str = "", sep: str = "_") -> dict:
