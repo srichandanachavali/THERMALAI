@@ -1,83 +1,65 @@
-# Implementation Plan — Step-by-Step Build Sequence
+# ThermalAI — Implementation Plan
 
-## Current State
-Production-grade application fully built and running. CI/CD pipeline active. Deployed to Render. 3 services (frontend, backend, ml-model) orchestrated via Docker. Real sensor integration pending.
+**Version:** 1.1.0  
+**Date:** 2026-07-04
 
-## Phase 1: Project Setup ✅
-- Monorepo structure: `frontend/`, `backend/`, `ml-model/`
-- Docker + docker-compose for all 3 services with healthchecks and shared network
-- GitHub Actions CI (ci.yml) running parallel test suites on every non-main push
-- GitHub Actions deploy (deploy.yml) triggering Render deploy hook on main push
-- Branch strategy: main (protected) → develop → feature/* / fix/*
-- Git LFS for model files (*.h5, *.pkl, *.npy)
+This document records the original implementation sequence and the v1.1.0 retrofit tasks.
 
-## Phase 2: Database & Schema ✅
-- MongoDB Atlas cluster connected via MONGO_URI environment variable
-- Mongoose models: Reactor, Alert, User, Plant
-- TTL index on reactor readings (7-day expiry)
-- Compound index on reactor_id + timestamp for efficient time-series queries
+---
 
-## Phase 3: Authentication ✅
-- JWT-based auth with bcrypt password hashing
-- Roles: admin and operator
-- `seedDefaultUsers()` seeds default credentials on first startup
-- Protected routes via middleware in Express
-- Role-based conditional rendering in React frontend
+## v1.0.0 — Initial Implementation (complete)
 
-## Phase 4: ML Model Training & Flask API ✅
-- Random Forest Classifier trained on synthetic sensor data (`train_model.py`)
-- LSTM model trained on time-series sequences (`train_lstm.py` / `train_xgboost.py`)
-- Feature engineering pipeline (`feature_engineering.py`, `lstm_prepare_data.py`)
-- Flask API (`ml-model/app.py`) serves `/predict` endpoint with lazy-loaded models
-- Risk engine (`risk_engine.py`) implements pure scoring logic
-- Sensor data simulator (`stream_data.py`) replaces real hardware
+Completed 2026-05-23. All items shipped:
 
-## Phase 5: Real-Time Backend ✅
-- Express 5 backend with Socket.io server
-- `/api/reactors/stream` endpoint: receives reading → calls ML → computes ensemble → saves to MongoDB → broadcasts `reactor_update` + `new_alert` events
-- ML watchdog: pings `/health` every 30 seconds, emits `system_alert` if ML goes down
-- `POST /api/simulate/:id` — admin-only synthetic critical reading injection
+1. **MongoDB + Mongoose** — Reactor, Alert, User schemas with TTL and compound indexes
+2. **Flask ML API** — Lazy-loading RF + LSTM, all prediction endpoints, explainability, maintenance
+3. **Express backend** — Auth (JWT + bcrypt), reactor stream, alert CRUD, plant data, Socket.io
+4. **ML ensemble** — RF×0.40 + LSTM×0.60, time-to-critical, predictive maintenance
+5. **React frontend** — SocketContext, ReactorDetail, Alerts, Home, Analytics, MultiPlant
+6. **Dual UI components** — RiskGauge, ExplainPanel, MaintenancePanel, AIComparison, CountdownTimer
+7. **Alert delivery** — Twilio SMS + Nodemailer email, 5-min cooldown per reactor
+8. **Admin simulate runaway** — Hardcoded CRITICAL reading injection for testing
+9. **ML watchdog** — 30s poll, system_alert socket event, MongoDB SYSTEM alert
+10. **Auth seeding** — admin/admin123, operator/op123 on cold start
+11. **Docker + docker-compose** — All 3 services with healthchecks and volumes
+12. **CI/CD** — ci.yml (parallel tests) + deploy.yml (Render hook)
+13. **Test suites** — Jest/supertest (backend), RTL (frontend), pytest (ml-model)
+14. **Git LFS** — Model files (.h5, .pkl, .npy)
+15. **Winston logging** — Replaced all console.* in backend
+16. **Branch strategy** — main/develop/feature/fix/release
 
-## Phase 6: Alert System ✅
-- Alert creation on CRITICAL/WARNING readings
-- Nodemailer email alerts to configured email address
-- Twilio SMS alerts to operator/admin phone numbers
-- Alert resolution via PUT `/api/alerts/:id/resolve`
-- Resolved state persisted in MongoDB and reflected in frontend (gray/strikethrough)
+---
 
-## Phase 7: Frontend Dashboard ✅
-- React 19 frontend with Tailwind CSS
-- SocketContext providing global real-time state (reactors, alerts, mlStatus)
-- Sidebar navigation, ReactorHeatmap, MetricCard panels
-- RiskGauge with animated needle and SAFE/WARNING/CRITICAL color zones
-- PredictionTimeline for historical risk chart
-- AIComparison: RF score vs LSTM score side-by-side
-- ExplainPanel: feature importance visualization
-- MaintenancePanel + CountdownTimer: time-to-critical prediction
-- Multi-plant support: PlantSelect → MultiPlant → ReactorDetail flow
-- AlertFeed with resolve functionality
-- Analytics page
+## v1.1.0 — Methodology Retrofit (complete)
 
-## Phase 8: Testing & Edge Cases ✅
-- Backend: Jest + Supertest integration tests for auth, reactors, alerts
-- Frontend: React Testing Library component tests for MetricCard, RiskGauge
-- ML: pytest unit tests for risk_engine (pure function, no file I/O)
-- All 3 suites run in CI on every non-main push
+Completed 2026-07-04. Brings codebase into full compliance with `docs/METHODOLOGY_BRIEF.md`.
 
-## Phase 9: Deployment ✅ / 🔄
-- Docker + docker-compose working locally for all 3 services
-- Render deployment for backend and ML service
-- ML service has known tensorflow-cpu issue on Render (see `.claude/known-issues.md`)
-- Frontend deployed via Vercel or Render static site
+| Task | What | Status |
+|---|---|---|
+| T1 | Move .claude/*.md → context/ + MEMORY.md index | Done |
+| T2 | YAML frontmatter on all context docs (modules/tests/references) | Done |
+| T3 | scripts/build_doc_manifest.sh — sole writer of manifest + code_map | Done |
+| T4 | scripts/check_doc_sync.sh (--audit/--precommit/--warn) + _doc_sync_common.sh | Done |
+| T5 | scripts/install_hooks.sh + pre-commit updated to call doc-sync gate | Done |
+| T6 | .claude/settings.json Stop hook → check_doc_sync.sh --warn | Done |
+| T7 | memory/ with README, MEMORY index, 3 seed files | Done |
+| T8 | docs/design/ensemble_locked_spec.md (C1–C8), ADR-001/002 superseded | Done |
+| T9 | context/tunables.md with all operator knobs | Done |
+| T10 | STANDING RULE: NO FALSE-SAFE FALLBACKS + ml_degraded flag + tests | Done |
+| T11 | CLAUDE.md restructured to §3 order | Done |
+| T12 | VERSION 1.1.0, CHANGELOG [1.1.0], docs/release_workflow.md | Done |
+| T13 | Coverage audit, watchdog test, context/open_work.md, context/roadmap.md | Done |
+| T14 | docs/01–06 THERMALAI-specific | Done |
+| T15 | Self-test the gates (block + pass + audit line) | Done |
+| T16 | Commit + tag v1.1.0 | Done |
 
-## Done Criteria
-- All 3 services running (docker-compose up --build)
-- ML models loaded and returning risk scores
-- Real-time sensor stream visible on dashboard
-- SMS + email alerts firing on CRITICAL events
-- CI passing (all 3 test suites green)
-- All pending items resolved:
-  - [ ] Render ML deployment fix (tensorflow-cpu swap)
-  - [ ] Real sensor data integration replacing `stream_data.py`
-  - [ ] Per-plant SMS/email contact configuration
-  - [ ] ML model retraining on real plant data
+---
+
+## Next Steps (v1.2.0 candidates)
+
+See `context/roadmap.md` and `context/open_work.md` for the full prioritized list.
+Top candidates:
+1. Fix Render ML deployment (tensorflow-cpu swap) — P0 safety
+2. Frontend tests for SocketContext ML-down transitions — P0
+3. Per-plant SMS/email contact routing — P1
+4. Persist `latestReadings` to MongoDB — P1

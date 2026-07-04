@@ -1,58 +1,92 @@
-# PRD — Product Requirements Document
+# ThermalAI — Product Requirements Document
 
-## App Name
-ThermalAI
+**Version:** 1.1.0  
+**Date:** 2026-07-04  
+**Status:** Active
 
-## Tagline
-AI-powered thermal runaway prevention platform that predicts dangerous reactor conditions 10–20 minutes before they occur.
+---
 
-## Problem
-Industrial chemical and pharmaceutical plants face catastrophic risk from thermal runaway events in reactors — sudden, uncontrolled exothermic reactions that can cause explosions, fires, and fatalities. Current monitoring systems are reactive, alerting operators only after a dangerous condition has already developed. There is no widely available tool that predicts failures in advance and explains the risk in plain language so operators can act early.
+## Problem Statement
 
-## Target User
-**Primary:** Plant operators and safety engineers at chemical/pharmaceutical manufacturing facilities who monitor reactor conditions in real time. They need fast, interpretable risk scores without needing ML expertise.  
-**Secondary:** Plant safety managers and administrators who oversee multiple facilities and need consolidated alerting, audit trails, and the ability to simulate failure scenarios for training purposes.
+Chemical and pharmaceutical plants operate exothermic reactors where runaway reactions
+can cause explosions, fires, and loss of life. Operators currently monitor temperature,
+pressure, and cooling efficiency manually via SCADA dashboards — they react to threshold
+breaches rather than predicting them. By the time an alarm sounds, a runaway may already
+be unstoppable.
 
-## Core Features (Must Have)
-- Real-time reactor sensor monitoring via WebSocket (Socket.io) — pushes every update to all dashboards instantly
-- Dual ML ensemble prediction: Random Forest (40%) + LSTM (60%) for risk scoring 0–100
-- AI explainability panel showing which sensor features drove the risk score
-- Predictive maintenance panel with time-to-critical countdown
-- Alert center with CRITICAL / WARNING / SAFE classification, resolve button, and resolved visual state
-- SMS notifications via Twilio and email notifications via Nodemailer to configured operators
-- Admin-only simulate runaway button to test system response with synthetic critical readings
-- Multi-plant support: 3 plants, 5 reactors across all plants
-- JWT-based authentication with role-based access (admin / operator)
-- MongoDB TTL index on reactor readings (7-day retention)
-- ML watchdog: broadcasts `ML_DOWN` / `ML_RECOVERED` system alerts when Flask ML API is unreachable
-- Docker + docker-compose orchestration for all 3 services (frontend, backend, ml-model)
-- CI/CD pipeline: GitHub Actions runs all 3 test suites on every push; deploys to Render on main
+**ThermalAI** closes this gap: it predicts thermal runaway **10–20 minutes before conditions
+become dangerous**, giving operators time to intervene.
 
-## Nice to Have
-- Per-plant SMS/email contact configuration (currently hardcoded to single numbers)
-- Real industrial sensor hardware integration (currently uses `stream_data.py` simulator)
-- ML model retraining pipeline on real production data
-- Historical trend analysis dashboard per reactor
-- PDF incident report export from alert center
-- Mobile-responsive operator interface
+---
 
-## Out of Scope
-- Hardware sensor installation or PLC integration (post-production)
-- Multi-tenant SaaS billing or subscription management
-- SCADA or DCS system integration in this version
-- Predictive maintenance scheduling calendar
+## Users
 
-## User Stories
-- As an **operator**, I want to see live risk scores for all reactors on a single dashboard so that I can monitor multiple reactors simultaneously without switching screens.
-- As an **operator**, I want to receive an SMS and email alert the moment a reactor enters WARNING or CRITICAL status so that I can respond immediately even when away from the dashboard.
-- As an **admin**, I want to trigger a simulated thermal runaway on a test reactor so that I can verify the alert pipeline and train operators on the emergency response flow.
-- As a **safety engineer**, I want to see which sensor features (temperature, pressure, cooling efficiency) contributed most to a high risk score so that I can understand the physical cause of the prediction.
-- As a **plant manager**, I want to view the historical alert log for a reactor and mark resolved alerts so that I can maintain an accurate incident record.
-- As an **operator**, I want to be informed immediately when the ML prediction service goes offline so that I know risk scores may be degraded.
+| Role | Access | Primary need |
+|---|---|---|
+| Plant Operator | All dashboards (read-only), alert resolution | Real-time risk scores, early warnings, explainability |
+| Plant Administrator | Full access + simulate runaway | Monitoring multiple reactors, testing emergency response |
 
-## Success Metrics
-- Mean time between alert and operator acknowledgement < 2 minutes
-- Risk score prediction lead time of 10–20 minutes before actual runaway event
-- Alert false positive rate < 5% on real sensor data
-- System uptime > 99.5% (excluding planned maintenance)
-- All 3 test suites (Jest, React Testing Library, pytest) pass on every CI run
+Default credentials (seeded on first startup): `admin/admin123`, `operator/op123`.
+
+---
+
+## Core Functional Requirements
+
+### FR1 — Real-Time Risk Monitoring
+- Display a live risk score (0–100) for each reactor, updated every ~2 seconds
+- Color-coded status: SAFE (green, <30), WARNING (yellow, 30–69), CRITICAL (red, ≥70)
+- Risk gauge + trend chart visible on the ReactorDetail page
+
+### FR2 — Predictive Warning (10–20 min horizon)
+- When status is WARNING and temperature is rising, display minutes-to-critical
+- Linear projection using temperature rate-of-change and a critical threshold of 162°C
+
+### FR3 — Dual ML Ensemble
+- Random Forest: single-reading feature-based classification (RF weight: 0.40)
+- LSTM: sequence-based temporal pattern detection across last 10 readings (weight: 0.60)
+- Ensemble formula: `risk_score = round(RF × 0.40 + LSTM × 0.60)`
+- See `docs/design/ensemble_locked_spec.md` for locked spec
+
+### FR4 — AI Explainability
+- Per-reading natural language explanation of why the risk score is what it is
+- Identifies top contributing factors (temperature, pressure, cooling decline)
+- Visible in ExplainPanel on ReactorDetail page
+
+### FR5 — Predictive Maintenance
+- Tracks trends for Cooling System, Pressure Relief Valve, and Reaction Controller
+- Displays days-to-maintenance per component
+- Requires ≥5 historical readings to activate
+
+### FR6 — Alert Center
+- Real-time feed of WARNING and CRITICAL alerts, newest first
+- Resolve button marks alerts resolved (gray/strikethrough)
+- Alerts persist in MongoDB (30-day window until TTL)
+
+### FR7 — SMS and Email Alerts
+- Twilio SMS and Gmail SMTP email triggered on every CRITICAL reading
+- 5-minute per-reactor cooldown prevents alert storms
+- Plant-level contact routing (known gap: currently single global number — see open_work.md)
+
+### FR8 — Multi-Plant Support
+- 3 plants: Alpha Chemical Works (Hyderabad), Beta Pharma Industries (Mumbai), Gamma Refinery (Chennai)
+- 5 reactors: A, B (Alpha), C, D (Beta), E (Gamma)
+- Plant selection screen before login
+
+### FR9 — ML Health Monitoring
+- 30-second watchdog checks ML API health
+- On ML-down: emits system alert, saves MongoDB Alert with reactor_id=SYSTEM, shows red banner
+- `ml_degraded: true` flag on all readings produced while ML is unreachable
+- Frontend MLStatusBanner visible on every protected page during degradation
+
+---
+
+## Non-Functional Requirements
+
+| Requirement | Target |
+|---|---|
+| Update latency | ≤3 seconds from sensor reading to dashboard update |
+| Risk score accuracy | F1 ≥ 0.85 on synthetic test set (SAFE/WARNING/CRITICAL) |
+| Alert reliability | SMS/email triggered within 30 seconds of CRITICAL detection |
+| Uptime | 99% on Render paid tier; ML service degrades gracefully |
+| Auth | JWT 24h expiry, bcrypt password hashing |
+| Data retention | 7-day TTL index on reactor readings |
