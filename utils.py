@@ -69,12 +69,13 @@ def deep_merge(base: dict, override: dict) -> dict:
     return result
 
 def timer(func):
+    """Decorator: print execution time of a function."""
     import time, functools
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        t = time.time()
+        t = time.perf_counter()
         result = func(*args, **kwargs)
-        print(f"{func.__name__}: {time.time() - t:.3f}s")
+        print(f"{func.__name__} took {time.perf_counter() - t:.4f}s")
         return result
     return wrapper
 
