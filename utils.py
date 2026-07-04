@@ -1,4 +1,4 @@
-"""Shared utility helpers — updated 2026-07-02."""
+"""Shared utility helpers — updated 2026-07-04."""
 
 def chunk_list(lst: list, size: int) -> list:
     """Split list into chunks of given size."""
@@ -61,16 +61,11 @@ def slugify(text):
     import re
     return re.sub(r"[^\w-]", "", text.lower().replace(" ", "-"))
 
-def deep_merge(base: dict, override: dict, *, extend_lists: bool = False) -> dict:
-    """Recursively merge two dicts; override wins on conflict.
-    Pass extend_lists=True to append lists instead of replacing them.
-    """
+def deep_merge(base, override):
     result = base.copy()
     for k, v in override.items():
         if k in result and isinstance(result[k], dict) and isinstance(v, dict):
-            result[k] = deep_merge(result[k], v, extend_lists=extend_lists)
-        elif extend_lists and k in result and isinstance(result[k], list) and isinstance(v, list):
-            result[k] = result[k] + v
+            result[k] = deep_merge(result[k], v)
         else:
             result[k] = v
     return result
