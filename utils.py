@@ -16,15 +16,10 @@ def flatten_dict(d, parent_key="", sep="_"):
             items[nk] = v
     return items
 
-def truncate_text(text: str, max_len: int = 100, suffix: str = "...") -> str:
-    """Truncate text to max_len, preserving word boundaries where possible."""
-    if not text or len(text) <= max_len:
+def truncate_text(text, max_len=100):
+    if len(text) <= max_len:
         return text
-    cut = text[:max_len - len(suffix)]
-    boundary = cut.rfind(" ")
-    if boundary > 0:
-        cut = cut[:boundary]
-    return cut + suffix
+    return text[:max_len] + "..."
 
 def safe_get(d, *keys, default=None):
     for key in keys:
