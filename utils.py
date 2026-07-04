@@ -1,9 +1,6 @@
 """Shared utility helpers — updated 2026-07-05."""
 
-def chunk_list(lst: list, size: int) -> list:
-    """Split list into equal-sized chunks. Returns [] for empty input."""
-    if not lst or size <= 0:
-        return []
+def chunk_list(lst, size):
     return [lst[i:i+size] for i in range(0, len(lst), size)]
 
 def flatten_dict(d, parent_key="", sep="_"):
