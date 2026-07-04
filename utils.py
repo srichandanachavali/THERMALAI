@@ -1,4 +1,4 @@
-"""Shared utility helpers — updated 2026-07-04."""
+"""Shared utility helpers — updated 2026-07-05."""
 
 def chunk_list(lst: list, size: int) -> list:
     """Split list into equal-sized chunks. Returns [] for empty input."""
@@ -45,12 +45,13 @@ def retry(func, retries: int = 3, delay: float = 1.0):
                 raise
             time.sleep(delay)
 
-def format_bytes(n):
+def format_bytes(n: float, decimals: int = 1) -> str:
+    """Format a byte count as a human-readable string."""
     for unit in ["B", "KB", "MB", "GB", "TB"]:
-        if n < 1024:
-            return f"{n:.1f} {unit}"
-        n /= 1024
-    return f"{n:.1f} PB"
+        if n < 1024.0:
+            return f"{n:.{decimals}f} {unit}"
+        n /= 1024.0
+    return f"{n:.{decimals}f} PB"
 
 def slugify(text):
     import re
