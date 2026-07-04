@@ -2,7 +2,7 @@ const Reactor = require('../models/Reactor');
 const Alert = require('../models/Alert');
 const axios = require('axios');
 const { sendEmailAlert, sendSMSAlert } = require('./alertController');
-const logger = require('../logger');
+const logger = require('../logger'); // task15-probe
 
 const ML_URL = process.env.ML_URL || 'http://localhost:5001';
 
@@ -51,21 +51,28 @@ const streamReading = async (req, res) => {
 
     // Random Forest prediction
     let riskResult = { risk_score: 0, status: 'SAFE' };
+    let rfFailed = false;
     try {
       const aiResponse = await axios.post(`${ML_URL}/predict`, reading);
       riskResult = aiResponse.data;
     } catch (err) {
       logger.warn('RF model not available');
+      rfFailed = true;
     }
 
     // LSTM prediction
     let lstmResult = { lstm_risk_score: 0, lstm_prediction: 'SAFE', lstm_confidence: 0 };
+    let lstmFailed = false;
     try {
       const lstmResponse = await axios.post(`${ML_URL}/predict-lstm`, reading);
       if (lstmResponse.data.success) lstmResult = lstmResponse.data;
     } catch (err) {
       logger.warn('LSTM model not available');
+      lstmFailed = true;
     }
+
+    // ml_degraded: true when both models are unreachable (NO FALSE-SAFE FALLBACKS rule)
+    const mlDegraded = rfFailed && lstmFailed;
 
     // Ensemble RF 40% + LSTM 60%
     const ensembleScore = Math.round(
@@ -99,6 +106,7 @@ const streamReading = async (req, res) => {
       minutes_to_critical: timeResult.minutes_to_critical,
       time_message: timeResult.message,
       time_urgency: timeResult.urgency,
+      ml_degraded: mlDegraded,
       timestamp: new Date()
     };
 
