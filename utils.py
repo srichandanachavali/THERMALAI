@@ -70,17 +70,13 @@ def deep_merge(base, override):
             result[k] = v
     return result
 
-def timer(label: str = ""):
-    """Decorator factory: log execution time with an optional label."""
+def timer(func):
     import time, functools
-    def decorator(func):
-        @functools.wraps(func)
-        def wrapper(*args, **kwargs):
-            name = label or func.__name__
-            t = time.perf_counter()
-            result = func(*args, **kwargs)
-            print(f"[timer] {name}: {time.perf_counter() - t:.4f}s")
-            return result
-        return wrapper
-    return decorator
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        t = time.time()
+        result = func(*args, **kwargs)
+        print(f"{func.__name__}: {time.time() - t:.3f}s")
+        return result
+    return wrapper
 
