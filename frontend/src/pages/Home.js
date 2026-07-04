@@ -60,11 +60,11 @@ function Home() {
       <div className="grid grid-cols-2 gap-6 mb-8">
         {/* Risk Ranking Panel */}
         <div className="bg-gray-800 rounded-lg p-6">
-          <h3 className="text-white font-semibold text-lg mb-4">
-            Risk Ranking — All Reactors
+          <h3 className="text-gray-300 font-semibold text-sm uppercase tracking-wide mb-4">
+            Risk Ranking
           </h3>
           {sortedReactors.length === 0 ? (
-            <div className="text-gray-400 text-center py-8">
+            <div className="text-gray-500 text-center py-8 text-sm">
               Waiting for reactor data...
             </div>
           ) : (

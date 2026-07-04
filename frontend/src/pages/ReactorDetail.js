@@ -38,7 +38,7 @@ function ReactorDetail() {
         const data = await getReactorHistory(reactorId);
         setHistory(data.reverse());
       } catch (err) {
-        console.log("History not available yet");
+        // history not yet available — stream data will populate it
       }
     };
     fetchHistory();
@@ -102,15 +102,14 @@ function ReactorDetail() {
                   `${API}/api/simulate/${reactorId}`,
                   { method: "POST" },
                 );
-                const data = await response.json();
-                console.log("Simulation triggered:", data);
-              } catch (err) {
-                console.log("Simulation error:", err);
+                await response.json();
+              } catch {
+                // simulation error handled silently — alert will appear via socket
               }
             }}
-            className="bg-red-600 hover:bg-red-500 text-white font-bold px-6 py-3 rounded-lg transition-all animate-pulse"
+            className="bg-red-700 hover:bg-red-600 text-white font-semibold px-5 py-2.5 rounded-lg transition-colors text-sm"
           >
-            🔥 Simulate Runaway
+            Simulate Runaway
           </button>
         )}
       </div>
@@ -180,8 +179,8 @@ function ReactorDetail() {
       {/* Live Charts */}
       <div className="grid grid-cols-2 gap-6 mb-8">
         <div className="bg-gray-800 rounded-lg p-6">
-          <h3 className="text-white font-semibold mb-4">
-            🌡️ Temperature (°C) — Live
+          <h3 className="text-gray-300 font-semibold mb-4 text-sm uppercase tracking-wide">
+            Temperature (°C)
           </h3>
           <ResponsiveContainer width="100%" height={200}>
             <LineChart data={history}>
@@ -207,8 +206,8 @@ function ReactorDetail() {
         </div>
 
         <div className="bg-gray-800 rounded-lg p-6">
-          <h3 className="text-white font-semibold mb-4">
-            💨 Pressure (bar) — Live
+          <h3 className="text-gray-300 font-semibold mb-4 text-sm uppercase tracking-wide">
+            Pressure (bar)
           </h3>
           <ResponsiveContainer width="100%" height={200}>
             <LineChart data={history}>
@@ -234,8 +233,8 @@ function ReactorDetail() {
         </div>
 
         <div className="bg-gray-800 rounded-lg p-6">
-          <h3 className="text-white font-semibold mb-4">
-            🤖 AI Risk Score — Live
+          <h3 className="text-gray-300 font-semibold mb-4 text-sm uppercase tracking-wide">
+            AI Risk Score
           </h3>
           <ResponsiveContainer width="100%" height={200}>
             <LineChart data={history}>
@@ -265,8 +264,8 @@ function ReactorDetail() {
         </div>
 
         <div className="bg-gray-800 rounded-lg p-6">
-          <h3 className="text-white font-semibold mb-4">
-            ❄️ Cooling Efficiency — Live
+          <h3 className="text-gray-300 font-semibold mb-4 text-sm uppercase tracking-wide">
+            Cooling Efficiency
           </h3>
           <ResponsiveContainer width="100%" height={200}>
             <LineChart data={history}>
@@ -311,13 +310,12 @@ function ReactorDetail() {
         <MaintenancePanel reactor={reactor} />
       </div>
 
-      {/* View Analytics Button */}
       <div className="flex justify-end">
         <button
           onClick={() => navigate(`/analytics/${reactorId}`)}
-          className="bg-blue-600 hover:bg-blue-500 text-white font-bold px-6 py-3 rounded-lg transition-all"
+          className="bg-blue-700 hover:bg-blue-600 text-white font-semibold px-5 py-2.5 rounded-lg transition-colors text-sm"
         >
-          📊 View Full History →
+          View Full History
         </button>
       </div>
     </div>

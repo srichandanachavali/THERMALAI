@@ -2,7 +2,7 @@ const Reactor = require('../models/Reactor');
 const Alert = require('../models/Alert');
 const axios = require('axios');
 const { sendEmailAlert, sendSMSAlert } = require('./alertController');
-const logger = require('../logger'); // task15-probe
+const logger = require('../logger');
 
 const ML_URL = process.env.ML_URL || 'http://localhost:5001';
 

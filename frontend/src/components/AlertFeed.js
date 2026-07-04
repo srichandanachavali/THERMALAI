@@ -17,12 +17,12 @@ function AlertFeed({ alerts, limit = 5 }) {
 
   return (
     <div className="bg-gray-800 rounded-lg p-6">
-      <h3 className="text-white font-semibold text-lg mb-4">
-        🚨 Live Alert Feed
+      <h3 className="text-gray-300 font-semibold text-sm uppercase tracking-wide mb-4">
+        Recent Alerts
       </h3>
       {displayAlerts.length === 0 ? (
-        <div className="text-gray-400 text-center py-8">
-          ✅ No alerts — all reactors safe
+        <div className="text-gray-500 text-center py-8 text-sm">
+          No active alerts — all reactors safe
         </div>
       ) : (
         <div className="space-y-3">

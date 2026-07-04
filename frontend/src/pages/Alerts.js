@@ -15,7 +15,7 @@ function Alerts() {
         const data = await getAlerts();
         setAllAlerts(data);
       } catch (err) {
-        console.log("Could not fetch alerts");
+        // alerts not yet available
       }
     };
     fetchAlerts();
@@ -42,8 +42,8 @@ function Alerts() {
       setAllAlerts((prev) =>
         prev.map((a) => (a._id === alertId ? { ...a, resolved: true } : a))
       );
-    } catch (err) {
-      console.log("Could not resolve alert");
+    } catch {
+      // resolve failed — alert stays unresolved
     }
   };
 
@@ -103,13 +103,13 @@ function Alerts() {
 
       {/* Alert Feed */}
       <div className="bg-gray-800 rounded-lg p-6">
-        <h3 className="text-white font-semibold text-lg mb-4">
-          🚨 Live Alert Feed
+        <h3 className="text-gray-300 font-semibold text-sm uppercase tracking-wide mb-4">
+          Live Alert Feed
         </h3>
         {allAlerts.length === 0 ? (
           <div className="text-center py-16">
-            <p className="text-green-400 text-xl">✅ All reactors safe</p>
-            <p className="text-gray-500 mt-2">No alerts at this time</p>
+            <p className="text-green-400 text-lg font-semibold">All reactors safe</p>
+            <p className="text-gray-500 mt-2 text-sm">No alerts at this time</p>
           </div>
         ) : (
           <div className="space-y-3">

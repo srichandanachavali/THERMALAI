@@ -53,7 +53,7 @@ function Login() {
 
         {/* Logo */}
         <div className="text-center mb-6">
-          <h1 className="text-4xl font-bold text-green-400">ThermalAI 🔥</h1>
+          <h1 className="text-4xl font-bold text-white tracking-tight">ThermalAI</h1>
           <p className="text-gray-400 mt-2">Industrial Safety Intelligence</p>
         </div>
 
@@ -126,7 +126,7 @@ function Login() {
             disabled={loading}
             className="w-full bg-green-500 hover:bg-green-400 disabled:bg-gray-600 text-white font-bold py-3 rounded-lg transition-all text-lg"
           >
-            {loading ? 'Logging in...' : 'Login 🔐'}
+            {loading ? 'Signing in...' : 'Sign In'}
           </button>
 
           <button

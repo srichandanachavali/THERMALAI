@@ -14,9 +14,9 @@ function Sidebar() {
   ).length;
 
   const navItems = [
-    { path: "/", label: "Home", icon: "🏠" },
-    { path: "/alerts", label: "Alerts", icon: "🚨" },
-    { path: "/analytics", label: "Analytics", icon: "📊" },
+    { path: "/", label: "Home" },
+    { path: "/alerts", label: "Alerts" },
+    { path: "/analytics", label: "Analytics" },
   ];
 
   const handleLogout = () => {
@@ -30,16 +30,16 @@ function Sidebar() {
     <div className="fixed left-0 top-0 h-full w-64 bg-gray-800 border-r border-gray-700 flex flex-col">
       {/* Logo */}
       <div className="p-6 border-b border-gray-700">
-        <h1 className="text-2xl font-bold text-green-400">ThermalAI 🔥</h1>
-        <p className="text-gray-400 text-xs mt-1">Thermal Runaway Prevention</p>
+        <h1 className="text-xl font-bold text-white tracking-tight">ThermalAI</h1>
+        <p className="text-gray-500 text-xs mt-1">Thermal Runaway Prevention</p>
         <div className="flex items-center gap-2 mt-3">
           <div
-            className={`w-2 h-2 rounded-full ${
+            className={`w-1.5 h-1.5 rounded-full ${
               connected ? "bg-green-400" : "bg-red-400"
             }`}
           ></div>
-          <span className="text-xs text-gray-400">
-            {connected ? "Live Connected" : "Disconnected"}
+          <span className="text-xs text-gray-500">
+            {connected ? "Live" : "Disconnected"}
           </span>
         </div>
       </div>
@@ -47,40 +47,29 @@ function Sidebar() {
       {/* Plant info */}
       {plant && (
         <div className="px-4 py-3 border-b border-gray-700">
-          <div className="bg-green-500/10 border border-green-500/20 rounded-lg px-3 py-2">
-            <p className="text-green-400 text-xs uppercase tracking-wide font-bold mb-0.5">
-              🏭 Current Plant
+          <p className="text-gray-500 text-xs uppercase tracking-wider font-semibold mb-1">
+            Active Plant
+          </p>
+          <p className="text-white text-sm font-semibold">{plant.name}</p>
+          {plant.city && (
+            <p className="text-gray-400 text-xs mt-0.5">
+              {plant.city}, {plant.state}
             </p>
-            <p className="text-white text-sm font-bold">{plant.name}</p>
-            {plant.city && (
-              <p className="text-gray-400 text-xs">
-                📍 {plant.city}, {plant.state}
-              </p>
-            )}
-          </div>
+          )}
         </div>
       )}
 
       {/* User info */}
       {user && user.role && (
         <div className="px-4 py-3 border-b border-gray-700">
-          <div
-            className={`flex items-center gap-2 px-3 py-2 rounded-lg ${
-              user.role === "admin" ? "bg-purple-500/10" : "bg-blue-500/10"
+          <p className="text-white text-sm font-semibold">{user.name}</p>
+          <span
+            className={`text-xs font-semibold uppercase tracking-wider ${
+              user.role === "admin" ? "text-purple-400" : "text-blue-400"
             }`}
           >
-            <span>{user.role === "admin" ? "👑" : "👷"}</span>
-            <div>
-              <p className="text-white text-sm font-bold">{user.name}</p>
-              <p
-                className={`text-xs uppercase font-bold ${
-                  user.role === "admin" ? "text-purple-400" : "text-blue-400"
-                }`}
-              >
-                {user.role}
-              </p>
-            </div>
-          </div>
+            {user.role}
+          </span>
         </div>
       )}
 
@@ -90,35 +79,29 @@ function Sidebar() {
           <Link
             key={item.path}
             to={item.path}
-            className={`flex items-center justify-between gap-3 px-4 py-3 rounded-lg mb-2 transition-all ${
+            className={`flex items-center justify-between px-4 py-2.5 rounded-lg mb-1 transition-colors text-sm font-medium ${
               location.pathname === item.path
-                ? "bg-green-500 text-white"
+                ? "bg-green-600 text-white"
                 : "text-gray-400 hover:bg-gray-700 hover:text-white"
             }`}
           >
-            <div className="flex items-center gap-3">
-              <span>{item.icon}</span>
-              <span className="font-medium">{item.label}</span>
-            </div>
+            <span>{item.label}</span>
             {item.label === "Alerts" && unreadCritical > 0 && (
-              <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
+              <span className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full font-bold">
                 {unreadCritical}
               </span>
             )}
           </Link>
         ))}
 
-        {/* Admin only */}
         {user.role === "admin" && (
           <div className="mt-4 pt-4 border-t border-gray-700">
-            <p className="text-gray-500 text-xs uppercase tracking-wide mb-2 px-2">
-              Admin Controls
+            <p className="text-gray-500 text-xs uppercase tracking-wider mb-1 px-1">
+              Admin
             </p>
-            <div className="px-2 py-1 bg-red-500/10 border border-red-500/20 rounded-lg">
-              <p className="text-red-400 text-xs text-center">
-                🔥 Simulate Runaway available on reactor pages
-              </p>
-            </div>
+            <p className="text-gray-500 text-xs px-1">
+              Simulate runaway on reactor pages
+            </p>
           </div>
         )}
       </nav>
@@ -127,11 +110,11 @@ function Sidebar() {
       <div className="p-4 border-t border-gray-700">
         <button
           onClick={handleLogout}
-          className="w-full bg-red-500/20 hover:bg-red-500/40 text-red-400 text-sm py-2 rounded-lg transition-all mb-2"
+          className="w-full text-gray-400 hover:text-white hover:bg-gray-700 text-sm py-2 px-3 rounded-lg transition-colors text-left mb-2"
         >
-          🚪 Logout
+          Logout
         </button>
-        <p className="text-gray-500 text-xs text-center">ThermalAI v1.0</p>
+        <p className="text-gray-600 text-xs text-center">v1.0.0</p>
       </div>
     </div>
   );
