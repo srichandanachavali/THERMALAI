@@ -18,8 +18,8 @@ function PlantSelect() {
     try {
       const response = await axios.get(`${API}/api/plants`);
       setPlants(response.data);
-    } catch (err) {
-      console.log('Error fetching plants:', err);
+    } catch {
+      // plants unavailable — will retry on next mount
     }
   };
 
@@ -35,7 +35,7 @@ function PlantSelect() {
       
       {/* Logo */}
       <div className="text-center mb-12">
-        <h1 className="text-5xl font-bold text-green-400">ThermalAI 🔥</h1>
+        <h1 className="text-5xl font-bold text-white tracking-tight">ThermalAI</h1>
         <p className="text-gray-400 mt-3 text-lg">
           Thermal Runaway Prevention Platform
         </p>

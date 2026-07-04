@@ -41,5 +41,11 @@ if [ "$FAILED" = "1" ]; then
   exit 1
 fi
 
+# 4. Doc-sync gate — check ownership contract (respects SKIP_DOC_SYNC=1)
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+if [ -x "$REPO_ROOT/scripts/check_doc_sync.sh" ]; then
+  bash "$REPO_ROOT/scripts/check_doc_sync.sh" --precommit || exit 1
+fi
+
 echo "✅ Pre-commit checks passed."
 exit 0

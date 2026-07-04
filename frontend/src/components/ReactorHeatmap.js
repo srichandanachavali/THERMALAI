@@ -13,8 +13,8 @@ function ReactorHeatmap({ reactors }) {
 
   return (
     <div className="bg-gray-800 rounded-lg p-6">
-      <h3 className="text-white font-semibold text-lg mb-4">
-        Reactor Heatmap
+      <h3 className="text-gray-300 font-semibold text-sm uppercase tracking-wide mb-4">
+        Status Map
       </h3>
       {reactors.length === 0 ? (
         <div className="text-gray-400 text-center py-8">

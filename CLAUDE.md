@@ -1,191 +1,212 @@
 # ThermalAI — Claude Context Guide
 
-> This file tells Claude everything needed to work effectively in this codebase.
-> Detailed references live in `.claude/` — load them when the task touches that domain.
+> Binding methodology: `docs/METHODOLOGY_BRIEF.md`. This file follows §3 structure.
+> Version: 1.1.0 (retrofit 2026-07-04)
 
 ---
 
-## What This Project Is
+## 1. What This Is
 
-**ThermalAI** is an AI-powered thermal runaway prevention platform for chemical/pharmaceutical industrial plants. It predicts dangerous reactor conditions **10–20 minutes before they happen** using a dual ML ensemble (Random Forest + LSTM), gives operators real-time risk scores, explainability, predictive maintenance forecasts, and triggers SMS/email alerts.
+**ThermalAI** predicts thermal runaway in industrial reactors 10–20 minutes early using an RF+LSTM ensemble.
 
-**Stack**: React 19 → Node/Express 5 → Flask ML API (port 5001) → MongoDB Atlas  
-**Real-time**: Socket.io (WebSocket) pushes every reactor update to all dashboards  
-**Auth**: JWT stored in localStorage, role-based (admin / operator)  
-**Logging**: Winston + daily-rotate-file (backend/logger.js)  
-**Containers**: Docker + docker-compose (all 3 services)
-
----
-
-## Repo Structure
-
-```
-THERMALAI/
-├── CLAUDE.md
-├── docker-compose.yml               ← all 3 services, network, volumes, healthchecks
-├── .github/workflows/ci.yml         ← parallel tests on every non-main push
-├── .github/workflows/deploy.yml     ← tests → Render deploy hook on push to main
-├── .claude/                         ← architecture, api-contracts, ml-models,
-│                                       data-models, frontend-patterns, dev-commands,
-│                                       known-issues
-├── frontend/  (port 3000)  Dockerfile  src/components/__tests__/
-├── backend/   (port 5000)  Dockerfile  logger.js  tests/
-└── ml-model/  (port 5001)  Dockerfile  tests/
-```
+**Stack:** React 19 → Node/Express 5 (port 5000) → Flask ML API (port 5001) → MongoDB Atlas  
+**Real-time:** Socket.io broadcasts every reactor update to all dashboards  
+**Auth:** JWT (24h expiry) stored in localStorage, role-based (admin / operator)  
+**Logging:** Winston + daily-rotate-file (`backend/logger.js`)  
+**Containers:** Docker + docker-compose (all 3 services, healthchecks, volumes)  
+**Deploy:** Render.com — frontend (static), backend (Node), ml-api (Python)
 
 ---
 
-## Critical Rules (Always Apply)
+## 2. Where the Brain Lives
 
-1. **Backend uses CommonJS** (`require`/`module.exports`) throughout — never use `import/export` there.
-2. **Frontend uses ES modules** (`import/export`) — never use `require` there.
-3. **The ML Flask API runs on port 5001**, backend on **5000**, frontend on **3000**. Never mix them up in URLs.
-4. **JWT secret is in `backend/.env`** as `JWT_SECRET`. Never hardcode it.
-5. **MongoDB models** are in `backend/models/`. Reactor, Alert, User, Plant.
-6. **`seedDefaultUsers()`** in `authController.js` runs on startup — seeds only if users collection is empty. Default: `admin/admin123`, `operator/op123`.
-7. **bcrypt** is used for password hashing via `User.pre('save')` hook and `user.comparePassword()`.
-8. **Socket.io events** that matter: `reactor_update` (new reading), `new_alert` (alert created), `system_alert` (ML_DOWN/ML_RECOVERED).
-9. **Alert `resolved` field** — `Alerts.js` handles resolved state (gray/strikethrough). Backend: `PUT /api/alerts/:id/resolve`.
-10. **ML ensemble**: `risk_score = RF_score × 0.40 + LSTM_score × 0.60`. Status: <30 SAFE, 30–69 WARNING, ≥70 CRITICAL.
-11. **Always develop on `develop` branch** — never commit feature work directly to `main`. Use `feature/*` branches, merge to `develop`, then PR to `main`.
-12. **Tests must pass before merging** — CI runs all 3 test suites on every push. A failing suite blocks the deploy workflow from triggering the Render hook.
+Read these files in order when starting a session. Each answers a specific question.
 
----
+| File | Answers |
+|---|---|
+| `context/MEMORY.md` | Index of all context docs — what each one covers |
+| `context/code_map.md` | Full flow spine (sensor → ML → MongoDB → socket → UI) + per-area ownership tree |
+| `context/tunables.md` | Every operator knob: weights, thresholds, timeouts, TTL, JWT expiry — all with real values |
+| `memory/MEMORY.md` | Locked decisions, incident records, learned feedback |
+| `docs/design/ensemble_locked_spec.md` | Citable clauses C1–C8 for the RF+LSTM ensemble — change process required |
 
-## Key Files to Know
+**Domain-specific context docs** (load when task touches that area):
 
-| File | What it does |
-|------|-------------|
-| `backend/server.js` | Express setup, Socket.io, MongoDB connect, simulate route, ML watchdog |
-| `backend/logger.js` | Winston logger — use `logger.info/warn/error` instead of `console.*` |
-| `backend/controllers/reactorController.js` | Stream endpoint — calls ML, computes ensemble, saves, broadcasts |
-| `backend/controllers/authController.js` | Login (DB+bcrypt), register (admin-only), seedDefaultUsers |
-| `backend/controllers/alertController.js` | Alert CRUD, email (Nodemailer), SMS (Twilio) |
-| `backend/models/Reactor.js` | Reactor schema — TTL index (7d) + compound index on reactor_id+timestamp |
-| `ml-model/app.py` | Flask ML API — lazy-loads RF + LSTM on first request, all prediction endpoints |
-| `ml-model/risk_engine.py` | Pure scoring module — `calculate_risk_score(reading, model)`, no file I/O |
-| `ml-model/stream_data.py` | Simulates sensor data (replaces real hardware for now) |
-| `frontend/src/context/SocketContext.js` | Global state — reactors[], alerts[], mlStatus via WebSocket |
-| `frontend/src/pages/ReactorDetail.js` | Main reactor page — gauge, charts, AI comparison, maintenance |
-| `frontend/src/services/api.js` | All axios calls — getReactors, getAlerts, resolveAlert, etc. |
-| `docker-compose.yml` | Orchestrates frontend + backend + ml with network, volumes, healthchecks |
-| `.github/workflows/ci.yml` | Parallel Jest + react-scripts + pytest on every non-main push |
-| `.github/workflows/deploy.yml` | Same tests → Render deploy hook → failure commit comment |
+| Task type | Load |
+|---|---|
+| API endpoints / request-response shapes | `context/api-contracts.md` |
+| ML ensemble, features, time-to-critical, maintenance | `context/ml-models.md` |
+| Frontend pages, components, SocketContext | `context/frontend-patterns.md` |
+| MongoDB schemas, indexes, JWT payload | `context/data-models.md` |
+| Service topology, data flow, watchdog | `context/architecture.md` |
+| Setup, start order, test commands, DB queries | `context/dev-commands.md` |
+| Deployment blockers, security gaps, known bugs | `context/known-issues.md` |
 
 ---
 
-## Environment Variables
+## 3. Standing Rules
 
-Copy the example files before first run — **never commit real values**:
+### STANDING RULE: NO FALSE-SAFE FALLBACKS (set 2026-07-04)
+
+> "When a prediction service is down, the system must never present a fabricated SAFE score as if it were real."
+
+| What | Required behavior |
+|---|---|
+| Watchdog fallback | Every reading produced while ML is down must carry `ml_degraded: true` |
+| Socket broadcast | `system_alert { type: 'ML_DOWN' }` emitted immediately on first detection |
+| System alert | A MongoDB Alert document with `reactor_id: 'SYSTEM'` saved on ML-down |
+| Frontend | Red `MLStatusBanner` shown on every protected page when `mlStatus === 'down'` |
+| Alerts | Must not auto-resolve during an ML-down period |
+
+**Burn case 2026-07-04:** Render ML deploy failed (TensorFlow ~500 MB OOM on free tier).
+Backend silently fell back to `risk_score: 0 / status: SAFE` for every reactor — a plant
+operator would have seen "all reactors safe" while the prediction engine was completely dead.
+
+**Implementation:**
+- `backend/controllers/reactorController.js` — sets `ml_degraded: true` when both RF and LSTM calls fail
+- `frontend/src/App.js` — `MLStatusBanner` reads `mlStatus` from `SocketContext`
+- `backend/server.js` — `checkMLHealth()` emits `system_alert` and saves MongoDB alert on ML-down
+- Test: `backend/tests/watchdog.test.js` — asserts `ml_degraded` flag on degraded readings
+
+---
+
+### Conventions (Always Apply)
+
+1. **Backend uses CommonJS** (`require`/`module.exports`) — never `import/export` in backend.
+2. **Frontend uses ES modules** (`import/export`) — never `require` in frontend.
+3. **Ports are fixed:** ML Flask = 5001, Express backend = 5000, React = 3000. Never mix.
+4. **JWT secret** is `JWT_SECRET` in `backend/.env`. Never hardcode.
+5. **MongoDB models** live in `backend/models/`: Reactor, Alert, User.
+6. **Logging:** use `logger.info/warn/error` — never `console.log/warn/error` in backend.
+7. **ML ensemble formula is locked** — see `docs/design/ensemble_locked_spec.md` clauses C1–C8.
+8. **Socket.io event names** (`reactor_update`, `new_alert`, `system_alert`) must match exactly in
+   both backend (emitter) and frontend (listener). See `context/tunables.md`.
+
+---
+
+## 4. Conventions
+
+### Doc-Sync (binding)
+
+Every tracked source file under `backend/`, `frontend/src/`, `ml-model/` must be owned by
+exactly one context doc in `context/`. The ownership contract is enforced by:
+
+- `context/_doc_manifest.json` — authoritative file→doc map (GENERATED, never hand-edit)
+- `scripts/build_doc_manifest.sh` — sole writer of manifest and `context/code_map.md`
+- `scripts/check_doc_sync.sh --audit` — prints `unowned=N double=N dead=N`
+- `scripts/check_doc_sync.sh --precommit` — blocks commits that violate the contract
+- Override (emergencies only): `SKIP_DOC_SYNC=1 git commit ...`
+
+**When you change a source file**, update its owning context doc, then regenerate:
 ```bash
-cp backend/.env.example backend/.env
-cp frontend/.env.example frontend/.env
+bash scripts/build_doc_manifest.sh
+git add context/_doc_manifest.json context/code_map.md
 ```
 
-### `backend/.env`
-```
-MONGO_URI=mongodb+srv://...
-PORT=5000
-JWT_SECRET=thermalai_secret_key_2026
-EMAIL_USER=...@gmail.com
-EMAIL_PASS=...              # Gmail app password (not account password)
-TWILIO_ACCOUNT_SID=...
-TWILIO_AUTH_TOKEN=...
-TWILIO_PHONE=+1...
-ALERT_PHONE=+91...
-OPERATOR_PHONE=+91...
-ADMIN_PHONE=+91...
-ML_URL=http://localhost:5001
-```
+### Versioning
 
-### `frontend/.env`
-```
-REACT_APP_API_URL=http://localhost:5000/api
+This project follows **SemVer**: `MAJOR.MINOR.PATCH` in `VERSION`.
+- PATCH: bug fix, doc update, test addition
+- MINOR: new feature, new context doc, methodology retrofit
+- MAJOR: breaking API or schema change
+
+### Test Hygiene
+
+- Run `scripts/check_doc_sync.sh --audit` before running test suites (a clean audit means
+  the manifest is current and files are owned — catch doc drift before test drift).
+- Never skip a failing test without a corresponding issue in `context/open_work.md`.
+- Do not commit commented-out tests.
+
+### Coverage Delta
+
+Before adding a new feature, check `context/open_work.md` for uncovered modules. If your
+change touches a module with no test, add at least one meaningful test. The threshold is not
+100% coverage — it is "no completely untested module in the critical safety path."
+
+---
+
+## 5. Active Hooks
+
+### Stop Hook (Claude Code)
+After every turn, `.claude/settings.json` runs `scripts/check_doc_sync.sh --warn` —
+non-blocking; prints nag if architectural code changed without a doc update, plus
+uncommitted-changes reminder.
+
+### Pre-commit Hook
+`scripts/pre-commit` (installed at `.git/hooks/pre-commit`) enforces:
+1. No direct commits to `main`
+2. No `import` statements in backend JS (CommonJS rule)
+3. No `console.*` in backend JS (logger rule)
+4. Doc-sync gate via `scripts/check_doc_sync.sh --precommit`
+
+**Per-machine install step (required on every fresh clone):**
+```bash
+bash scripts/install_hooks.sh
 ```
 
 ---
 
-## Branch Strategy
+## 6. Branch / Release Model
 
 | Branch | Purpose | Merge target |
-|--------|---------|--------------|
-| `main` | Production only — protected, deploys to Render on push | — |
+|---|---|---|
+| `main` | Production only — protected, fast-forward-only, always tagged | — |
 | `develop` | Integration branch — all features merge here first | `main` via PR |
-| `feature/*` | Individual features (e.g. `feature/docker-setup`) | `develop` |
-| `fix/*` | Hotfixes from main (e.g. `fix/render-requirements`) | `main` + `develop` |
-| `release/*` | Release candidates (e.g. `release/v1.1.0`) | `main` |
+| `feature/*` | Individual features | `develop` |
+| `fix/*` | Hotfixes | `main` + `develop` |
+| `release/*` | Release candidates | `main` |
 
 `main` is protected: requires 1 PR review, CI must pass, squash merge only.
 
----
-
-## Development Workflow
-
+**Tag ritual** (see `docs/release_workflow.md` for full procedure):
 ```bash
-git checkout develop && git checkout -b feature/your-feature
+# 1. Update VERSION
+# 2. Update CHANGELOG.md
+# 3. Regenerate manifest LAST — if you tag before regenerating, manifest in the
+#    tagged commit is stale and the gate fires on the next commit
+bash scripts/build_doc_manifest.sh
+git add VERSION CHANGELOG.md context/_doc_manifest.json context/code_map.md
+git commit -m "chore: release vX.Y.Z"
+git tag vX.Y.Z
+```
 
-cp backend/.env.example  backend/.env   # fill in real values
+**Environment setup** (first time or after clone):
+```bash
+cp backend/.env.example  backend/.env   # fill in MONGO_URI, JWT_SECRET, Twilio, Gmail
 cp frontend/.env.example frontend/.env
 
-docker-compose up --build               # recommended — starts all 3 services
-# OR manually (in order): ml-model/app.py → backend/server.js → frontend npm start
-#                          then: python stream_data.py (sensor simulator)
-
-# Before pushing:
-cd backend  && npm test
-cd frontend && CI=true npm test
-cd ml-model && pytest tests/ -v
+bash scripts/install_hooks.sh           # install pre-commit hook
+bash scripts/setup.sh                   # install Node + Python deps
 ```
 
 ---
 
-## Test Commands
+## 7. NEVER DO
 
-| Suite | Command | Runner |
-|-------|---------|--------|
-| Backend | `cd backend && npm test` | Jest + supertest |
-| Frontend | `cd frontend && CI=true npm test` | react-scripts / RTL |
-| ML model | `cd ml-model && pytest tests/ -v` | pytest (no tensorflow) |
+These are tied directly to the domain risk: **ThermalAI sends real SMS/email alerts to
+plant operators and writes to the production MongoDB — a false or suppressed alert has
+real-world safety cost.**
 
-CI runs all three in parallel on every push via `.github/workflows/ci.yml`.
+1. **Never send test SMS/email through live Twilio/Nodemailer credentials.**
+   Use `NODE_ENV=test` which mocks both (see `backend/tests/` for the mock pattern).
 
----
+2. **Never write test data to the production MongoDB.**
+   Set `MONGO_URI` to a test/local database in `.env` when developing. The test suite
+   mocks Mongoose models — it never touches the real DB.
 
-## Current Implementation Status
+3. **Never mark a degraded reading as SAFE without the `ml_degraded` flag.**
+   When both ML calls fail, `risk_score` arithmetic defaults to 0 (SAFE). This must
+   always be accompanied by `ml_degraded: true` on the enriched reading. See the
+   NO FALSE-SAFE FALLBACKS standing rule above.
 
-### Done
-- [x] Real-time reactor monitoring (WebSocket)
-- [x] Dual ML ensemble (RF + LSTM) with time-to-critical
-- [x] AI explainability panel
-- [x] Predictive maintenance panel
-- [x] Alert center with resolve button + resolved visual state
-- [x] Database-backed auth (MongoDB + bcrypt + JWT)
-- [x] Admin-only simulate runaway button
-- [x] SMS (Twilio) + Email (Nodemailer) notifications
-- [x] Multi-plant support (3 plants, 5 reactors)
-- [x] Winston logging (backend/logger.js — all console.* replaced)
-- [x] MongoDB TTL index on reactor readings (7-day retention)
-- [x] Docker + docker-compose (all 3 services, healthchecks, volumes)
-- [x] CI/CD pipeline (ci.yml + deploy.yml with Render deploy hook)
-- [x] Test suites (Jest/supertest, React Testing Library, pytest)
-- [x] Git LFS for *.h5, *.pkl, *.npy model files
-- [x] Branch strategy (main/develop/feature/fix/release)
+4. **Never fast-forward production to an untagged commit.**
+   Every `main` commit that ships must have a corresponding `vX.Y.Z` tag. The deploy
+   workflow in `.github/workflows/deploy.yml` triggers on push to `main` — if you push
+   without tagging, the release is untracked. Always complete the tag ritual.
 
-### Pending / Known Gaps
-- [ ] Render ML deployment fix (tensorflow-cpu swap — see `.claude/known-issues.md`)
-- [ ] Real sensor data integration (post-production — replace `stream_data.py`)
-- [ ] ML model retraining on real data
-- [ ] Per-plant SMS/email contacts (currently hardcoded to single numbers)
+5. **Never commit directly to `main`.**
+   The pre-commit hook blocks this. Use `feature/*` → `develop` → PR to `main`.
 
----
-
-## Load These Files For Deep Work
-
-| Task type | Load |
-|-----------|------|
-| Adding/changing API endpoints | `.claude/api-contracts.md` |
-| Changing ML predictions or features | `.claude/ml-models.md` |
-| Working on frontend pages/components | `.claude/frontend-patterns.md` |
-| Debugging or deploying | `.claude/known-issues.md` + `.claude/dev-commands.md` |
-| Changing DB schemas | `.claude/data-models.md` |
-| Understanding service wiring | `.claude/architecture.md` |
+6. **Never hand-edit `context/_doc_manifest.json` or `context/code_map.md`.**
+   These are GENERATED files. The pre-commit hook will block you if the manifest is stale.
+   Regenerate with `bash scripts/build_doc_manifest.sh`.

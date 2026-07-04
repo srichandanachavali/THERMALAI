@@ -7,7 +7,7 @@ the "why" before changing the "what."
 
 ## ADR-001: Dual ML Ensemble (RF + LSTM)
 
-**Status:** Accepted  
+**Status:** Superseded — see `docs/design/ensemble_locked_spec.md` clauses C1, C6, C7 (history only)  
 **Date:** 2026-05-23
 
 **Context:**  
@@ -30,7 +30,7 @@ are combined at inference time.
 
 ## ADR-002: Ensemble Weights RF × 0.40 + LSTM × 0.60
 
-**Status:** Accepted  
+**Status:** Superseded — see `docs/design/ensemble_locked_spec.md` clauses C2, C3, C4, C5, C8 (history only)  
 **Date:** 2026-05-23
 
 **Context:**  
