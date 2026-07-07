@@ -41,6 +41,7 @@ const express = require('express');
 const axios = require('axios');
 const Reactor = require('../models/Reactor');
 const reactorRoutes = require('../routes/reactorRoutes');
+const { operatorHeaders } = require('./helpers/tokens');
 
 // Provide req.io so streamReading's socket.emit calls don't throw.
 function buildApp() {
@@ -62,7 +63,7 @@ describe('GET /api/reactors', () => {
   it('returns an array (empty on cold start)', async () => {
     const app = buildApp();
 
-    const res = await request(app).get('/api/reactors');
+    const res = await request(app).get('/api/reactors').set(operatorHeaders());
 
     expect(res.status).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
@@ -121,6 +122,7 @@ describe('POST /api/reactors/stream', () => {
 
     const res = await request(app)
       .post('/api/reactors/stream')
+      .set(operatorHeaders())
       .send(safeReading);
 
     expect(res.status).toBe(200);
@@ -135,6 +137,7 @@ describe('POST /api/reactors/stream', () => {
 
     const res = await request(app)
       .post('/api/reactors/stream')
+      .set(operatorHeaders())
       .send(safeReading);
 
     expect(['SAFE', 'WARNING', 'CRITICAL']).toContain(res.body.status);
@@ -143,7 +146,10 @@ describe('POST /api/reactors/stream', () => {
   it('calls the RF and LSTM ML endpoints', async () => {
     const app = buildApp();
 
-    await request(app).post('/api/reactors/stream').send(safeReading);
+    await request(app)
+      .post('/api/reactors/stream')
+      .set(operatorHeaders())
+      .send(safeReading);
 
     const calledUrls = axios.post.mock.calls.map(([url]) => url);
     expect(calledUrls.some((u) => u.includes('/predict'))).toBe(true);
@@ -158,6 +164,7 @@ describe('POST /api/reactors/stream', () => {
 
     const res = await request(app)
       .post('/api/reactors/stream')
+      .set(operatorHeaders())
       .send(safeReading);
 
     expect(res.status).toBe(200);
@@ -186,7 +193,7 @@ describe('GET /api/reactors/:id/history', () => {
 
     const app = buildApp();
 
-    const res = await request(app).get('/api/reactors/A/history');
+    const res = await request(app).get('/api/reactors/A/history').set(operatorHeaders());
 
     expect(res.status).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
@@ -203,7 +210,7 @@ describe('GET /api/reactors/:id/history', () => {
 
     const app = buildApp();
 
-    const res = await request(app).get('/api/reactors/Z/history');
+    const res = await request(app).get('/api/reactors/Z/history').set(operatorHeaders());
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual([]);

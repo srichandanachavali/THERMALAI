@@ -1,38 +1,57 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const helmet = require("helmet");
 const dotenv = require("dotenv");
 const http = require("http");
 const { Server } = require("socket.io");
+const jwt = require("jsonwebtoken");
 const axios = require("axios");
 const logger = require("./logger");
+const { verifyToken, adminOnly } = require("./middleware/auth");
 
 dotenv.config();
 
 const ML_URL = process.env.ML_URL || 'http://localhost:5001';
+const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || 'http://localhost:3000';
+const CORS_ORIGINS = FRONTEND_ORIGIN.split(',').map(s => s.trim()).filter(Boolean);
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
-  cors: { origin: "*" },
+  cors: { origin: CORS_ORIGINS, credentials: true },
 });
 
-app.use(cors());
-app.use(express.json());
+app.use(helmet());
+app.use(cors({ origin: CORS_ORIGINS, credentials: true }));
+app.use(express.json({ limit: '32kb' }));
 
 app.use((req, res, next) => {
   req.io = io;
   next();
 });
 
+// ── Socket.io auth: reject any handshake without a valid JWT ──────────────
+io.use((socket, next) => {
+  const token = socket.handshake.auth?.token;
+  if (!token) return next(new Error('unauthorized'));
+  if (!process.env.JWT_SECRET) return next(new Error('server misconfigured'));
+  try {
+    socket.user = jwt.verify(token, process.env.JWT_SECRET);
+    next();
+  } catch (e) {
+    next(new Error('unauthorized'));
+  }
+});
+
 app.get("/", (req, res) => {
   res.json({ message: "ThermalAI Backend Running 🔥" });
 });
 
-// Simulate route FIRST before other routes
-app.post("/api/simulate/:id", async (req, res) => {
+// Simulate route — admin-only (fabricates critical alerts; must never be anonymous)
+app.post("/api/simulate/:id", verifyToken, adminOnly, async (req, res) => {
   const reactorId = req.params.id;
-  logger.info(`Simulate runaway triggered for reactor: ${reactorId}`);
+  logger.info(`Simulate runaway triggered for reactor: ${reactorId} by ${req.user?.username}`);
 
   const criticalReading = {
     reactor_id: reactorId,
@@ -80,7 +99,6 @@ app.post("/api/simulate/:id", async (req, res) => {
   res.json({ success: true, risk_score: riskResult.risk_score });
 });
 
-// Other routes AFTER simulate
 const reactorRoutes = require("./routes/reactorRoutes");
 const alertRoutes = require("./routes/alertRoutes");
 const authRoutes = require("./routes/authRoutes");
@@ -129,7 +147,6 @@ async function checkMLHealth() {
       });
       mlDown = true;
 
-      // Save a system alert to MongoDB so it appears in the alert center
       const Alert = require('./models/Alert');
       const sysAlert = new Alert({
         reactor_id: 'SYSTEM',
@@ -144,12 +161,13 @@ async function checkMLHealth() {
   }
 }
 
-// Check every 30 seconds
-setInterval(checkMLHealth, 30000);
-checkMLHealth(); // also run immediately on startup
+if (process.env.NODE_ENV !== 'test') {
+  setInterval(checkMLHealth, 30000);
+  checkMLHealth();
+}
 
 io.on("connection", (socket) => {
-  logger.info(`Dashboard connected: ${socket.id}`);
+  logger.info(`Dashboard connected: ${socket.id} user=${socket.user?.username}`);
   socket.on("disconnect", () => {
     logger.info(`Dashboard disconnected: ${socket.id}`);
   });
@@ -157,15 +175,19 @@ io.on("connection", (socket) => {
 
 const { seedDefaultUsers } = require("./controllers/authController");
 
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(async () => {
-    logger.info("Connected to MongoDB");
-    await seedDefaultUsers();
-  })
-  .catch((err) => logger.error("MongoDB connection error:", err));
+if (process.env.NODE_ENV !== 'test') {
+  mongoose
+    .connect(process.env.MONGO_URI)
+    .then(async () => {
+      logger.info("Connected to MongoDB");
+      await seedDefaultUsers();
+    })
+    .catch((err) => logger.error("MongoDB connection error:", err));
 
-const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => {
-  logger.info(`Server running on port ${PORT}`);
-});
+  const PORT = process.env.PORT || 5000;
+  server.listen(PORT, () => {
+    logger.info(`Server running on port ${PORT}`);
+  });
+}
+
+module.exports = { app, server, io };

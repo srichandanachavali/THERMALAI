@@ -1,10 +1,11 @@
 {
   "_comment": "GENERATED -- never hand-edit. Regenerate with scripts/build_doc_manifest.sh",
-  "_generated": "2026-07-04T16:58:16Z",
+  "_generated": "2026-07-07T10:46:12Z",
   "file_to_doc": {
     "backend/controllers/reactorController.js": "context/api-contracts.md",
     "backend/controllers/alertController.js": "context/api-contracts.md",
     "backend/controllers/authController.js": "context/api-contracts.md",
+    "backend/middleware/auth.js": "context/api-contracts.md",
     "backend/routes/reactorRoutes.js": "context/api-contracts.md",
     "backend/routes/alertRoutes.js": "context/api-contracts.md",
     "backend/routes/authRoutes.js": "context/api-contracts.md",
@@ -55,6 +56,7 @@
       "backend/controllers/reactorController.js",
       "backend/controllers/alertController.js",
       "backend/controllers/authController.js",
+      "backend/middleware/auth.js",
       "backend/routes/reactorRoutes.js",
       "backend/routes/alertRoutes.js",
       "backend/routes/authRoutes.js",

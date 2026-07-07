@@ -10,7 +10,15 @@ references:
   - context/architecture.md
   - context/ml-models.md
   - context/known-issues.md
+  - docs/SECURITY_AUDIT.md
 ---
+
+## Environment variables introduced in v1.2.0
+
+- `FRONTEND_ORIGIN` — comma-separated allow-list for CORS (Express, socket.io, Flask). Default: `http://localhost:3000`.
+- `SIM_USER` / `SIM_PASS` — simulator (`ml-model/stream_data.py`) logs in at startup and sends the resulting JWT on every stream POST. Defaults to demo credentials (`operator` / `op123`).
+
+
 
 # ThermalAI — Dev Commands
 

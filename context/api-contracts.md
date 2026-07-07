@@ -5,6 +5,7 @@ modules:
   - backend/controllers/reactorController.js
   - backend/controllers/alertController.js
   - backend/controllers/authController.js
+  - backend/middleware/auth.js
   - backend/routes/reactorRoutes.js
   - backend/routes/alertRoutes.js
   - backend/routes/authRoutes.js
@@ -14,18 +15,24 @@ tests:
   - backend/tests/reactors.test.js
   - backend/tests/alerts.test.js
   - backend/tests/auth.test.js
+  - backend/tests/security.test.js
   - frontend/src/services/__tests__/api.test.js
 references:
   - context/architecture.md
   - context/data-models.md
   - context/ml-models.md
+  - docs/SECURITY_AUDIT.md
 ---
 
 # ThermalAI — API Contracts
 
 ## Backend REST API (port 5000)
 
-Auth header where required: `Authorization: Bearer <JWT>`
+**Auth (v1.2.0):** every endpoint below except `POST /api/auth/login`, `GET /health`,
+and `GET /` requires `Authorization: Bearer <JWT>`. `POST /api/simulate/:id` and
+`POST /api/auth/register` additionally require an admin role. Middleware:
+`backend/middleware/auth.js` (`verifyToken`, `adminOnly`) — full negative-test
+coverage in `backend/tests/security.test.js`. See `docs/SECURITY_AUDIT.md`.
 
 ---
 

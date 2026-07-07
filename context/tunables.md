@@ -71,6 +71,9 @@ All ensemble clauses are locked — do not change without a formal ADR. See `doc
 | JWT expiry | `{ expiresIn: '24h' }` in `backend/controllers/authController.js` line 54 | `24h` | Single-shift plant operation; forces re-login each day |
 | JWT secret | `JWT_SECRET` in `backend/.env` | (never hardcoded) | Must be a strong random string in production |
 | Token storage key | `'thermalai_token'` in `frontend/src/pages/Login.js` | `localStorage` key | XSS risk accepted for intranet-only deployment (see ADR-003) |
+| CORS allow-list | `FRONTEND_ORIGIN` env in `backend/.env` and `ml-model/.env` | `http://localhost:3000` (dev default) | Comma-separated origins; consumed by Express, socket.io, and Flask CORS (v1.2.0) |
+| Simulator auth | `SIM_USER` / `SIM_PASS` env used by `ml-model/stream_data.py` | `operator` / `op123` (demo default) | Simulator logs in at startup and sends the JWT on every stream POST (v1.2.0) |
+| Express body size limit | `express.json({ limit: '32kb' })` in `backend/server.js` | `32kb` | Readings are ~500 bytes; 32kb generous but bounded (v1.2.0) |
 
 ---
 

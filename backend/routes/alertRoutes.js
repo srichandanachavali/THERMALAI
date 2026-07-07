@@ -4,8 +4,9 @@ const {
   getAllAlerts,
   resolveAlert
 } = require('../controllers/alertController');
+const { verifyToken } = require('../middleware/auth');
 
-router.get('/', getAllAlerts);
-router.put('/:id/resolve', resolveAlert);
+router.get('/', verifyToken, getAllAlerts);
+router.put('/:id/resolve', verifyToken, resolveAlert);
 
 module.exports = router;

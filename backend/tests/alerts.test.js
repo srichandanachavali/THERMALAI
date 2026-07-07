@@ -1,5 +1,6 @@
 'use strict';
 
+process.env.JWT_SECRET = 'thermalai_test_secret';
 process.env.NODE_ENV = 'test';
 
 // alertController calls nodemailer.createTransport() and twilio() at module
@@ -25,6 +26,7 @@ const request = require('supertest');
 const express = require('express');
 const Alert = require('../models/Alert');
 const alertRoutes = require('../routes/alertRoutes');
+const { operatorHeaders } = require('./helpers/tokens');
 
 function buildApp() {
   const app = express();
@@ -62,7 +64,7 @@ describe('GET /api/alerts', () => {
     });
 
     const app = buildApp();
-    const res = await request(app).get('/api/alerts');
+    const res = await request(app).get('/api/alerts').set(operatorHeaders());
 
     expect(res.status).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
@@ -78,7 +80,7 @@ describe('GET /api/alerts', () => {
     });
 
     const app = buildApp();
-    const res = await request(app).get('/api/alerts');
+    const res = await request(app).get('/api/alerts').set(operatorHeaders());
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual([]);
@@ -108,7 +110,7 @@ describe('PUT /api/alerts/:id/resolve', () => {
     Alert.findByIdAndUpdate.mockResolvedValue(resolvedAlert);
 
     const app = buildApp();
-    const res = await request(app).put('/api/alerts/abc123/resolve');
+    const res = await request(app).put('/api/alerts/abc123/resolve').set(operatorHeaders());
 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
@@ -127,7 +129,7 @@ describe('PUT /api/alerts/:id/resolve', () => {
     Alert.findByIdAndUpdate.mockResolvedValue(null);
 
     const app = buildApp();
-    const res = await request(app).put('/api/alerts/nonexistent/resolve');
+    const res = await request(app).put('/api/alerts/nonexistent/resolve').set(operatorHeaders());
 
     expect(res.status).toBe(404);
     expect(res.body.error).toBe('Alert not found');

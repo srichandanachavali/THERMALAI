@@ -8,6 +8,21 @@ from collections import deque
 from sklearn.linear_model import LinearRegression
 
 app = Flask(__name__)
+
+# CORS locked to allow-list (default: local dev). Multiple origins allowed via comma.
+_frontend_origin = os.environ.get('FRONTEND_ORIGIN', 'http://localhost:3000')
+_allowed_origins = [o.strip() for o in _frontend_origin.split(',') if o.strip()]
+CORS(app, origins=_allowed_origins)
+
+# Security headers on every response (Flask equivalent of helmet defaults)
+@app.after_request
+def _apply_security_headers(response):
+    response.headers.setdefault('X-Content-Type-Options', 'nosniff')
+    response.headers.setdefault('X-Frame-Options', 'DENY')
+    response.headers.setdefault('Referrer-Policy', 'no-referrer')
+    response.headers.setdefault('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
+    return response
+
 @app.route('/health', methods=['GET'])
 def health():
     return jsonify({
@@ -15,7 +30,6 @@ def health():
         'models_loaded': model is not None,
         'reactor_buffers': len(reactor_buffers)
     })
-CORS(app)
 
 # RF model is lazy-loaded on first request so the app starts instantly
 # LSTM removed — tensorflow-cpu is too large for free-tier deployment

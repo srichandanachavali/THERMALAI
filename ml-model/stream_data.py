@@ -1,10 +1,37 @@
+import os
+import sys
 import time
 import random
 import requests
 from datetime import datetime
 
 # Backend API URL
-API_URL = "http://localhost:5000/api/reactors/stream"
+BACKEND_URL = os.environ.get('BACKEND_URL', 'http://localhost:5000')
+API_URL = f"{BACKEND_URL}/api/reactors/stream"
+LOGIN_URL = f"{BACKEND_URL}/api/auth/login"
+
+# Auth — simulator must log in like any other client (route is JWT-protected).
+SIM_USER = os.environ.get('SIM_USER', 'operator')
+SIM_PASS = os.environ.get('SIM_PASS', 'op123')
+
+
+def get_auth_token():
+    """POST /api/auth/login and return the JWT."""
+    try:
+        r = requests.post(LOGIN_URL, json={'username': SIM_USER, 'password': SIM_PASS}, timeout=10)
+        if r.status_code != 200:
+            print(f"❌ Simulator login failed ({r.status_code}): {r.text}")
+            print(f"   Set SIM_USER / SIM_PASS env vars or seed the demo users.")
+            sys.exit(1)
+        return r.json()['token']
+    except requests.exceptions.RequestException as e:
+        print(f"❌ Cannot reach backend at {LOGIN_URL}: {e}")
+        sys.exit(1)
+
+
+AUTH_TOKEN = get_auth_token()
+AUTH_HEADERS = {'Authorization': f'Bearer {AUTH_TOKEN}'}
+print(f"🔑 Simulator authenticated as {SIM_USER}")
 
 reactors = ['A', 'B', 'C', 'D', 'E']
 
@@ -103,6 +130,7 @@ while True:
             response = requests.post(
                 API_URL,
                 json=reading,
+                headers=AUTH_HEADERS,
                 timeout=5
             )
 

@@ -1,16 +1,18 @@
 ---
 title: ThermalAI — Service Architecture
-description: Service topology, data-flow through the three services, Socket.io event bus, ports, and Render deployment target
+description: Service topology, data-flow through the three services, Socket.io event bus (JWT-authenticated), ports, security middleware (helmet + CORS allow-list), and Render deployment target
 modules:
   - backend/server.js
   - backend/logger.js
   - frontend/src/context/SocketContext.js
 tests:
   - backend/tests/reactors.test.js
+  - backend/tests/security.test.js
 references:
   - context/api-contracts.md
   - context/dev-commands.md
   - context/tunables.md
+  - docs/SECURITY_AUDIT.md
 ---
 
 # ThermalAI — Service Architecture

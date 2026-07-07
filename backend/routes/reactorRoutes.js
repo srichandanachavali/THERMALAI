@@ -8,12 +8,13 @@ const {
   getExplanation,
   getMaintenancePrediction
 } = require('../controllers/reactorController');
+const { verifyToken } = require('../middleware/auth');
 
-router.get('/', getAllReactors);
-router.post('/stream', streamReading);
-router.post('/explain', getExplanation);
-router.get('/:id/history', getReactorHistory);
-router.get('/:id/maintenance', getMaintenancePrediction);
-router.get('/:id', getReactorById);
+router.get('/', verifyToken, getAllReactors);
+router.post('/stream', verifyToken, streamReading);
+router.post('/explain', verifyToken, getExplanation);
+router.get('/:id/history', verifyToken, getReactorHistory);
+router.get('/:id/maintenance', verifyToken, getMaintenancePrediction);
+router.get('/:id', verifyToken, getReactorById);
 
 module.exports = router;

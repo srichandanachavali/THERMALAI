@@ -38,6 +38,7 @@ const request = require('supertest');
 const express = require('express');
 const axios = require('axios');
 const reactorRoutes = require('../routes/reactorRoutes');
+const { operatorHeaders } = require('./helpers/tokens');
 
 function buildApp() {
   const app = express();
@@ -72,7 +73,7 @@ describe('POST /api/reactors/stream — ML degraded mode', () => {
 
   it('returns success:true even when ML is unreachable', async () => {
     const app = buildApp();
-    const res = await request(app).post('/api/reactors/stream').send(safeReading);
+    const res = await request(app).post('/api/reactors/stream').set(operatorHeaders()).send(safeReading);
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
   });
@@ -88,7 +89,7 @@ describe('POST /api/reactors/stream — ML degraded mode', () => {
       next();
     });
 
-    const res = await request(app).post('/api/reactors/stream').send(safeReading);
+    const res = await request(app).post('/api/reactors/stream').set(operatorHeaders()).send(safeReading);
     expect(res.status).toBe(200);
 
     // The reactor_update socket event must carry ml_degraded:true
@@ -107,7 +108,7 @@ describe('POST /api/reactors/stream — ML degraded mode', () => {
     });
     appWithCapture.use('/api/reactors', reactorRoutes);
 
-    await request(appWithCapture).post('/api/reactors/stream').send(safeReading);
+    await request(appWithCapture).post('/api/reactors/stream').set(operatorHeaders()).send(safeReading);
 
     const reactorUpdateCall = mockEmit.mock.calls.find(([event]) => event === 'reactor_update');
     expect(reactorUpdateCall).toBeDefined();
@@ -117,7 +118,7 @@ describe('POST /api/reactors/stream — ML degraded mode', () => {
 
   it('risk_score defaults to 0 when both models fail', async () => {
     const app = buildApp();
-    const res = await request(app).post('/api/reactors/stream').send(safeReading);
+    const res = await request(app).post('/api/reactors/stream').set(operatorHeaders()).send(safeReading);
     expect(res.body.risk_score).toBe(0);
     expect(res.body.status).toBe('SAFE');
   });
@@ -157,7 +158,7 @@ describe('POST /api/reactors/stream — partial ML degradation', () => {
     });
     appWithCapture.use('/api/reactors', reactorRoutes);
 
-    await request(appWithCapture).post('/api/reactors/stream').send(safeReading);
+    await request(appWithCapture).post('/api/reactors/stream').set(operatorHeaders()).send(safeReading);
 
     const reactorUpdateCall = mockEmit.mock.calls.find(([event]) => event === 'reactor_update');
     expect(reactorUpdateCall).toBeDefined();

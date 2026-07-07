@@ -5,6 +5,41 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [1.2.0] — 2026-07-06
+
+### Added — Security Hardening (see `docs/SECURITY_AUDIT.md`)
+
+- **`backend/middleware/auth.js`** — single source for `verifyToken` + `adminOnly` (extracted from `authController.js`)
+- **`backend/tests/security.test.js`** — 401 negative tests for all 11 protected routes + 403 role tests + socket handshake refusal tests (16 assertions)
+- **`backend/tests/helpers/tokens.js`** — `signAdmin()` / `signOperator()` / `adminHeaders()` / `operatorHeaders()` helpers
+- **`helmet()`** on Express + Flask `@app.after_request` security headers (`X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, HSTS)
+- **`express.json({ limit: '32kb' })`** — bounded body size
+- **Socket.io JWT auth** — `io.use((socket, next) => …)` in `backend/server.js`; frontend `SocketContext.js` sends `auth: { token }` in handshake and force-redirects to `/login` on `connect_error === 'unauthorized'`
+- **`docs/SECURITY_AUDIT.md`** — dated per-check table (PASS / FIXED / GAP + evidence)
+- **`docs/SECRET_ROTATION.md`** — 5-row checklist for compromised historical credentials (unchecked until user rotates)
+- **`memory/security-baseline.md`** — locked baseline with regression policy
+- **`FRONTEND_ORIGIN`**, **`SIM_USER`**, **`SIM_PASS`** env vars (documented in `.env.example` and `context/dev-commands.md`)
+- **`ml-model/.env.example`** — new file for Flask env template
+
+### Changed
+
+- **Route auth applied** to every mutating/sensitive endpoint. `/api/simulate/:id` is now `verifyToken, adminOnly`. Public routes: `POST /api/auth/login`, `GET /health`, `GET /`.
+- **CORS locked to allow-list** on Express, socket.io, and Flask (from `FRONTEND_ORIGIN` env). No `origin: '*'` remains anywhere.
+- **`ml-model/stream_data.py`** — simulator logs in at startup using `SIM_USER`/`SIM_PASS` and sends `Authorization: Bearer <token>` on every stream POST
+- **`CLAUDE.md` §7 NEVER-DO** — added binding rule 7: never commit `.env`; all four historical secrets remain compromised until rotated
+
+### Fixed — Dependency Hygiene
+
+- **Backend `npm audit`** — bumped `nodemailer` to latest to clear GHSA-p6gq-j5cr-w38f. Result: `found 0 vulnerabilities`.
+- **Frontend `npm audit`** — `shell-quote` CRITICAL (GHSA-w7jw-789q-3m8p) resolved via `npm audit fix`. Remaining HIGH are transitive `react-scripts` dev-only vulns (open_work.md GAP #3).
+- All test suites re-run green after upgrades: backend 40/40, frontend 25/25, ml-model 12/12.
+
+### Security GAPs (see `docs/SECURITY_AUDIT.md`, `context/open_work.md`, `context/roadmap.md`)
+
+- **Historical secrets in git** — MongoDB, Twilio SID+token, Gmail app password, `JWT_SECRET` recoverable from history. Rotation required at each provider. Top roadmap item.
+- **ML API publicly reachable on Render free tier** — private networking is a paid feature.
+- **13 frontend HIGH transitive dev-dep vulns** pinned by `react-scripts`.
+
 ## [1.1.0] — 2026-07-04
 
 ### Added — Methodology Retrofit (docs/METHODOLOGY_BRIEF.md compliance)

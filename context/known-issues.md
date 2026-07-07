@@ -12,6 +12,9 @@ references:
 
 # ThermalAI — Known Issues & Gaps
 
+> **Security note (2026-07-06):** Historical git-committed credentials remain compromised until rotated at each provider. See `docs/SECRET_ROTATION.md` — 5 unchecked rows. Full security posture: `docs/SECURITY_AUDIT.md`.
+
+
 ---
 
 ## 1. Render ML Deployment Failure — TensorFlow Bloat

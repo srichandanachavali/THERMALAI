@@ -210,3 +210,9 @@ real-world safety cost.**
 6. **Never hand-edit `context/_doc_manifest.json` or `context/code_map.md`.**
    These are GENERATED files. The pre-commit hook will block you if the manifest is stale.
    Regenerate with `bash scripts/build_doc_manifest.sh`.
+
+7. **Never commit `.env`. All four historical secrets are compromised until rotated.**
+   The `.gitignore` already blocks `.env` / `.env.*`. If you catch yourself about to
+   `git add backend/.env`, stop. The 2026-05-09/10 leak (commits `8c88d92`, `674dd66`,
+   `650db89`, `158d0f6`) has NOT been remediated — see `docs/SECRET_ROTATION.md` for
+   the outstanding checklist. Full security posture: `docs/SECURITY_AUDIT.md`.

@@ -19,7 +19,7 @@ echo ""
 echo "========================================="
 echo " ML model tests (pytest)"
 echo "========================================="
-cd "$ROOT/ml-model" && pytest tests/ -v
+cd "$ROOT/ml-model" && python -m pytest tests/ -v
 
 echo ""
 echo "✅ All test suites passed."

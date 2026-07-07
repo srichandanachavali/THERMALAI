@@ -51,6 +51,7 @@ frontend/src/App.js  -> MLStatusBanner shown (red banner)
   - `backend/controllers/alertController.js`
   - `backend/controllers/authController.js`
   - `backend/controllers/reactorController.js`
+  - `backend/middleware/auth.js`
   - `backend/routes/alertRoutes.js`
   - `backend/routes/authRoutes.js`
   - `backend/routes/plantRoutes.js`

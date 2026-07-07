@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
+const { verifyToken } = require('../middleware/auth');
 
-// Plant configuration — hardcoded for demo
 const PLANTS = [
   {
     plant_id: 'PLANT_ALPHA',
@@ -35,13 +35,11 @@ const PLANTS = [
   }
 ];
 
-// GET all plants
-router.get('/', (req, res) => {
+router.get('/', verifyToken, (req, res) => {
   res.json(PLANTS);
 });
 
-// GET specific plant
-router.get('/:id', (req, res) => {
+router.get('/:id', verifyToken, (req, res) => {
   const plant = PLANTS.find(p => p.plant_id === req.params.id);
   if (!plant) return res.status(404).json({ error: 'Plant not found' });
   res.json(plant);

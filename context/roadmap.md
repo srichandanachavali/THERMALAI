@@ -18,8 +18,10 @@ references:
 
 | Item | Effort | Why |
 |---|---|---|
+| **[TOP] Rotate compromised production credentials** — MongoDB, Twilio SID+token, Gmail app password, `JWT_SECRET` (see `docs/SECRET_ROTATION.md`) | S — user action | The five credentials are recoverable from git history (`git log -p -- backend/.env`). Until every checkbox in `SECRET_ROTATION.md` is ticked, an attacker with a clone can read/write the production MongoDB, send SMS as ThermalAI, and forge admin JWTs. |
+| Move ML API to Render private service (paid tier) | M | Free tier can't hide the ML endpoint from the public internet. CORS lock + Flask headers are mitigations; a private service is the fix. |
 | Fix Render ML deployment (tensorflow-cpu) | S | ML service is currently undeployable on free tier — all production risk scores are degraded |
-| Add server-side auth guard to `/api/simulate/:id` | XS | Any HTTP client can trigger a simulated runaway; currently only frontend-guarded |
+| ~~Add server-side auth guard to `/api/simulate/:id`~~ **DONE v1.2.0** — `server.js:52` `verifyToken, adminOnly` | — | See `docs/SECURITY_AUDIT.md` row #7 |
 | Test SocketContext ML-down transitions | S | Frontend banner is the operator's only visual indicator that scores are fabricated |
 
 ---
@@ -52,8 +54,11 @@ references:
 |---|---|---|
 | Fix `risk_engine.py` top-level model load | XS | Crashes with `FileNotFoundError` if run standalone without LFS objects pulled |
 | Delete `lstm_best.h5` duplicate | XS | 460 KB wasted in Git LFS |
-| Add CSP headers at Render/nginx level | S | Mitigates localStorage JWT XSS risk (ADR-003) |
+| ~~Add CSP headers at Render/nginx level~~ **PARTIAL v1.2.0** — `helmet()` on Express + Flask `@app.after_request` headers (CSP itself still off) | S | Mitigates localStorage JWT XSS risk (ADR-003) |
 | Upgrade Render plan for ML service | L | Removes the TF OOM blocker without changing requirements.txt |
+| Migrate off `react-scripts` (Vite or eject) — clears 13 HIGH transitive dev-dep vulns | M | See `context/open_work.md` Security GAP #3 |
+| Move `pip-audit` into a Linux CI job | XS | See `context/open_work.md` Security GAP #4 |
+| Add `express-rate-limit` on `/api/*` | XS | Belt-and-braces over per-reactor SMS cooldown; deferred from v1.2.0 |
 
 ---
 
