@@ -6,9 +6,18 @@ function Sidebar() {
   const location = useLocation();
   const { alerts, connected } = useSocket();
 
-  const user = JSON.parse(localStorage.getItem("thermalai_user") || "{}");
-  const plant = JSON.parse(localStorage.getItem("thermalai_plant") || "null");
+  function safeParse(key, fallback) {
+    const raw = localStorage.getItem(key);
+    if (!raw || raw === "undefined") return fallback;
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return fallback;
+    }
+  }
 
+  const user = safeParse("thermalai_user", {});
+  const plant = safeParse("thermalai_plant", null);
   const unreadCritical = alerts.filter(
     (a) => a.alert_type === "CRITICAL",
   ).length;
@@ -30,7 +39,9 @@ function Sidebar() {
     <div className="fixed left-0 top-0 h-full w-64 bg-gray-800 border-r border-gray-700 flex flex-col">
       {/* Logo */}
       <div className="p-6 border-b border-gray-700">
-        <h1 className="text-xl font-bold text-white tracking-tight">ThermalAI</h1>
+        <h1 className="text-xl font-bold text-white tracking-tight">
+          ThermalAI
+        </h1>
         <p className="text-gray-500 text-xs mt-1">Thermal Runaway Prevention</p>
         <div className="flex items-center gap-2 mt-3">
           <div

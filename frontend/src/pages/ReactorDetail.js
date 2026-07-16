@@ -93,25 +93,31 @@ function ReactorDetail() {
           </p>
         </div>
 
-        {/* Admin only simulate button */}
-        {user.role === "admin" && (
-          <button
-            onClick={async () => {
-              try {
-                const response = await fetch(
-                  `${API}/api/simulate/${reactorId}`,
-                  { method: "POST" },
-                );
-                await response.json();
-              } catch {
-                // simulation error handled silently — alert will appear via socket
-              }
-            }}
-            className="bg-red-700 hover:bg-red-600 text-white font-semibold px-5 py-2.5 rounded-lg transition-colors text-sm"
-          >
-            Simulate Runaway
-          </button>
-        )}
+     {/* Admin only simulate button */}
+{user.role === "admin" && (
+  <button
+    onClick={async () => {
+      try {
+        const token = localStorage.getItem("thermalai_token");
+        const response = await fetch(
+          `${API}/api/simulate/${reactorId}`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+        await response.json();
+      } catch {
+        // simulation error handled silently — alert will appear via socket
+      }
+    }}
+    className="bg-red-700 hover:bg-red-600 text-white font-semibold px-5 py-2.5 rounded-lg transition-colors text-sm"
+  >
+    Simulate Runaway
+  </button>
+)}
       </div>
 
       {/* Countdown Timer */}
