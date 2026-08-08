@@ -1,0 +1,42 @@
+{
+  "plant_id": "PLANT_ALPHA",
+  "protocol": "modbus-tcp",
+  "description": "Example Modbus holding-register map for PLANT_ALPHA reactors. Values are scaled to engineering units via value = raw * scale + offset.",
+  "registers": {
+    "temperature": {
+      "address": 0,
+      "scale": 0.1,
+      "offset": 0.0,
+      "units": "degC",
+      "source": "RTD 4-20mA transmitter (raw is 0-1000)"
+    },
+    "pressure": {
+      "address": 2,
+      "scale": 0.01,
+      "offset": 0.0,
+      "units": "bar",
+      "source": "0-10 bar pressure transmitter (raw is 0-1000)"
+    },
+    "reaction_rate": {
+      "address": 4,
+      "scale": 0.001,
+      "offset": 0.0,
+      "units": "mol/L/s",
+      "source": "derived process variable"
+    },
+    "cooling_efficiency": {
+      "address": 6,
+      "scale": 0.1,
+      "offset": 0.0,
+      "units": "percent",
+      "source": "jacket cooling loop (raw is 0-1000)"
+    },
+    "vibration": {
+      "address": 8,
+      "scale": 0.001,
+      "offset": 0.0,
+      "units": "mm/s",
+      "source": "accelerometer (raw is 0-10000)"
+    }
+  }
+}
