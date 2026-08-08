@@ -1,7 +1,15 @@
+import sys
+
 import pandas as pd
 import numpy as np
 import random
 import os
+
+# Windows cp1252 console crashes on emoji in print() — force UTF-8 output.
+try:
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+except (AttributeError, ValueError):
+    pass
 
 np.random.seed(42)
 random.seed(42)

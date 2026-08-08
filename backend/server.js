@@ -12,6 +12,19 @@ const { verifyToken, adminOnly } = require("./middleware/auth");
 
 dotenv.config();
 
+// DNS resilience — this dev machine's sole configured DNS server (an IPv6
+// resolver) intermittently refuses Node's queries while nslookup succeeds,
+// which made the MongoDB SRV lookup fail with querySrv ECONNREFUSED at
+// startup. Append well-known public resolvers as a fallback when they aren't
+// already in the list; harmless on healthy networks, unblocks Atlas here.
+const PUBLIC_DNS = ['8.8.8.8', '8.8.4.4'];
+const dns = require('dns');
+const currentServers = dns.getServers();
+const missing = PUBLIC_DNS.filter((s) => !currentServers.includes(s));
+if (missing.length) {
+  dns.setServers([...currentServers, ...missing]);
+}
+
 const ML_URL = process.env.ML_URL || 'http://localhost:5001';
 const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || 'http://localhost:3000';
 const CORS_ORIGINS = FRONTEND_ORIGIN.split(',').map(s => s.trim()).filter(Boolean);
@@ -176,13 +189,25 @@ io.on("connection", (socket) => {
 const { seedDefaultUsers } = require("./controllers/authController");
 
 if (process.env.NODE_ENV !== 'test') {
-  mongoose
-    .connect(process.env.MONGO_URI)
-    .then(async () => {
+  // Retry the initial connect so a transient Atlas outage (or paused free-tier
+  // cluster) at startup doesn't leave the backend running with a dead DB
+  // connection — which previously surfaced as "users.findOne() buffering timed
+  // out after 10000ms" on login. Mongoose auto-reconnects once connected.
+  const connectWithRetry = async (attempt = 0) => {
+    try {
+      if (mongoose.connection.readyState !== 0) {
+        await mongoose.connection.close();
+      }
+      await mongoose.connect(process.env.MONGO_URI, { serverSelectionTimeoutMS: 15000 });
       logger.info("Connected to MongoDB");
       await seedDefaultUsers();
-    })
-    .catch((err) => logger.error("MongoDB connection error:", err));
+    } catch (err) {
+      logger.error(`MongoDB connection failed (attempt ${attempt + 1}): ${err.message}`);
+      const delay = Math.min(1000 * 2 ** attempt, 30000);
+      setTimeout(() => connectWithRetry(attempt + 1), delay);
+    }
+  };
+  connectWithRetry();
 
   const PORT = process.env.PORT || 5000;
   server.listen(PORT, () => {

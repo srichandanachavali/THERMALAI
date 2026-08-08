@@ -5,6 +5,13 @@ import random
 import requests
 from datetime import datetime
 
+# Windows cp1252 console crashes on emoji in print() — force UTF-8 output.
+try:
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+except (AttributeError, ValueError):
+    pass
+
 # Backend API URL
 BACKEND_URL = os.environ.get('BACKEND_URL', 'http://localhost:5000')
 API_URL = f"{BACKEND_URL}/api/reactors/stream"

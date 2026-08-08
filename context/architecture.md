@@ -110,6 +110,21 @@ All events are broadcast to all connected clients (`io.emit`, not room-scoped).
 | Flask ML API | 5001 | `python app.py` in `ml-model/` |
 | Sensor simulator | — | `python stream_data.py` in `ml-model/` |
 
+## Startup Resilience (server.js)
+
+`server.js` guards against transient Atlas outages and flaky machine DNS:
+
+- **MongoDB connect retry** — the initial `mongoose.connect` is wrapped in
+  `connectWithRetry()` (exponential backoff, capped at 30s). A failed first
+  connect no longer leaves a dead buffered connection (which surfaced as
+  `users.findOne() buffering timed out after 10000ms` on login); it retries
+  until Mongo is reachable, then runs `seedDefaultUsers()`.
+- **DNS fallback** — on machines whose configured DNS resolver intermittently
+  refuses Node's SRV lookups (`querySrv ECONNREFUSED`), the backend appends
+  public resolvers (`8.8.8.8`/`8.8.4.4`) to the Node resolver list at startup
+  via `dns.setServers()` when they aren't already present. This unblocks
+  `mongodb+srv://` Atlas SRV discovery. Harmless on healthy networks.
+
 ## Deployment Target
 
 Platform: **Render.com** (`render.yaml` present in repo root)

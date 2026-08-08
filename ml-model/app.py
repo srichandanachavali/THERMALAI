@@ -45,5 +45,5 @@ app.register_blueprint(maintenance_bp)
 
 
 if __name__ == '__main__':
-    print("🚀 Starting ThermalAI ML API...")
+    print("Starting ThermalAI ML API...")  # ASCII only — emoji crashes Windows cp1252 console
     app.run(host='0.0.0.0', port=service_port(), debug=False)
