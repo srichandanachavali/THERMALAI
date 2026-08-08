@@ -3,6 +3,7 @@ title: ThermalAI — API Contracts
 description: All REST endpoints, request/response shapes, Socket.io events, auth middleware, and ML Flask API contracts
 modules:
   - backend/controllers/reactorController.js
+  - backend/controllers/maintenanceScheduleController.js
   - backend/controllers/alertController.js
   - backend/controllers/authController.js
   - backend/middleware/auth.js

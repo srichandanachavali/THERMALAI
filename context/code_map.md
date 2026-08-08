@@ -50,6 +50,7 @@ frontend/src/App.js  -> MLStatusBanner shown (red banner)
 ### context/api-contracts.md
   - `backend/controllers/alertController.js`
   - `backend/controllers/authController.js`
+  - `backend/controllers/maintenanceScheduleController.js`
   - `backend/controllers/reactorController.js`
   - `backend/middleware/auth.js`
   - `backend/routes/alertRoutes.js`
@@ -119,6 +120,7 @@ frontend/src/App.js  -> MLStatusBanner shown (red banner)
   - `ml-model/routes_maintenance.py`
   - `ml-model/routes_risk.py`
   - `ml-model/routes_simulation.py`
+  - `ml-model/schedule_service.py`
   - `ml-model/simulation/reactor_simulator.py`
   - `ml-model/test.py`
   - `ml-model/train_lstm.py`

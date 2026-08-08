@@ -2,8 +2,22 @@ from flask import Blueprint, request, jsonify
 
 from maintenance import run_maintenance_prediction, buffer_for
 from risk_service import load_models
+from schedule_service import build_schedule
 
 maintenance_bp = Blueprint('maintenance', __name__)
+
+
+@maintenance_bp.route('/maintenance-schedule', methods=['POST'])
+def maintenance_schedule():
+    try:
+        load_models()
+        data = request.get_json() or {}
+        result = build_schedule(data.get('reactor_id'), data.get('history', []) or [])
+        if isinstance(result, dict) and result.get('error'):
+            return jsonify(result), 400
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 @maintenance_bp.route('/predict-maintenance', methods=['POST'])

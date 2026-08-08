@@ -8,6 +8,7 @@ const {
   getExplanation,
   getMaintenancePrediction
 } = require('../controllers/reactorController');
+const { getMaintenanceSchedule } = require('../controllers/maintenanceScheduleController');
 const { verifyToken } = require('../middleware/auth');
 
 router.get('/', verifyToken, getAllReactors);
@@ -15,6 +16,7 @@ router.post('/stream', verifyToken, streamReading);
 router.post('/explain', verifyToken, getExplanation);
 router.get('/:id/history', verifyToken, getReactorHistory);
 router.get('/:id/maintenance', verifyToken, getMaintenancePrediction);
+router.get('/:id/maintenance-schedule', verifyToken, getMaintenanceSchedule);
 router.get('/:id', verifyToken, getReactorById);
 
 module.exports = router;

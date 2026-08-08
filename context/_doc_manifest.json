@@ -1,8 +1,9 @@
 {
   "_comment": "GENERATED -- never hand-edit. Regenerate with scripts/build_doc_manifest.sh",
-  "_generated": "2026-08-08T21:58:39Z",
+  "_generated": "2026-08-08T22:24:23Z",
   "file_to_doc": {
     "backend/controllers/reactorController.js": "context/api-contracts.md",
+    "backend/controllers/maintenanceScheduleController.js": "context/api-contracts.md",
     "backend/controllers/alertController.js": "context/api-contracts.md",
     "backend/controllers/authController.js": "context/api-contracts.md",
     "backend/middleware/auth.js": "context/api-contracts.md",
@@ -62,6 +63,7 @@
     "ml-model/lstm_prepare_data.py": "context/ml-models.md",
     "ml-model/feature_engineering.py": "context/ml-models.md",
     "ml-model/predictive_maintenance.py": "context/ml-models.md",
+    "ml-model/schedule_service.py": "context/ml-models.md",
     "ml-model/validate_data.py": "context/ml-models.md",
     "ml-model/test.py": "context/ml-models.md",
     "ml-model/routes_simulation.py": "context/ml-models.md",
@@ -70,6 +72,7 @@
   "doc_to_files": {
     "context/api-contracts.md": [
       "backend/controllers/reactorController.js",
+      "backend/controllers/maintenanceScheduleController.js",
       "backend/controllers/alertController.js",
       "backend/controllers/authController.js",
       "backend/middleware/auth.js",
@@ -140,6 +143,7 @@
       "ml-model/lstm_prepare_data.py",
       "ml-model/feature_engineering.py",
       "ml-model/predictive_maintenance.py",
+      "ml-model/schedule_service.py",
       "ml-model/validate_data.py",
       "ml-model/test.py",
       "ml-model/routes_simulation.py",

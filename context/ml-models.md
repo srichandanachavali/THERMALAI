@@ -15,6 +15,7 @@ modules:
   - ml-model/lstm_prepare_data.py
   - ml-model/feature_engineering.py
   - ml-model/predictive_maintenance.py
+  - ml-model/schedule_service.py
   - ml-model/validate_data.py
   - ml-model/test.py
   - ml-model/routes_simulation.py
