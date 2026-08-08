@@ -26,3 +26,12 @@ export const resolveAlert = async (id) => {
   const response = await axios.put(`${BASE_URL}/alerts/${id}/resolve`);
   return response.data;
 };
+
+export const simulateRunaway = async (reactorId) => {
+  const token = localStorage.getItem("thermalai_token");
+  const response = await fetch(`${BASE_URL}/simulate/${reactorId}`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response.json();
+};

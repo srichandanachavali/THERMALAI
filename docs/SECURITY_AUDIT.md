@@ -32,7 +32,7 @@
 | 4 | JWT signing secret from env, no fallback | PASS | `backend/middleware/auth.js:11-13` — 500 if `JWT_SECRET` unset; `authController.js:53` — `process.env.JWT_SECRET`, no `\|\| 'secret'` fallback |
 | 5 | JWT expiry set | PASS | `backend/controllers/authController.js:54` — `{ expiresIn: '24h' }` |
 | 6 | Password hashing (bcrypt cost 10) | PASS | `backend/models/User.js:14` — `bcrypt.hash(this.password, 10)`; `comparePassword` on line 17 |
-| 7 | Route auth on every mutating/sensitive endpoint | FIXED | `verifyToken` applied at: `routes/reactorRoutes.js:13-18` (6 routes), `routes/alertRoutes.js:9-10` (2 routes), `routes/plantRoutes.js:39,43` (2 routes), `server.js:52` (`/api/simulate/:id` also `adminOnly`). Public only: `POST /api/auth/login`, `GET /health`, `GET /`. `POST /api/auth/register` is `verifyToken, adminOnly` (`authRoutes.js:7`). |
+| 7 | Route auth on every mutating/sensitive endpoint | FIXED | `verifyToken` applied at: `routes/reactorRoutes.js:13-18` (6 routes), `routes/alertRoutes.js:9-10` (2 routes), `routes/plantRoutes.js:45` (`/:id`), `server.js:52` (`/api/simulate/:id` also `adminOnly`). Public by design: `POST /api/auth/login`, `GET /health`, `GET /`, and `GET /api/plants` (plant list is the pre-login facility picker used by `PlantSelect.js`). `POST /api/auth/register` is `verifyToken, adminOnly` (`authRoutes.js:7`). |
 | 8 | 401 negative-test coverage | FIXED | `backend/tests/security.test.js` — `test.each` covers 11 protected routes: each returns 401 without token. Invalid-token 401 covered. |
 | 9 | 403 role-tier test coverage | FIXED | `backend/tests/security.test.js` — `POST /api/simulate/:id` with operator token → 403; with admin token → 200; `GET /api/reactors` with operator → 200 (allowed) |
 | 10 | Socket.io handshake auth | FIXED | `backend/server.js:34-45` — `io.use((socket, next) => …)` verifies JWT from `socket.handshake.auth.token`; frontend `SocketContext.js:22` sends `auth: { token }`; on `connect_error === 'unauthorized'` frontend clears token and redirects to `/login`. Socket tests: tokenless refused, invalid-token refused, valid token connects. |
@@ -52,38 +52,4 @@
 
 ---
 
-## Verification transcript
-
-Machine outputs (Windows, 2026-07-06):
-
-```
-$ bash scripts/check_doc_sync.sh --audit
-unowned=0 double=0 dead=0
-
-$ cd backend && npm test
-Test Suites: 5 passed, 5 total
-Tests:       40 passed, 40 total
-
-$ cd frontend && npx react-scripts test --watchAll=false
-Test Suites: 4 passed, 4 total
-Tests:       25 passed, 25 total
-
-$ python -m pytest ml-model/tests/ -q
-12 passed, 24 warnings in 16.68s
-
-$ cd backend && npm audit
-found 0 vulnerabilities
-
-$ cd frontend && npm audit --json | jq '.metadata.vulnerabilities'
-crit: 0 high: 13 mod: 6 low: 9   (all high are transitive dev deps via react-scripts)
-```
-
----
-
-## Cross-references
-
-- `docs/SECRET_ROTATION.md` — 5-row checklist for row #3 (all boxes unchecked)
-- `memory/security-baseline.md` — locked baseline pointing to this file
-- `context/open_work.md` — Security GAPs section (rows #3, #18, #21, #22)
-- `context/roadmap.md` — impact-ranked (row #3 is the top item)
-- `CLAUDE.md` §7 NEVER DO — new binding line 7 about `.env` and compromised credentials
+> Machine-output transcript and cross-references moved to `docs/SECURITY_VERIFICATION.md` to keep this audit table compact.

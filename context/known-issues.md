@@ -147,3 +147,85 @@ referenced in production code. It was likely the intermediate output of training
 to `lstm_model.h5`).
 
 **Fix**: Delete `lstm_best.h5` once confirmed. Both files are now tracked via Git LFS.
+
+---
+
+## 9. `console.*` Calls Remain in Backend Controllers
+
+**Status**: Violates CLAUDE.md §4 logger rule
+
+`alertController.js`, `authController.js`, `reactorController.js` still contain
+`console.log` calls. These bypass Winston, so they don't reach `backend/logs/` in
+production.
+
+**Fix**: Replace with `logger.info/warn/error` (from `backend/logger.js`).
+
+---
+
+## 10. `App.test.js` is the Default CRA Placeholder
+
+**Status**: Fails CI on every non-main push
+
+`frontend/src/App.test.js` asserts for `"learn react"` text that doesn't exist.
+
+**Fix**: Delete or replace with a real smoke test.
+
+---
+
+## 11. No LICENSE File
+
+**Status**: Minor repo hygiene
+
+README/badges declare MIT but no `LICENSE` file exists at repo root.
+
+**Fix**: Add MIT `LICENSE`.
+
+---
+
+## 12. `.vscode/settings.json` Committed
+
+**Status**: IDE config should not be tracked
+
+Contains `"claudeCodeChat.permissions.yoloMode": true`.
+
+**Fix**: Add `/.vscode/` to `.gitignore` and remove from tracking.
+
+---
+
+## 13. `backend/Plant.js` is Dead Code
+
+**Status**: Confusing — conflicts with CLAUDE.md models location
+
+Full Mongoose schema never imported or used; plant data is hardcoded in `plantRoutes.js`.
+
+**Fix**: Delete the file.
+
+---
+
+## 14. `ML_URL` Duplicated Constant
+
+**Status**: Drift risk
+
+`server.js` and `reactorController.js` each read `process.env.ML_URL || 'http://localhost:5001'`
+independently.
+
+**Fix**: Centralize in one shared config.
+
+---
+
+## 15. `stream_data.py` Has Uncommitted Working-Tree Changes
+
+**Status**: Check current `git status`
+
+Working tree modifies reactors B, C, E initial states from SAFE to WARNING/CRITICAL.
+
+**Fix**: Commit or revert deliberately.
+
+---
+
+## 16. Render Free-Tier Spin-Down
+
+**Status**: Latency, not a bug
+
+Services sleep after ~15 min idle; cold start takes 30–60 s. ML service (tensorflow-cpu
+removed) now builds in ~45 s.

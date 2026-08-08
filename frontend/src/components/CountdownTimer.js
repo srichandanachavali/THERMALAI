@@ -3,7 +3,7 @@ import React from 'react';
 function CountdownTimer({ reactor }) {
   if (!reactor) return null;
 
-  const { minutes_to_critical, time_message, status, risk_score } = reactor;
+  const { minutes_to_critical, time_message, status } = reactor;
 
   if (status === 'SAFE' || !time_message) {
     return (

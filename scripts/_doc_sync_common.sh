@@ -26,7 +26,7 @@ is_exempt() {
   local filepath="$1"
   # Exempt node_modules, __pycache__, .venv, build, dist
   case "$filepath" in
-    */node_modules/*|*/\__pycache__/*|*/.venv/*|*/build/*|*/dist/*) return 0 ;;
+    */node_modules/*|*/\__pycache__/*|*/.venv/*|*/venv/*|*/build/*|*/dist/*) return 0 ;;
   esac
   # Exempt if under any EXEMPT_DIR
   for exempt in "${EXEMPT_DIRS[@]}"; do
@@ -61,7 +61,7 @@ list_arch_files() {
       is_exempt "$rel" && continue
       echo "$rel"
     done < <(find "$abs_dir" \
-      \( -name "node_modules" -o -name "__pycache__" -o -name ".venv" -o -name "build" -o -name "dist" \) -prune \
+      \( -name "node_modules" -o -name "__pycache__" -o -name ".venv" -o -name "venv" -o -name "build" -o -name "dist" \) -prune \
       -o -type f \( -name "*.js" -o -name "*.py" \) -print0)
   done | sort -u
 }

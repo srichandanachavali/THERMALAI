@@ -48,6 +48,15 @@ Before opening a PR to `develop`:
 - [ ] Backend changes use CommonJS (`require`/`module.exports`) — no `import`
 - [ ] Frontend changes use ES modules (`import`/`export`) — no `require`
 - [ ] New backend log statements use `logger.*` not `console.*`
+- [ ] No staged file exceeds ~8,000 characters (~2,000 tokens) — enforced by the pre-commit hook; split oversized files by responsibility/topic instead
+
+## File-Size Guardrail
+
+Every source/config/doc file must stay under **~8,000 characters (~2,000 tokens)**.
+The pre-commit hook blocks any staged file over this limit (lockfiles, minified/bundled
+output, and generated build dirs are exempt). If a file grows too large, split it by
+responsibility (code) or topic (docs) and link the parts from an index — the same
+pattern as `context/` and `docs/methodology/`.
 
 ## Code Style
 

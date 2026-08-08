@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 
 const API =
@@ -9,13 +9,7 @@ function ExplainPanel({ reactor }) {
   const [explanation, setExplanation] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (reactor && reactor.risk_score > 0) {
-      fetchExplanation();
-    }
-  }, [reactor?.risk_score]);
-
-  const fetchExplanation = async () => {
+  const fetchExplanation = useCallback(async () => {
     setLoading(true);
     try {
       const response = await axios.post(
@@ -33,7 +27,13 @@ function ExplainPanel({ reactor }) {
       console.log("Explanation error:", err);
     }
     setLoading(false);
-  };
+  }, [reactor]);
+
+  useEffect(() => {
+    if (reactor && reactor.risk_score > 0) {
+      fetchExplanation();
+    }
+  }, [reactor, fetchExplanation]);
 
   if (loading) {
     return (

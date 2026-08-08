@@ -73,12 +73,18 @@ describe('Anonymous requests are rejected with 401', () => {
     ['GET',  '/api/reactors/A/maintenance'],
     ['GET',  '/api/alerts'],
     ['PUT',  '/api/alerts/abc123/resolve'],
-    ['GET',  '/api/plants'],
     ['GET',  '/api/plants/PLANT_ALPHA'],
   ])('%s %s without token → 401', async (method, path) => {
     const res = await request(app)[method.toLowerCase()](path).send({});
     expect(res.status).toBe(401);
     expect(res.body.error).toMatch(/token/i);
+  });
+
+  // GET /api/plants (the list) is intentionally PUBLIC — PlantSelect.js uses it
+  // to let users pick a facility before logging in. Single-plant lookup stays protected.
+  test('GET /api/plants without token → 200 (public landing list)', async () => {
+    const res = await request(app).get('/api/plants').send({});
+    expect(res.status).toBe(200);
   });
 
   test('POST /api/simulate/:id with an invalid token → 401', async () => {

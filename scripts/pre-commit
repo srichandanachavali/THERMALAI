@@ -34,6 +34,26 @@ for f in $(git diff --cached --name-only | grep '^backend/.*\.js$'); do
   fi
 done
 
+# 4. File-size guardrail — block staged files over 8,000 chars (~2,000 tokens)
+# Excludes lockfiles, minified/bundled output, and generated build dirs.
+SIZE_LIMIT=8000
+for f in $(git diff --cached --name-only); do
+  # Skip deletions and files not on disk
+  [ -f "$f" ] || continue
+  # Skip lockfiles / minified / maps / generated build output
+  case "$f" in
+    *package-lock.json|*yarn.lock|*pnpm-lock.yaml|*Gemfile.lock|*.min.js|*.map)
+      continue ;;
+    node_modules/*|dist/*|build/*|coverage/*|ml-model/venv/*|.venv/*)
+      continue ;;
+  esac
+  SIZE=$(wc -c < "$f" 2>/dev/null || echo 0)
+  if [ "$SIZE" -gt "$SIZE_LIMIT" ]; then
+    echo "❌ $f is ${SIZE} bytes (>${SIZE_LIMIT}). Split it to keep every file under ~2,000 tokens."
+    FAILED=1
+  fi
+done
+
 if [ "$FAILED" = "1" ]; then
   echo ""
   echo "Fix the errors above, then re-stage and commit."
@@ -41,7 +61,7 @@ if [ "$FAILED" = "1" ]; then
   exit 1
 fi
 
-# 4. Doc-sync gate — check ownership contract (respects SKIP_DOC_SYNC=1)
+# 5. Doc-sync gate — check ownership contract (respects SKIP_DOC_SYNC=1)
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 if [ -x "$REPO_ROOT/scripts/check_doc_sync.sh" ]; then
   bash "$REPO_ROOT/scripts/check_doc_sync.sh" --precommit || exit 1

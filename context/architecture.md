@@ -122,3 +122,19 @@ Platform: **Render.com** (`render.yaml` present in repo root)
 
 Environment variables are set in Render dashboard (never committed). See
 `backend/.env.example` and `frontend/.env.example` for the full list.
+
+## CI/CD
+
+- `.github/workflows/ci.yml` — runs on every push except `main`; 3 parallel jobs
+  (backend-test, frontend-test, ml-test).
+- `.github/workflows/deploy.yml` — runs on push to `main`; same 3 test jobs → deploy
+  job → `curl RENDER_DEPLOY_HOOK_URL`; failure posts a commit comment.
+- Deploy job requires GitHub environment `production` and secret `RENDER_DEPLOY_HOOK_URL`.
+
+## Docker
+
+`docker-compose up --build` starts all 4 containers: `thermalai-ml` (5001),
+`thermalai-backend` (5000), `thermalai-frontend` (3000→80), `thermalai-simulator`.
+Backend waits for the ML healthcheck before starting; the simulator waits for the
+backend healthcheck. Backend logs mount to a named volume `backend-logs`, and it reads
+`./backend/.env` via `env_file`.

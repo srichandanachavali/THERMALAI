@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 
 const API =
@@ -9,13 +9,7 @@ function MaintenancePanel({ reactor }) {
   const [maintenance, setMaintenance] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (reactor && reactor.reactor_id) {
-      fetchMaintenance();
-    }
-  }, [reactor?.reactor_id, reactor?.cooling_efficiency]);
-
-  const fetchMaintenance = async () => {
+  const fetchMaintenance = useCallback(async () => {
     setLoading(true);
     try {
       const response = await axios.get(
@@ -28,7 +22,13 @@ function MaintenancePanel({ reactor }) {
       console.log('Maintenance fetch error:', err);
     }
     setLoading(false);
-  };
+  }, [reactor]);
+
+  useEffect(() => {
+    if (reactor && reactor.reactor_id) {
+      fetchMaintenance();
+    }
+  }, [reactor, fetchMaintenance]);
 
   const getHealthColor = (health) => {
     if (health >= 80) return 'text-green-400';

@@ -1,48 +1,33 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useSocket } from "../context/SocketContext";
-import { getReactorHistory } from "../services/api";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  Legend,
-} from "recharts";
+import MetricLineChart from "../components/MetricLineChart";
+import ReactorSelector from "../components/ReactorSelector";
+import CurrentStatusCard from "../components/CurrentStatusCard";
+import useReactorHistory from "../hooks/useReactorHistory";
+
+// Module-scope so the hook's format reference is stable across renders.
+const formatHistory = (d, i) => ({
+  ...d,
+  time: new Date(d.timestamp).toLocaleTimeString(),
+  index: i,
+});
 
 function Analytics() {
   const { id } = useParams();
   const { reactors } = useSocket();
-  const [history, setHistory] = useState([]);
   const [selectedReactor, setSelectedReactor] = useState(id || "A");
 
   useEffect(() => {
     if (id) setSelectedReactor(id);
   }, [id]);
 
-  useEffect(() => {
-    const fetchHistory = async () => {
-      try {
-        const data = await getReactorHistory(selectedReactor);
-        const formatted = data.reverse().map((d, i) => ({
-          ...d,
-          time: new Date(d.timestamp).toLocaleTimeString(),
-          index: i,
-        }));
-        setHistory(formatted);
-      } catch (err) {
-        console.log("History not available");
-      }
-    };
-    fetchHistory();
-  }, [selectedReactor]);
+  const { history } = useReactorHistory(selectedReactor, {
+    format: formatHistory,
+  });
 
   const reactorIds = ["A", "B", "C", "D", "E"];
+  const reactor = reactors.find((r) => r.reactor_id === selectedReactor);
 
   return (
     <div>
@@ -56,72 +41,15 @@ function Analytics() {
         </div>
 
         {/* Reactor Selector */}
-        <div className="flex gap-2">
-          {reactorIds.map((rid) => (
-            <button
-              key={rid}
-              onClick={() => setSelectedReactor(rid)}
-              className={`px-4 py-2 rounded-lg font-bold transition-all ${
-                selectedReactor === rid
-                  ? "bg-green-500 text-white"
-                  : "bg-gray-700 text-gray-400 hover:bg-gray-600"
-              }`}
-            >
-              {rid}
-            </button>
-          ))}
-        </div>
+        <ReactorSelector
+          reactorIds={reactorIds}
+          selected={selectedReactor}
+          onSelect={setSelectedReactor}
+        />
       </div>
 
       {/* Current Status */}
-      {reactors.find((r) => r.reactor_id === selectedReactor) && (
-        <div className="bg-gray-800 rounded-lg p-6 mb-6">
-          <h3 className="text-white font-semibold mb-3">
-            Reactor {selectedReactor} — Current Status
-          </h3>
-          <div className="grid grid-cols-4 gap-4">
-            {(() => {
-              const r = reactors.find((r) => r.reactor_id === selectedReactor);
-              return (
-                <>
-                  <div className="text-center">
-                    <p className="text-gray-400 text-sm">Temperature</p>
-                    <p className="text-orange-400 text-2xl font-bold">
-                      {r.temperature}°C
-                    </p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-gray-400 text-sm">Pressure</p>
-                    <p className="text-blue-400 text-2xl font-bold">
-                      {r.pressure} bar
-                    </p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-gray-400 text-sm">Risk Score</p>
-                    <p className="text-red-400 text-2xl font-bold">
-                      {r.risk_score}%
-                    </p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-gray-400 text-sm">Status</p>
-                    <p
-                      className={`text-2xl font-bold ${
-                        r.status === "SAFE"
-                          ? "text-green-400"
-                          : r.status === "WARNING"
-                            ? "text-yellow-400"
-                            : "text-red-400"
-                      }`}
-                    >
-                      {r.status}
-                    </p>
-                  </div>
-                </>
-              );
-            })()}
-          </div>
-        </div>
-      )}
+      <CurrentStatusCard reactor={reactor} />
 
       {/* Charts */}
       {history.length === 0 ? (
@@ -133,125 +61,40 @@ function Analytics() {
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-6">
-          {/* Temperature History */}
-          <div className="bg-gray-800 rounded-lg p-6">
-            <h3 className="text-white font-semibold mb-4">
-              🌡️ Temperature History
-            </h3>
-            <ResponsiveContainer width="100%" height={200}>
-              <LineChart data={history}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                <XAxis dataKey="time" stroke="#6b7280" tick={{ fontSize: 9 }} />
-                <YAxis stroke="#6b7280" tick={{ fontSize: 10 }} />
-                <Tooltip
-                  contentStyle={{
-                    background: "#1f2937",
-                    border: "none",
-                    color: "white",
-                  }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="temperature"
-                  stroke="#f97316"
-                  strokeWidth={2}
-                  dot={false}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* Risk Score History */}
-          <div className="bg-gray-800 rounded-lg p-6">
-            <h3 className="text-white font-semibold mb-4">
-              🤖 AI Risk Score History
-            </h3>
-            <ResponsiveContainer width="100%" height={200}>
-              <LineChart data={history}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                <XAxis dataKey="time" stroke="#6b7280" tick={{ fontSize: 9 }} />
-                <YAxis
-                  stroke="#6b7280"
-                  tick={{ fontSize: 10 }}
-                  domain={[0, 100]}
-                />
-                <Tooltip
-                  contentStyle={{
-                    background: "#1f2937",
-                    border: "none",
-                    color: "white",
-                  }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="risk_score"
-                  stroke="#ef4444"
-                  strokeWidth={2}
-                  dot={false}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* Pressure History */}
-          <div className="bg-gray-800 rounded-lg p-6">
-            <h3 className="text-white font-semibold mb-4">
-              💨 Pressure History
-            </h3>
-            <ResponsiveContainer width="100%" height={200}>
-              <LineChart data={history}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                <XAxis dataKey="time" stroke="#6b7280" tick={{ fontSize: 9 }} />
-                <YAxis stroke="#6b7280" tick={{ fontSize: 10 }} />
-                <Tooltip
-                  contentStyle={{
-                    background: "#1f2937",
-                    border: "none",
-                    color: "white",
-                  }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="pressure"
-                  stroke="#60a5fa"
-                  strokeWidth={2}
-                  dot={false}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* Cooling Efficiency History */}
-          <div className="bg-gray-800 rounded-lg p-6">
-            <h3 className="text-white font-semibold mb-4">
-              ❄️ Cooling Efficiency History
-            </h3>
-            <ResponsiveContainer width="100%" height={200}>
-              <LineChart data={history}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                <XAxis dataKey="time" stroke="#6b7280" tick={{ fontSize: 9 }} />
-                <YAxis
-                  stroke="#6b7280"
-                  tick={{ fontSize: 10 }}
-                  domain={[0, 1]}
-                />
-                <Tooltip
-                  contentStyle={{
-                    background: "#1f2937",
-                    border: "none",
-                    color: "white",
-                  }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="cooling_efficiency"
-                  stroke="#22c55e"
-                  strokeWidth={2}
-                  dot={false}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
+          <MetricLineChart
+            data={history}
+            dataKey="temperature"
+            stroke="#f97316"
+            title="🌡️ Temperature History"
+            titleClassName="text-white font-semibold mb-4"
+            tickFontSize={9}
+          />
+          <MetricLineChart
+            data={history}
+            dataKey="risk_score"
+            stroke="#ef4444"
+            title="🤖 AI Risk Score History"
+            titleClassName="text-white font-semibold mb-4"
+            tickFontSize={9}
+            domain={[0, 100]}
+          />
+          <MetricLineChart
+            data={history}
+            dataKey="pressure"
+            stroke="#60a5fa"
+            title="💨 Pressure History"
+            titleClassName="text-white font-semibold mb-4"
+            tickFontSize={9}
+          />
+          <MetricLineChart
+            data={history}
+            dataKey="cooling_efficiency"
+            stroke="#22c55e"
+            title="❄️ Cooling Efficiency History"
+            titleClassName="text-white font-semibold mb-4"
+            tickFontSize={9}
+            domain={[0, 1]}
+          />
         </div>
       )}
     </div>

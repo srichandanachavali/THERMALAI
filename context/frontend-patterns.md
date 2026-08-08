@@ -22,6 +22,14 @@ modules:
   - frontend/src/components/AlertFeed.js
   - frontend/src/components/Sidebar.js
   - frontend/src/components/ReactorHeatmap.js
+  - frontend/src/components/MetricLineChart.js
+  - frontend/src/components/ReactorStats.js
+  - frontend/src/components/PlantCard.js
+  - frontend/src/components/EnterpriseSummary.js
+  - frontend/src/components/ReactorSelector.js
+  - frontend/src/components/CurrentStatusCard.js
+  - frontend/src/hooks/useReactorHistory.js
+  - frontend/src/utils/plantStatus.js
   - frontend/src/reportWebVitals.js
 tests:
   - frontend/src/App.test.js

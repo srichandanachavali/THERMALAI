@@ -7,28 +7,27 @@
 
 ## 1. What This Is
 
-**ThermalAI** predicts thermal runaway in industrial reactors 10–20 minutes early using an RF+LSTM ensemble.
+**ThermalAI** predicts thermal runaway in industrial reactors 10–20 min early via an RF+LSTM ensemble.
 
-**Stack:** React 19 → Node/Express 5 (port 5000) → Flask ML API (port 5001) → MongoDB Atlas  
-**Real-time:** Socket.io broadcasts every reactor update to all dashboards  
-**Auth:** JWT (24h expiry) stored in localStorage, role-based (admin / operator)  
+**Stack:** React 19 → Express 5 (5000) → Flask ML (5001) → MongoDB Atlas  
+**Auth:** JWT (24h, localStorage), roles: admin / operator  
+**Real-time:** Socket.io broadcasts every reactor update  
 **Logging:** Winston + daily-rotate-file (`backend/logger.js`)  
-**Containers:** Docker + docker-compose (all 3 services, healthchecks, volumes)  
-**Deploy:** Render.com — frontend (static), backend (Node), ml-api (Python)
+**Deploy:** Docker-compose (3 svcs, healthchecks); Render.com — frontend, backend, ml-api
 
 ---
 
 ## 2. Where the Brain Lives
 
-Read these files in order when starting a session. Each answers a specific question.
+Read in order each session; each file answers a specific question.
 
 | File | Answers |
 |---|---|
-| `context/MEMORY.md` | Index of all context docs — what each one covers |
-| `context/code_map.md` | Full flow spine (sensor → ML → MongoDB → socket → UI) + per-area ownership tree |
-| `context/tunables.md` | Every operator knob: weights, thresholds, timeouts, TTL, JWT expiry — all with real values |
+| `context/MEMORY.md` | Index of all context docs |
+| `context/code_map.md` | Full flow spine + per-area ownership tree |
+| `context/tunables.md` | Every operator knob — weights, thresholds, TTL, JWT expiry (real values) |
 | `memory/MEMORY.md` | Locked decisions, incident records, learned feedback |
-| `docs/design/ensemble_locked_spec.md` | Citable clauses C1–C8 for the RF+LSTM ensemble — change process required |
+| `docs/design/ensemble_locked_spec.md` | Citable clauses C1–C8 for the ensemble — change process required |
 
 **Domain-specific context docs** (load when task touches that area):
 
@@ -39,7 +38,7 @@ Read these files in order when starting a session. Each answers a specific quest
 | Frontend pages, components, SocketContext | `context/frontend-patterns.md` |
 | MongoDB schemas, indexes, JWT payload | `context/data-models.md` |
 | Service topology, data flow, watchdog | `context/architecture.md` |
-| Setup, start order, test commands, DB queries | `context/dev-commands.md` |
+| Setup, start order, test commands | `context/dev-commands.md` |
 | Deployment blockers, security gaps, known bugs | `context/known-issues.md` |
 
 ---
@@ -58,29 +57,26 @@ Read these files in order when starting a session. Each answers a specific quest
 | Frontend | Red `MLStatusBanner` shown on every protected page when `mlStatus === 'down'` |
 | Alerts | Must not auto-resolve during an ML-down period |
 
-**Burn case 2026-07-04:** Render ML deploy failed (TensorFlow ~500 MB OOM on free tier).
-Backend silently fell back to `risk_score: 0 / status: SAFE` for every reactor — a plant
-operator would have seen "all reactors safe" while the prediction engine was completely dead.
+**Burn case 2026-07-04:** Render ML deploy OOM'd; backend silently returned
+`risk_score: 0 / SAFE` for every reactor — operators would have seen "all safe"
+while the prediction engine was dead.
 
-**Implementation:**
-- `backend/controllers/reactorController.js` — sets `ml_degraded: true` when both RF and LSTM calls fail
-- `frontend/src/App.js` — `MLStatusBanner` reads `mlStatus` from `SocketContext`
-- `backend/server.js` — `checkMLHealth()` emits `system_alert` and saves MongoDB alert on ML-down
-- Test: `backend/tests/watchdog.test.js` — asserts `ml_degraded` flag on degraded readings
+**Implementation:** `reactorController.js` sets `ml_degraded`; `App.js` renders `MLStatusBanner`;
+`server.js` `checkMLHealth()` emits `system_alert` + saves a MongoDB alert. Test: `watchdog.test.js`.
 
 ---
 
 ### Conventions (Always Apply)
 
-1. **Backend uses CommonJS** (`require`/`module.exports`) — never `import/export` in backend.
-2. **Frontend uses ES modules** (`import/export`) — never `require` in frontend.
-3. **Ports are fixed:** ML Flask = 5001, Express backend = 5000, React = 3000. Never mix.
-4. **JWT secret** is `JWT_SECRET` in `backend/.env`. Never hardcode.
-5. **MongoDB models** live in `backend/models/`: Reactor, Alert, User.
-6. **Logging:** use `logger.info/warn/error` — never `console.log/warn/error` in backend.
-7. **ML ensemble formula is locked** — see `docs/design/ensemble_locked_spec.md` clauses C1–C8.
-8. **Socket.io event names** (`reactor_update`, `new_alert`, `system_alert`) must match exactly in
-   both backend (emitter) and frontend (listener). See `context/tunables.md`.
+1. **Backend: CommonJS** (`require`/`module.exports`) — never `import`/`export`.
+2. **Frontend: ES modules** (`import`/`export`) — never `require`.
+3. **Ports fixed:** ML = 5001, Express = 5000, React = 3000. Never mix.
+4. **JWT secret** lives in `backend/.env` as `JWT_SECRET`. Never hardcode.
+5. **MongoDB models** in `backend/models/`: Reactor, Alert, User.
+6. **Logging:** use `logger.info/warn/error` — never `console.*` in backend.
+7. **ML ensemble formula is locked** — see `ensemble_locked_spec.md` clauses C1–C8.
+8. **Socket.io events** (`reactor_update`, `new_alert`, `system_alert`) must match exactly
+   between backend emitter and frontend listener. See `context/tunables.md`.
 
 ---
 
@@ -88,40 +84,17 @@ operator would have seen "all reactors safe" while the prediction engine was com
 
 ### Doc-Sync (binding)
 
-Every tracked source file under `backend/`, `frontend/src/`, `ml-model/` must be owned by
-exactly one context doc in `context/`. The ownership contract is enforced by:
-
-- `context/_doc_manifest.json` — authoritative file→doc map (GENERATED, never hand-edit)
-- `scripts/build_doc_manifest.sh` — sole writer of manifest and `context/code_map.md`
-- `scripts/check_doc_sync.sh --audit` — prints `unowned=N double=N dead=N`
-- `scripts/check_doc_sync.sh --precommit` — blocks commits that violate the contract
-- Override (emergencies only): `SKIP_DOC_SYNC=1 git commit ...`
-
-**When you change a source file**, update its owning context doc, then regenerate:
+Every tracked source file under `backend/`, `frontend/src/`, `ml-model/` is owned by exactly
+one `context/` doc. Enforced by `_doc_manifest.json` (GENERATED) + `scripts/build_doc_manifest.sh`
++ `scripts/check_doc_sync.sh --audit`/`--precommit`. Override: `SKIP_DOC_SYNC=1`.
+After touching a source file, update its owning doc and regenerate:
 ```bash
 bash scripts/build_doc_manifest.sh
 git add context/_doc_manifest.json context/code_map.md
 ```
 
-### Versioning
-
-This project follows **SemVer**: `MAJOR.MINOR.PATCH` in `VERSION`.
-- PATCH: bug fix, doc update, test addition
-- MINOR: new feature, new context doc, methodology retrofit
-- MAJOR: breaking API or schema change
-
-### Test Hygiene
-
-- Run `scripts/check_doc_sync.sh --audit` before running test suites (a clean audit means
-  the manifest is current and files are owned — catch doc drift before test drift).
-- Never skip a failing test without a corresponding issue in `context/open_work.md`.
-- Do not commit commented-out tests.
-
-### Coverage Delta
-
-Before adding a new feature, check `context/open_work.md` for uncovered modules. If your
-change touches a module with no test, add at least one meaningful test. The threshold is not
-100% coverage — it is "no completely untested module in the critical safety path."
+**Versioning** (SemVer in `VERSION`), **test hygiene**, and **coverage-delta** rules:
+`docs/methodology/conventions.md`.
 
 ---
 
@@ -129,15 +102,16 @@ change touches a module with no test, add at least one meaningful test. The thre
 
 ### Stop Hook (Claude Code)
 After every turn, `.claude/settings.json` runs `scripts/check_doc_sync.sh --warn` —
-non-blocking; prints nag if architectural code changed without a doc update, plus
-uncommitted-changes reminder.
+non-blocking nag if architectural code changed without a doc update.
 
 ### Pre-commit Hook
 `scripts/pre-commit` (installed at `.git/hooks/pre-commit`) enforces:
 1. No direct commits to `main`
 2. No `import` statements in backend JS (CommonJS rule)
 3. No `console.*` in backend JS (logger rule)
-4. Doc-sync gate via `scripts/check_doc_sync.sh --precommit`
+4. File-size guardrail — no staged file over ~8,000 chars (~2,000 tokens), excluding
+   lockfiles/minified/build.
+5. Doc-sync gate via `scripts/check_doc_sync.sh --precommit`
 
 **Per-machine install step (required on every fresh clone):**
 ```bash
@@ -156,25 +130,22 @@ bash scripts/install_hooks.sh
 | `fix/*` | Hotfixes | `main` + `develop` |
 | `release/*` | Release candidates | `main` |
 
-`main` is protected: requires 1 PR review, CI must pass, squash merge only.
+`main` is protected: 1 PR review, CI green, squash merge only.
 
-**Tag ritual** (see `docs/release_workflow.md` for full procedure):
+**Tag ritual** (full procedure: `docs/release_workflow.md`):
 ```bash
-# 1. Update VERSION
-# 2. Update CHANGELOG.md
-# 3. Regenerate manifest LAST — if you tag before regenerating, manifest in the
-#    tagged commit is stale and the gate fires on the next commit
+# 1. Update VERSION  2. Update CHANGELOG.md
+# 3. Regenerate manifest LAST — tagging first makes the gate fire on next commit
 bash scripts/build_doc_manifest.sh
 git add VERSION CHANGELOG.md context/_doc_manifest.json context/code_map.md
 git commit -m "chore: release vX.Y.Z"
 git tag vX.Y.Z
 ```
 
-**Environment setup** (first time or after clone):
+**Environment setup** (first time / after clone):
 ```bash
-cp backend/.env.example  backend/.env   # fill in MONGO_URI, JWT_SECRET, Twilio, Gmail
+cp backend/.env.example  backend/.env   # fill MONGO_URI, JWT_SECRET, Twilio, Gmail
 cp frontend/.env.example frontend/.env
-
 bash scripts/install_hooks.sh           # install pre-commit hook
 bash scripts/setup.sh                   # install Node + Python deps
 ```
@@ -187,32 +158,29 @@ These are tied directly to the domain risk: **ThermalAI sends real SMS/email ale
 plant operators and writes to the production MongoDB — a false or suppressed alert has
 real-world safety cost.**
 
-1. **Never send test SMS/email through live Twilio/Nodemailer credentials.**
-   Use `NODE_ENV=test` which mocks both (see `backend/tests/` for the mock pattern).
+1. **Never send test SMS/email via live Twilio/Nodemailer credentials.**
+   Use `NODE_ENV=test` (mocks both — see `backend/tests/`).
 
 2. **Never write test data to the production MongoDB.**
-   Set `MONGO_URI` to a test/local database in `.env` when developing. The test suite
-   mocks Mongoose models — it never touches the real DB.
+   Point `MONGO_URI` at a test/local DB in `.env` when developing; the test suite
+   mocks Mongoose models and never touches the real DB.
 
-3. **Never mark a degraded reading as SAFE without the `ml_degraded` flag.**
-   When both ML calls fail, `risk_score` arithmetic defaults to 0 (SAFE). This must
-   always be accompanied by `ml_degraded: true` on the enriched reading. See the
-   NO FALSE-SAFE FALLBACKS standing rule above.
+3. **Never mark a degraded reading as SAFE without `ml_degraded: true`.**
+   When both ML calls fail, `risk_score` defaults to 0 (SAFE); the enriched reading
+   must always carry `ml_degraded: true`. See the standing rule above.
 
 4. **Never fast-forward production to an untagged commit.**
-   Every `main` commit that ships must have a corresponding `vX.Y.Z` tag. The deploy
-   workflow in `.github/workflows/deploy.yml` triggers on push to `main` — if you push
-   without tagging, the release is untracked. Always complete the tag ritual.
+   Every `main` commit must have a `vX.Y.Z` tag — the deploy workflow triggers on
+   push to `main`, so an untagged push ships untracked. Complete the tag ritual.
 
 5. **Never commit directly to `main`.**
-   The pre-commit hook blocks this. Use `feature/*` → `develop` → PR to `main`.
+   The pre-commit hook blocks it. Use `feature/*` → `develop` → PR to `main`.
 
-6. **Never hand-edit `context/_doc_manifest.json` or `context/code_map.md`.**
-   These are GENERATED files. The pre-commit hook will block you if the manifest is stale.
-   Regenerate with `bash scripts/build_doc_manifest.sh`.
+6. **Never hand-edit `context/_doc_manifest.json` / `code_map.md`.**
+   GENERATED files; the hook blocks stale manifests. Regenerate with
+   `bash scripts/build_doc_manifest.sh`.
 
 7. **Never commit `.env`. All four historical secrets are compromised until rotated.**
-   The `.gitignore` already blocks `.env` / `.env.*`. If you catch yourself about to
-   `git add backend/.env`, stop. The 2026-05-09/10 leak (commits `8c88d92`, `674dd66`,
-   `650db89`, `158d0f6`) has NOT been remediated — see `docs/SECRET_ROTATION.md` for
-   the outstanding checklist. Full security posture: `docs/SECURITY_AUDIT.md`.
+   `.gitignore` blocks `.env` / `.env.*`. The 2026-05-09/10 leak (`8c88d92`, `674dd66`,
+   `650db89`, `158d0f6`) is NOT remediated — see `docs/SECRET_ROTATION.md`. Full
+   posture: `docs/SECURITY_AUDIT.md`.

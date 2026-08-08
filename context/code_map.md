@@ -78,14 +78,21 @@ frontend/src/App.js  -> MLStatusBanner shown (red banner)
   - `frontend/src/components/AIComparison.js`
   - `frontend/src/components/AlertFeed.js`
   - `frontend/src/components/CountdownTimer.js`
+  - `frontend/src/components/CurrentStatusCard.js`
+  - `frontend/src/components/EnterpriseSummary.js`
   - `frontend/src/components/ExplainPanel.js`
   - `frontend/src/components/MaintenancePanel.js`
   - `frontend/src/components/MetricCard.js`
+  - `frontend/src/components/MetricLineChart.js`
+  - `frontend/src/components/PlantCard.js`
   - `frontend/src/components/PredictionTimeline.js`
   - `frontend/src/components/ReactorHeatmap.js`
+  - `frontend/src/components/ReactorSelector.js`
+  - `frontend/src/components/ReactorStats.js`
   - `frontend/src/components/RiskGauge.js`
   - `frontend/src/components/Sidebar.js`
   - `frontend/src/config.js`
+  - `frontend/src/hooks/useReactorHistory.js`
   - `frontend/src/index.js`
   - `frontend/src/pages/Alerts.js`
   - `frontend/src/pages/Analytics.js`
@@ -95,16 +102,23 @@ frontend/src/App.js  -> MLStatusBanner shown (red banner)
   - `frontend/src/pages/PlantSelect.js`
   - `frontend/src/pages/ReactorDetail.js`
   - `frontend/src/reportWebVitals.js`
+  - `frontend/src/utils/plantStatus.js`
 
 ### context/known-issues.md
   *(no source files -- meta doc)*
 
 ### context/ml-models.md
   - `ml-model/app.py`
+  - `ml-model/config.py`
   - `ml-model/feature_engineering.py`
   - `ml-model/lstm_prepare_data.py`
+  - `ml-model/maintenance.py`
   - `ml-model/predictive_maintenance.py`
   - `ml-model/risk_engine.py`
+  - `ml-model/risk_service.py`
+  - `ml-model/routes_maintenance.py`
+  - `ml-model/routes_risk.py`
+  - `ml-model/test.py`
   - `ml-model/train_lstm.py`
   - `ml-model/train_model.py`
   - `ml-model/train_xgboost.py`

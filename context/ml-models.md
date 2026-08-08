@@ -4,6 +4,11 @@ description: RF+LSTM ensemble formula, feature engineering, time-to-critical pro
 modules:
   - ml-model/app.py
   - ml-model/risk_engine.py
+  - ml-model/config.py
+  - ml-model/risk_service.py
+  - ml-model/routes_risk.py
+  - ml-model/routes_maintenance.py
+  - ml-model/maintenance.py
   - ml-model/train_model.py
   - ml-model/train_xgboost.py
   - ml-model/train_lstm.py
@@ -11,6 +16,7 @@ modules:
   - ml-model/feature_engineering.py
   - ml-model/predictive_maintenance.py
   - ml-model/validate_data.py
+  - ml-model/test.py
 tests:
   - ml-model/tests/test_risk_engine.py
 references:
