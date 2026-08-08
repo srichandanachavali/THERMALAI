@@ -118,6 +118,8 @@ frontend/src/App.js  -> MLStatusBanner shown (red banner)
   - `ml-model/risk_service.py`
   - `ml-model/routes_maintenance.py`
   - `ml-model/routes_risk.py`
+  - `ml-model/routes_simulation.py`
+  - `ml-model/simulation/reactor_simulator.py`
   - `ml-model/test.py`
   - `ml-model/train_lstm.py`
   - `ml-model/train_model.py`

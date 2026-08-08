@@ -38,6 +38,9 @@ ORM: Mongoose (CommonJS `require` throughout backend)
 | `temp_rate_of_change` | Number | no | `0` | °C per 2-second cycle |
 | `risk_score` | Number | no | `0` | ensemble score 0–100 |
 | `status` | String (enum) | no | `"SAFE"` | `"SAFE"` \| `"WARNING"` \| `"CRITICAL"` |
+| `predicted_temp` | Number | no | `null` | simulator predicted temperature (°C) |
+| `runaway_risk` | Number | no | `0` | simulator runaway risk 0–100 |
+| `sensor_fault_suspected` | Boolean | no | `false` | sim vs sensor temp deviation > 15°C |
 | `timestamp` | Date | no | `Date.now` | set by backend on save |
 
 **Note**: The enriched reading emitted via `reactor_update` Socket.io also carries

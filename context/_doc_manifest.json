@@ -1,6 +1,6 @@
 {
   "_comment": "GENERATED -- never hand-edit. Regenerate with scripts/build_doc_manifest.sh",
-  "_generated": "2026-08-08T18:49:02Z",
+  "_generated": "2026-08-08T21:27:39Z",
   "file_to_doc": {
     "backend/controllers/reactorController.js": "context/api-contracts.md",
     "backend/controllers/alertController.js": "context/api-contracts.md",
@@ -63,7 +63,9 @@
     "ml-model/feature_engineering.py": "context/ml-models.md",
     "ml-model/predictive_maintenance.py": "context/ml-models.md",
     "ml-model/validate_data.py": "context/ml-models.md",
-    "ml-model/test.py": "context/ml-models.md"
+    "ml-model/test.py": "context/ml-models.md",
+    "ml-model/routes_simulation.py": "context/ml-models.md",
+    "ml-model/simulation/reactor_simulator.py": "context/ml-models.md"
   },
   "doc_to_files": {
     "context/api-contracts.md": [
@@ -139,7 +141,9 @@
       "ml-model/feature_engineering.py",
       "ml-model/predictive_maintenance.py",
       "ml-model/validate_data.py",
-      "ml-model/test.py"
+      "ml-model/test.py",
+      "ml-model/routes_simulation.py",
+      "ml-model/simulation/reactor_simulator.py"
     ],
     "context/open_work.md": [],
     "context/roadmap.md": [],

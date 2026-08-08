@@ -49,6 +49,17 @@ const streamReading = async (req, res) => {
   try {
     const reading = req.body;
 
+    // Independent physics simulation — fires in parallel with the ML calls
+    // (promise is created now, awaited later). Independent cross-check layer.
+    const simulationPromise = axios.post(`${ML_URL}/simulate`, {
+      reactor_id: reading.reactor_id,
+      current_state: reading,
+      reactor_type: reading.reactor_type || 'nitration'
+    }).then(r => r.data).catch(err => {
+      logger.warn('Simulation not available');
+      return null;
+    });
+
     // Random Forest prediction
     let riskResult = { risk_score: 0, status: 'SAFE' };
     let rfFailed = false;
@@ -95,6 +106,7 @@ const streamReading = async (req, res) => {
       logger.warn('Time prediction not available');
     }
 
+    const simResult = await simulationPromise;
     const enrichedReading = {
       ...reading,
       risk_score: ensembleScore,
@@ -107,6 +119,9 @@ const streamReading = async (req, res) => {
       time_message: timeResult.message,
       time_urgency: timeResult.urgency,
       ml_degraded: mlDegraded,
+      predicted_temp: simResult?.predicted_temperature ?? null,
+      runaway_risk: simResult?.runaway_risk_score ?? 0,
+      sensor_fault_suspected: simResult?.sensor_fault_suspected ?? false,
       timestamp: new Date()
     };
 

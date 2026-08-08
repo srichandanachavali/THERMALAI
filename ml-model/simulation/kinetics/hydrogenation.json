@@ -1,0 +1,10 @@
+{
+  "reactor_type": "hydrogenation",
+  "description": "Kinetics for a catalytic hydrogenation reactor. Lower activation energy, slightly higher exotherm, runaway around 120 C.",
+  "activation_energy": 50000,
+  "pre_exponential_factor": 1e6,
+  "heat_of_reaction": 1500000,
+  "heat_transfer_coefficient": 400.0,
+  "cooling_capacity_nominal": 120.0,
+  "runaway_temperature_threshold": 120.0
+}

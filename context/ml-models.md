@@ -17,6 +17,8 @@ modules:
   - ml-model/predictive_maintenance.py
   - ml-model/validate_data.py
   - ml-model/test.py
+  - ml-model/routes_simulation.py
+  - ml-model/simulation/reactor_simulator.py
 tests:
   - ml-model/tests/test_risk_engine.py
 references:

@@ -8,6 +8,9 @@ const ReactorSchema = new mongoose.Schema({
   cooling_efficiency: { type: Number, required: true },
   temp_rate_of_change: { type: Number, default: 0 },
   risk_score: { type: Number, default: 0 },
+  predicted_temp: { type: Number, default: null },
+  runaway_risk: { type: Number, default: 0 },
+  sensor_fault_suspected: { type: Boolean, default: false },
   status: {
     type: String,
     enum: ["SAFE", "WARNING", "CRITICAL"],

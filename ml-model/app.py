@@ -7,6 +7,7 @@ import risk_service
 from config import frontend_origins, service_port
 from routes_risk import risk_bp
 from routes_maintenance import maintenance_bp
+from routes_simulation import simulation_bp
 
 app = Flask(__name__)
 
@@ -42,6 +43,7 @@ def home():
 
 app.register_blueprint(risk_bp)
 app.register_blueprint(maintenance_bp)
+app.register_blueprint(simulation_bp)
 
 
 if __name__ == '__main__':

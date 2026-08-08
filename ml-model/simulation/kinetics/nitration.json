@@ -1,0 +1,10 @@
+{
+  "reactor_type": "nitration",
+  "description": "Kinetics for a mixed-acid aromatic nitration batch reactor. Exothermic, moderate activation energy, runaway around 150 C.",
+  "activation_energy": 70000,
+  "pre_exponential_factor": 1e8,
+  "heat_of_reaction": 1200000,
+  "heat_transfer_coefficient": 500.0,
+  "cooling_capacity_nominal": 100.0,
+  "runaway_temperature_threshold": 150.0
+}
