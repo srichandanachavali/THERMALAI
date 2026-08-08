@@ -147,9 +147,9 @@ Uses `sklearn.linear_model.LinearRegression` for trend slopes (not the RF/LSTM m
 
 ## AI Explainability
 
-`POST /explain` is **rule-based** — it does not call RF or LSTM. It evaluates
-thresholds directly on the raw reading to generate human-readable reasons and
-recommendations:
+`POST /explain` returns **both**:
+1. **Rule-based** reasons/recommendations (thresholds on the raw reading):
+
 
 | Parameter | Threshold levels |
 |---|---|
@@ -157,6 +157,12 @@ recommendations:
 | temp_rate_of_change | > 5 (critical), > 2 (warning) |
 | cooling_efficiency | < 0.30 (critical), < 0.50 (danger), < 0.70 (warning) |
 | pressure | > 8 bar (critical), > 6 bar (elevated), > 4.5 bar (warning) |
+
+2. **SHAP-based `top_drivers`** — `risk_service.shap_top_drivers()` builds the
+   same `config.FEATURES` vector as scoring, runs `shap.TreeExplainer`, and
+   returns the 3 features with the largest |contribution| for the predicted
+   class, plus `explanation_confidence` (high if predicted-class prob > 0.7).
+   `top_drivers` feeds the SMS/email alert content and is stored on alerts.
 
 ## Model Files
 

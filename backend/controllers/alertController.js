@@ -28,9 +28,13 @@ const PLANT_CONTACTS = {
 // Send SMS alert
 const sendSMSAlert = async (alert) => {
   const contact = PLANT_CONTACTS[alert.plant_id] || { phone: process.env.ALERT_PHONE };
+  const topDriver = (alert.top_drivers && alert.top_drivers[0]);
+  const driverLine = topDriver
+    ? ` — driven by: ${topDriver.sensor} ${topDriver.current_value}`
+    : '';
   try {
     await twilioClient.messages.create({
-      body: `🚨 ThermalAI ALERT\nReactor ${alert.reactor_id}: ${alert.alert_type}\nRisk Score: ${alert.risk_score}%\nTemp: ${alert.temperature}°C\nImmediate action required!`,
+      body: `🚨 ThermalAI ALERT\nReactor ${alert.reactor_id}: ${alert.alert_type}\nRisk Score: ${alert.risk_score}%\nTemp: ${alert.temperature}°C\nImmediate action required!${driverLine}`,
       from: process.env.TWILIO_PHONE,
       to: contact.phone,
     });
@@ -78,6 +82,13 @@ const sendEmailAlert = async (alert) => {
               <td style="padding: 10px;">${new Date().toLocaleString()}</td>
             </tr>
           </table>
+          ${(alert.top_drivers && alert.top_drivers.length) ? `
+          <h3 style="color: #aaa; margin-top: 20px;">Why this alert?</h3>
+          <ul style="color: white;">
+            ${alert.top_drivers.map(d =>
+              `<li><strong>${d.sensor.replace(/_/g, ' ')}</strong>: ${d.direction} (${d.contribution}) — current value ${d.current_value}</li>`
+            ).join('')}
+          </ul>` : ''}
           <p style="color: #ff4444; margin-top: 20px;">
             ⚡ Immediate action required — ThermalAI Prevention System
           </p>

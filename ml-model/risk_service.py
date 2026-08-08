@@ -1,5 +1,6 @@
 import pickle
 
+import numpy as np
 import pandas as pd
 
 from config import FEATURES
@@ -7,15 +8,94 @@ from config import FEATURES
 # RF model is lazy-loaded on first request so the app starts instantly.
 # LSTM removed — tensorflow-cpu is too large for free-tier deployment.
 model = None
+explainer = None
 
 
 def load_models():
-    global model
+    global model, explainer
     if model is not None:
         return
     with open('saved-models/rf_model.pkl', 'rb') as f:
         model = pickle.load(f)
+    try:
+        import shap
+        explainer = shap.TreeExplainer(model)
+    except ImportError:
+        explainer = None
     print("✅ RF model loaded!")
+
+
+def build_feature_vector(reading):
+    """Return the ordered feature vector the RF expects (config.FEATURES).
+
+    Mirrors the engineering in calculate_risk_score so SHAP attributions
+    align with the exact inputs the model saw at train time.
+    """
+    temp = reading['temperature']
+    pressure = reading['pressure']
+    cooling = reading['cooling_efficiency']
+    values = [
+        temp, pressure, reading.get('reaction_rate', 0.5), cooling,
+        reading.get('temp_rate_of_change', 0),
+        reading.get('temp_rolling_avg', temp),
+        reading.get('pressure_rolling_avg', pressure),
+        reading.get('temp_acceleration', 0),
+        round(pressure / temp, 4),
+        round((1 - cooling) * temp, 2),
+    ]
+    return values
+
+
+def shap_top_drivers(reading):
+    """Return (top_drivers, explanation_confidence) using SHAP values.
+
+    Uses the predicted class's attributions so the explanation matches the
+    decision the model actually made.
+    """
+    if explainer is None:
+        return [], 'medium'
+    features = build_feature_vector(reading)
+    X = np.array([features])
+    pred = model.predict(X)[0]
+    class_idx = list(model.classes_).index(pred)
+    shap_values = explainer.shap_values(X)
+    # Multiclass RF: newer shap returns a single (samples, features, classes)
+    # array; older returns a list (one array per class). Normalize to the
+    # predicted class's per-feature contributions.
+    if isinstance(shap_values, list):
+        vals = np.asarray(shap_values[class_idx][0])
+    else:
+        sv = np.asarray(shap_values)
+        if sv.ndim == 3:
+            vals = sv[0, :, class_idx]
+        else:
+            vals = sv[0]
+    top = sorted(zip(FEATURES, vals), key=lambda x: abs(x[1]), reverse=True)[:3]
+    proba = model.predict_proba(X)[0]
+    confidence = 'high' if max(proba) > 0.7 else 'medium'
+    drivers = []
+    for rank, (name, contribution) in enumerate(top, start=1):
+        label = name.replace('_', ' ').title()
+        direction = 'increasing' if contribution >= 0 else 'decreasing'
+        current_value = features[FEATURES.index(name)]
+        drivers.append({
+            'sensor': name,
+            'contribution': round(float(contribution), 4),
+            'direction': direction,
+            'current_value': round(float(current_value), 2),
+            'human_readable': (
+                f"{label} is the {rank}{_ordinal(rank)} strongest driver "
+                f"(current {current_value:.2f}) pushing risk "
+                f"{'up' if direction == 'increasing' else 'down'}"
+            ),
+        })
+    return drivers, confidence
+
+
+def _ordinal(n):
+    if 10 <= n % 100 <= 20:
+        return 'th'
+    return {1: 'st', 2: 'nd', 3: 'rd'}.get(n % 10, 'th')
 
 
 def calculate_risk_score(reading):

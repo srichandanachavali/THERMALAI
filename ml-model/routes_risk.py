@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 
 from config import CRITICAL_TEMP
-from risk_service import load_models, calculate_risk_score
+from risk_service import load_models, calculate_risk_score, shap_top_drivers
 
 risk_bp = Blueprint('risk', __name__)
 
@@ -157,9 +157,12 @@ def explain():
         if not reasons:
             reasons.append("✅ All parameters within safe operating range")
             recommendations.append("Continue normal operations")
+        load_models()
+        drivers, explain_conf = shap_top_drivers(data)
         return jsonify({
             'success': True, 'overall': overall,
-            'reasons': reasons, 'recommendations': recommendations, 'risk_score': risk_score
+            'reasons': reasons, 'recommendations': recommendations, 'risk_score': risk_score,
+            'top_drivers': drivers, 'explanation_confidence': explain_conf
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500

@@ -8,6 +8,7 @@ const AlertSchema = new mongoose.Schema({
   temperature: { type: Number, required: true },
   pressure: { type: Number, required: true },
   message: { type: String, required: true },
+  top_drivers: { type: Array, default: [] },
   resolved: { type: Boolean, default: false },
   timestamp: { type: Date, default: Date.now },
 });

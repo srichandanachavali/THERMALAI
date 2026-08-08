@@ -66,6 +66,7 @@ the Mongoose schema does not include them and strict mode will drop them on save
 | `temperature` | Number | yes | — | °C at time of alert |
 | `pressure` | Number | yes | — | bar at time of alert |
 | `message` | String | yes | — | human-readable description |
+| `top_drivers` | Array | no | `[]` | SHAP top-3 drivers (sensor/contribution/current_value) for the alert |
 | `resolved` | Boolean | no | `false` | set to `true` via PUT /api/alerts/:id/resolve |
 | `timestamp` | Date | no | `Date.now` | — |
 

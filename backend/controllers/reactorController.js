@@ -107,6 +107,16 @@ const streamReading = async (req, res) => {
     }
 
     const simResult = await simulationPromise;
+
+    // SHAP explanation (parallel): top drivers feed the CRITICAL alert content.
+    const explainPromise = axios.post(`${ML_URL}/explain`, {
+      ...reading, risk_score: ensembleScore
+    }).then(r => r.data).catch(err => {
+      logger.warn('Explanation not available');
+      return null;
+    });
+    const explainResult = await explainPromise;
+
     const enrichedReading = {
       ...reading,
       risk_score: ensembleScore,
@@ -142,7 +152,8 @@ const streamReading = async (req, res) => {
         risk_score: ensembleScore,
         temperature: reading.temperature,
         pressure: reading.pressure,
-        message: `Reactor ${reading.reactor_id}: ${ensembleScore}% ${ensembleStatus} risk detected`
+        message: `Reactor ${reading.reactor_id}: ${ensembleScore}% ${ensembleStatus} risk detected`,
+        top_drivers: (explainResult?.top_drivers) || []
       });
       await alert.save();
       req.io.emit('new_alert', alert);
