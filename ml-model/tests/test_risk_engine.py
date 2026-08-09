@@ -199,12 +199,15 @@ class TestDerivedFeatures:
 
 class TestFeatureList:
     def test_features_count(self):
-        assert len(FEATURES) == 10
+        assert len(FEATURES) == 15
 
     def test_required_features_present(self):
+        # 10 original + 5 IEC 61511 sensor additions
         required = {
             'temperature', 'pressure', 'reaction_rate', 'cooling_efficiency',
             'temp_rate_of_change', 'temp_rolling_avg', 'pressure_rolling_avg',
             'temp_acceleration', 'pressure_temp_ratio', 'cooling_danger',
+            'flow_rate', 'material_level', 'gas_concentration',
+            'ph_level', 'emissions_co2_ppm',
         }
         assert set(FEATURES) == required

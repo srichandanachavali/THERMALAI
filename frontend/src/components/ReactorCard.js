@@ -34,16 +34,15 @@ function ReactorCard({ reactor, onClick }) {
     );
   };
 
-  const sensorRows = (r) => [
+  const sensorRows = (r) => {
     const rate = r.reaction_rate || 0;
     return [
-    { label: "Temperature", value: Math.min(100, (r.temperature / 200) * 100), display: `${r.temperature}°C`, color: r.temperature > 160 ? "var(--danger)" : "var(--accent)" },
-    { label: "Pressure", value: Math.min(100, (r.pressure / 10) * 100), display: `${r.pressure} bar`, color: r.pressure > 8 ? "var(--danger)" : "var(--accentLight)" },
-    { label: "Reaction Rate", value: Math.min(100, rate * 100), display: `${Math.round(rate * 100)}%`, color: rate >= 0.7 ? "var(--danger)" : rate >= 0.4 ? "var(--warning)" : "var(--success)" },
-    { label: "Cooling", value: Math.min(100, r.cooling_efficiency * 100), display: `${Math.round(r.cooling_efficiency * 100)}%`, color: r.cooling_efficiency < 0.3 ? "var(--danger)" : "var(--success)" },
+      { label: "Temperature", value: Math.min(100, (r.temperature / 200) * 100), display: `${r.temperature}°C`, color: r.temperature > 160 ? "var(--danger)" : "var(--accent)" },
+      { label: "Pressure", value: Math.min(100, (r.pressure / 10) * 100), display: `${r.pressure} bar`, color: r.pressure > 8 ? "var(--danger)" : "var(--accentLight)" },
+      { label: "Reaction Rate", value: Math.min(100, rate * 100), display: `${Math.round(rate * 100)}%`, color: rate >= 0.7 ? "var(--danger)" : rate >= 0.4 ? "var(--warning)" : "var(--success)" },
+      { label: "Cooling", value: Math.min(100, r.cooling_efficiency * 100), display: `${Math.round(r.cooling_efficiency * 100)}%`, color: r.cooling_efficiency < 0.3 ? "var(--danger)" : "var(--success)" },
     ];
   };
-  ];
 
   // IEC 61511 extended sensors
   const extendedRows = (r) => {

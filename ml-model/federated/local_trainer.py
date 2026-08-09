@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 
-from config import FEATURES
+from config import FEATURES, ORIGINAL_FEATURES
 from risk_service import build_feature_vector
 
 MODEL_PATH = 'saved-models/rf_model.pkl'
@@ -76,7 +76,9 @@ class LocalModelTrainer:
             if label is None:
                 continue
             try:
-                rows.append(build_feature_vector(r))
+                # build_feature_vector yields the full 15-field vector; slice to
+                # ORIGINAL_FEATURES so it aligns with the base model's width.
+                rows.append(build_feature_vector(r)[:len(ORIGINAL_FEATURES)])
                 labels.append(label)
             except KeyError:
                 continue
