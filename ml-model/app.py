@@ -4,7 +4,7 @@ from flask import Flask, jsonify
 from flask_cors import CORS
 
 import risk_service
-from risk_service import reactor_buffers
+from sequence_buffer import reactor_buffers
 from config import frontend_origins, service_port
 from routes_risk import risk_bp
 from routes_maintenance import maintenance_bp

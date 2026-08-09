@@ -130,6 +130,7 @@ frontend/src/App.js  -> MLStatusBanner shown (red banner)
 ### context/ml-models.md
   - `ml-model/app.py`
   - `ml-model/config.py`
+  - `ml-model/explain_service.py`
   - `ml-model/feature_engineering.py`
   - `ml-model/federated/local_trainer.py`
   - `ml-model/lstm_prepare_data.py`
@@ -140,7 +141,9 @@ frontend/src/App.js  -> MLStatusBanner shown (red banner)
   - `ml-model/routes_maintenance.py`
   - `ml-model/routes_risk.py`
   - `ml-model/routes_simulation.py`
+  - `ml-model/safety_alerts.py`
   - `ml-model/schedule_service.py`
+  - `ml-model/sequence_buffer.py`
   - `ml-model/simulation/reactor_simulator.py`
   - `ml-model/test.py`
   - `ml-model/train_lstm.py`
