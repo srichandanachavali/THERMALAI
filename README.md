@@ -80,6 +80,40 @@ Open **http://localhost:3000**. The sensor simulator starts automatically. See [
 
 [`render.yaml`](render.yaml) defines 3 Render services. Push to `main` → CI (3 parallel test suites) → Render deploy hook via GitHub Actions.
 
+## 🐳 Docker Deployment
+
+The whole stack is containerized with Docker Compose — 4 services, one command.
+
+**Services:**
+
+| Service | Image | Port | Notes |
+|---------|-------|------|-------|
+| `frontend` | `nginx:alpine` (multi-stage build) | host `3000` → nginx `80` | Serves the React build; reverse-proxies `/api` + `/socket.io` to `backend` |
+| `backend` | `node:18-alpine` | `5000` (internal) | Express + Socket.io; `ML_URL=http://ml:5001` |
+| `ml` | `python:3.11-slim` | `5001` | Flask RF+LSTM prediction service |
+| `simulator` | `python:3.11-slim` | — | Runs `stream_data.py` to feed synthetic reactor readings |
+
+**Bring it up:**
+```bash
+cp backend/.env.example backend/.env   # fill MONGO_URI + JWT_SECRET
+docker-compose up --build
+```
+
+Open **http://localhost:3000** — nginx serves the SPA and proxies API/socket traffic, so no CORS or cross-origin config is needed.
+
+**Production build (clean images):**
+```bash
+bash scripts/deploy.sh
+```
+This rebuilds with `--no-cache`, starts the stack, waits for the backend health check, and prints the container status.
+
+**Inspect:**
+```bash
+docker-compose ps          # status
+docker-compose logs -f backend
+docker-compose down        # stop (add -v to drop named volumes)
+```
+
 > **Known issue:** `tensorflow-cpu` (~450 MB) times out on Render free tier. Upgrade the ML service to a paid instance. See [`.claude/known-issues.md`](.claude/known-issues.md).
 
 ## 📁 Project Structure

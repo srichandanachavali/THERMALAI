@@ -1,0 +1,14 @@
+# Backend service (Express 5 + MongoDB) — production image
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Install prod deps first so layer caching survives source edits
+COPY backend/package*.json ./
+RUN npm ci --only=production
+
+COPY backend/ .
+
+EXPOSE 5000
+
+CMD ["node", "server.js"]

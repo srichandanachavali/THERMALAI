@@ -1,0 +1,27 @@
+# VCS
+.git
+.gitignore
+
+# Secrets — never ship .env into a build
+.env
+.env.*
+!*.env.example
+
+# Dependencies (installed inside the image)
+node_modules
+__pycache__
+*.pyc
+
+# Logs
+*.log
+logs/
+
+# Build artifacts
+frontend/build
+*.tsbuildinfo
+
+# Editor / OS
+.vscode
+.idea
+.DS_Store
+Thumbs.db

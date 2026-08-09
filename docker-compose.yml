@@ -1,5 +1,3 @@
-version: '3.9'
-
 networks:
   thermalai:
 
@@ -7,9 +5,11 @@ volumes:
   backend-logs:
 
 services:
-
+  # ML prediction service (Flask RF+LSTM ensemble)
   ml:
-    build: ./ml-model
+    build:
+      context: .
+      dockerfile: Dockerfile.ml
     container_name: thermalai-ml
     ports:
       - "5001:5001"
@@ -22,8 +22,11 @@ services:
       retries: 3
       start_period: 60s
 
+  # SCADA feed simulator — streams synthetic reactor readings into the backend
   simulator:
-    build: ./ml-model
+    build:
+      context: .
+      dockerfile: Dockerfile.ml
     container_name: thermalai-simulator
     command: python stream_data.py
     environment:
@@ -35,15 +38,17 @@ services:
         condition: service_healthy
     restart: on-failure
 
+  # Express backend (port 5000 internal, proxied via nginx)
   backend:
-    build: ./backend
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
     container_name: thermalai-backend
-    ports:
-      - "5000:5000"
     env_file:
       - ./backend/.env
     environment:
       - ML_URL=http://ml:5001
+      - NODE_ENV=production
     volumes:
       - backend-logs:/app/logs
     networks:
@@ -58,8 +63,11 @@ services:
       retries: 3
       start_period: 30s
 
+  # Frontend SPA served by nginx (host port 3000)
   frontend:
-    build: ./frontend
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
     container_name: thermalai-frontend
     ports:
       - "3000:80"
