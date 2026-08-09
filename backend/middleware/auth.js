@@ -21,7 +21,7 @@ const verifyToken = (req, res, next) => {
 };
 
 const adminOnly = (req, res, next) => {
-  if (req.user?.role !== 'admin') {
+  if (!['admin', 'superadmin'].includes(req.user?.role)) {
     return res.status(403).json({ error: 'Admin access required' });
   }
   next();

@@ -4,19 +4,30 @@ description: All REST endpoints, request/response shapes, Socket.io events, auth
 modules:
   - backend/controllers/reactorController.js
   - backend/controllers/maintenanceScheduleController.js
+  - backend/controllers/federatedController.js
   - backend/controllers/alertController.js
   - backend/controllers/authController.js
   - backend/middleware/auth.js
+  - backend/middleware/roleGuard.js
   - backend/routes/reactorRoutes.js
   - backend/routes/alertRoutes.js
   - backend/routes/authRoutes.js
   - backend/routes/plantRoutes.js
+  - backend/routes/federatedRoutes.js
+  - backend/routes/auditRoutes.js
+  - backend/routes/adminRoutes.js
+  - backend/controllers/auditController.js
+  - backend/services/plantService.js
+  - backend/services/mlGateway.js
+  - backend/services/alertPipeline.js
+  - backend/utils/silBands.js
   - frontend/src/services/api.js
 tests:
   - backend/tests/reactors.test.js
   - backend/tests/alerts.test.js
   - backend/tests/auth.test.js
   - backend/tests/security.test.js
+  - backend/tests/audit.test.js
   - frontend/src/services/__tests__/api.test.js
 references:
   - context/architecture.md

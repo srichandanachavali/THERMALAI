@@ -49,23 +49,37 @@ frontend/src/App.js  -> MLStatusBanner shown (red banner)
 
 ### context/api-contracts.md
   - `backend/controllers/alertController.js`
+  - `backend/controllers/auditController.js`
   - `backend/controllers/authController.js`
+  - `backend/controllers/federatedController.js`
   - `backend/controllers/maintenanceScheduleController.js`
   - `backend/controllers/reactorController.js`
   - `backend/middleware/auth.js`
+  - `backend/middleware/roleGuard.js`
+  - `backend/routes/adminRoutes.js`
   - `backend/routes/alertRoutes.js`
+  - `backend/routes/auditRoutes.js`
   - `backend/routes/authRoutes.js`
+  - `backend/routes/federatedRoutes.js`
   - `backend/routes/plantRoutes.js`
   - `backend/routes/reactorRoutes.js`
+  - `backend/services/alertPipeline.js`
+  - `backend/services/mlGateway.js`
+  - `backend/services/plantService.js`
+  - `backend/utils/silBands.js`
   - `frontend/src/services/api.js`
 
 ### context/architecture.md
+  - `backend/connectors/connector-registry.js`
+  - `backend/connectors/opcua-connector.js`
   - `backend/logger.js`
   - `backend/server.js`
   - `frontend/src/context/SocketContext.js`
 
 ### context/data-models.md
   - `backend/models/Alert.js`
+  - `backend/models/AuditLog.js`
+  - `backend/models/FederatedUpdate.js`
   - `backend/models/Reactor.js`
   - `backend/models/User.js`
 
@@ -78,6 +92,7 @@ frontend/src/App.js  -> MLStatusBanner shown (red banner)
   - `frontend/src/App.js`
   - `frontend/src/components/AIComparison.js`
   - `frontend/src/components/AlertFeed.js`
+  - `frontend/src/components/AlertRow.js`
   - `frontend/src/components/CountdownTimer.js`
   - `frontend/src/components/CurrentStatusCard.js`
   - `frontend/src/components/EnterpriseSummary.js`
@@ -87,12 +102,14 @@ frontend/src/App.js  -> MLStatusBanner shown (red banner)
   - `frontend/src/components/MetricLineChart.js`
   - `frontend/src/components/PlantCard.js`
   - `frontend/src/components/PredictionTimeline.js`
+  - `frontend/src/components/ReactorCard.js`
   - `frontend/src/components/ReactorHeatmap.js`
   - `frontend/src/components/ReactorSelector.js`
   - `frontend/src/components/ReactorStats.js`
   - `frontend/src/components/RiskGauge.js`
   - `frontend/src/components/Sidebar.js`
   - `frontend/src/config.js`
+  - `frontend/src/context/ThemeContext.js`
   - `frontend/src/hooks/useReactorHistory.js`
   - `frontend/src/index.js`
   - `frontend/src/pages/Alerts.js`
@@ -102,7 +119,9 @@ frontend/src/App.js  -> MLStatusBanner shown (red banner)
   - `frontend/src/pages/MultiPlant.js`
   - `frontend/src/pages/PlantSelect.js`
   - `frontend/src/pages/ReactorDetail.js`
+  - `frontend/src/pages/Settings.js`
   - `frontend/src/reportWebVitals.js`
+  - `frontend/src/styles/tokens.js`
   - `frontend/src/utils/plantStatus.js`
 
 ### context/known-issues.md
@@ -112,6 +131,7 @@ frontend/src/App.js  -> MLStatusBanner shown (red banner)
   - `ml-model/app.py`
   - `ml-model/config.py`
   - `ml-model/feature_engineering.py`
+  - `ml-model/federated/local_trainer.py`
   - `ml-model/lstm_prepare_data.py`
   - `ml-model/maintenance.py`
   - `ml-model/predictive_maintenance.py`
