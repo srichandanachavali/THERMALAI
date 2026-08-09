@@ -7,6 +7,7 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  ReferenceLine,
 } from "recharts";
 
 function MetricLineChart({
@@ -18,6 +19,9 @@ function MetricLineChart({
   height = 200,
   titleClassName = "text-gray-300 font-semibold mb-4 text-sm uppercase tracking-wide",
   tickFontSize = 10,
+  referenceY,
+  referenceLabel,
+  refs,
 }) {
   return (
     <div className="bg-gray-800 rounded-lg p-6">
@@ -38,6 +42,24 @@ function MetricLineChart({
               color: "white",
             }}
           />
+          {refs &&
+            refs.map((r, i) => (
+              <ReferenceLine
+                key={i}
+                y={r.y}
+                stroke={r.color || "#ef4444"}
+                strokeDasharray="4 4"
+                label={{ value: r.label, fill: r.color || "#ef4444", fontSize: 10 }}
+              />
+            ))}
+          {!refs && referenceY !== undefined && (
+            <ReferenceLine
+              y={referenceY}
+              stroke="#ef4444"
+              strokeDasharray="5 5"
+              label={referenceLabel || { value: "warn", fill: "#ef4444", fontSize: 10 }}
+            />
+          )}
           <Line
             type="monotone"
             dataKey={dataKey}

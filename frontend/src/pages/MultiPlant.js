@@ -20,7 +20,11 @@ function MultiPlant() {
 
   const fetchPlants = async () => {
     try {
-      const response = await axios.get(`${config.API_URL}/plants`);
+      const token = localStorage.getItem('thermalai_token');
+      // /plants/mine returns ONLY the plants this user is authorized to see.
+      const response = await axios.get(`${config.API_URL}/plants/mine`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
       setPlants(response.data);
     } catch (err) {
       console.log('Plants fetch error:', err);
@@ -39,7 +43,7 @@ function MultiPlant() {
           🏭 Enterprise Plant Network
         </h1>
         <p className="text-gray-400 mt-1">
-          Multi-facility monitoring — all plants, all reactors, one dashboard
+          Multi-facility monitoring — your authorized plants, one dashboard
         </p>
       </div>
 

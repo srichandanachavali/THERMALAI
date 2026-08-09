@@ -6,6 +6,7 @@ import {
   Navigate,
 } from "react-router-dom";
 import { SocketProvider, useSocket } from "./context/SocketContext";
+import { ThemeProvider } from "./context/ThemeContext";
 import Sidebar from "./components/Sidebar";
 import Home from "./pages/Home";
 import ReactorDetail from "./pages/ReactorDetail";
@@ -14,6 +15,7 @@ import Analytics from "./pages/Analytics";
 import MultiPlant from "./pages/MultiPlant";
 import Login from "./pages/Login";
 import PlantSelect from "./pages/PlantSelect";
+import Settings from "./pages/Settings";
 
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem("thermalai_token");
@@ -38,7 +40,8 @@ const MLStatusBanner = () => {
 
 function App() {
   return (
-    <Router>
+    <ThemeProvider>
+      <Router>
       <Routes>
         {/* Public routes */}
         <Route path="/select-plant" element={<PlantSelect />} />
@@ -50,12 +53,12 @@ function App() {
           element={
             <ProtectedRoute>
               <SocketProvider>
-                <div className="flex flex-col bg-gray-900 min-h-screen">
+                <div className="flex flex-col min-h-screen" style={{ backgroundColor: "var(--bg)" }}>
                   {/* ML warning banner sits above everything */}
                   <MLStatusBanner />
                   <div className="flex flex-1">
                     <Sidebar />
-                    <div className="flex-1 ml-64 p-6">
+                    <div className="flex-1 ml-[220px] p-6">
                       <Routes>
                         <Route path="/" element={<Home />} />
                         <Route path="/plants" element={<MultiPlant />} />
@@ -66,6 +69,7 @@ function App() {
                         <Route path="/alerts" element={<Alerts />} />
                         <Route path="/analytics" element={<Analytics />} />
                         <Route path="/analytics/:id" element={<Analytics />} />
+                        <Route path="/settings" element={<Settings />} />
                       </Routes>
                     </div>
                   </div>
@@ -75,7 +79,8 @@ function App() {
           }
         />
       </Routes>
-    </Router>
+      </Router>
+    </ThemeProvider>
   );
 }
 

@@ -5,6 +5,8 @@ modules:
   - frontend/src/App.js
   - frontend/src/index.js
   - frontend/src/config.js
+  - frontend/src/context/ThemeContext.js
+  - frontend/src/styles/tokens.js
   - frontend/src/pages/Home.js
   - frontend/src/pages/Login.js
   - frontend/src/pages/PlantSelect.js
@@ -12,6 +14,7 @@ modules:
   - frontend/src/pages/ReactorDetail.js
   - frontend/src/pages/Analytics.js
   - frontend/src/pages/Alerts.js
+  - frontend/src/pages/Settings.js
   - frontend/src/components/RiskGauge.js
   - frontend/src/components/CountdownTimer.js
   - frontend/src/components/PredictionTimeline.js
@@ -20,6 +23,8 @@ modules:
   - frontend/src/components/MetricCard.js
   - frontend/src/components/AIComparison.js
   - frontend/src/components/AlertFeed.js
+  - frontend/src/components/AlertRow.js
+  - frontend/src/components/ReactorCard.js
   - frontend/src/components/Sidebar.js
   - frontend/src/components/ReactorHeatmap.js
   - frontend/src/components/MetricLineChart.js

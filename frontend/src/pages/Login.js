@@ -5,7 +5,7 @@ import axios from 'axios';
 const API =
   process.env.REACT_APP_API_URL?.replace('/api', '') ||
   'http://localhost:5000';
-  
+
 function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -48,26 +48,47 @@ function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-      <div className="bg-gray-800 rounded-2xl p-10 w-full max-w-md shadow-2xl">
-
+    <div
+      className="min-h-screen flex items-center justify-center"
+      style={{ backgroundColor: 'var(--bg)' }}
+    >
+      <div
+        className="w-full max-w-md"
+        style={{
+          width: 400,
+          backgroundColor: 'var(--card)',
+          border: '1px solid var(--border)',
+          borderRadius: 16,
+          padding: '2.5rem',
+        }}
+      >
         {/* Logo */}
         <div className="text-center mb-6">
-          <h1 className="text-4xl font-bold text-white tracking-tight">ThermalAI</h1>
-          <p className="text-gray-400 mt-2">Industrial Safety Intelligence</p>
+          <h1
+            className="text-4xl font-extrabold tracking-tight"
+            style={{ color: 'var(--accent)' }}
+          >
+            ThermalAI
+          </h1>
+          <p className="mt-2" style={{ color: 'var(--textSub)' }}>
+            Industrial Safety Intelligence
+          </p>
         </div>
 
         {/* Plant info */}
         {plant && (
-          <div className="bg-gray-700/50 border border-gray-600 rounded-xl p-4 mb-6">
+          <div
+            className="rounded-xl p-4 mb-6"
+            style={{ backgroundColor: 'var(--accentGlow)', border: '1px solid var(--border)' }}
+          >
             <div className="flex items-center gap-3">
               <span className="text-3xl">{getTypeIcon(plant.type)}</span>
               <div>
-                <p className="text-white font-bold">{plant.name}</p>
-                <p className="text-gray-400 text-sm">
+                <p className="font-bold" style={{ color: 'var(--text)' }}>{plant.name}</p>
+                <p className="text-sm" style={{ color: 'var(--textSub)' }}>
                   📍 {plant.city}, {plant.state}
                 </p>
-                <p className="text-gray-500 text-xs mt-1">{plant.type}</p>
+                <p className="text-xs mt-1" style={{ color: 'var(--textMuted)' }}>{plant.type}</p>
               </div>
             </div>
           </div>
@@ -77,23 +98,34 @@ function Login() {
         <div className="grid grid-cols-2 gap-3 mb-6">
           <div
             onClick={() => { setUsername('admin'); setPassword('admin123'); }}
-            className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-3 cursor-pointer hover:bg-purple-500/20 transition-all text-center"
+            className="rounded-lg p-3 cursor-pointer transition-colors text-center"
+            style={{
+              backgroundColor: 'var(--accentGlow)',
+              border: '1px solid var(--accent)',
+            }}
           >
-            <p className="text-purple-400 font-bold">👑 Admin</p>
-            <p className="text-gray-500 text-xs mt-1">Full access</p>
+            <p className="font-bold" style={{ color: 'var(--accentLight)' }}>👑 Admin</p>
+            <p className="text-xs mt-1" style={{ color: 'var(--textMuted)' }}>Full access</p>
           </div>
           <div
             onClick={() => { setUsername('operator'); setPassword('op123'); }}
-            className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3 cursor-pointer hover:bg-blue-500/20 transition-all text-center"
+            className="rounded-lg p-3 cursor-pointer transition-colors text-center"
+            style={{
+              backgroundColor: 'var(--accentGlow)',
+              border: '1px solid var(--border)',
+            }}
           >
-            <p className="text-blue-400 font-bold">👷 Operator</p>
-            <p className="text-gray-500 text-xs mt-1">Monitor access</p>
+            <p className="font-bold" style={{ color: 'var(--highlight)' }}>👷 Operator</p>
+            <p className="text-xs mt-1" style={{ color: 'var(--textMuted)' }}>Monitor access</p>
           </div>
         </div>
 
         {/* Login form */}
         <div>
-          <label className="text-gray-400 text-sm uppercase tracking-wide mb-2 block">
+          <label
+            className="text-xs uppercase tracking-wide mb-2 block"
+            style={{ color: 'var(--textSub)' }}
+          >
             Username
           </label>
           <input
@@ -101,9 +133,18 @@ function Login() {
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             placeholder="Enter username"
-            className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-green-400 mb-4"
+            className="w-full rounded-lg px-4 py-3 mb-4"
+            style={{
+              backgroundColor: 'var(--bg)',
+              border: '1px solid var(--border)',
+              color: 'var(--text)',
+              caretColor: 'var(--accent)',
+            }}
           />
-          <label className="text-gray-400 text-sm uppercase tracking-wide mb-2 block">
+          <label
+            className="text-xs uppercase tracking-wide mb-2 block"
+            style={{ color: 'var(--textSub)' }}
+          >
             Password
           </label>
           <input
@@ -111,27 +152,53 @@ function Login() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Enter password"
-            className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-green-400 mb-4"
+            className="w-full rounded-lg px-4 py-3 mb-4"
+            style={{
+              backgroundColor: 'var(--bg)',
+              border: '1px solid var(--border)',
+              color: 'var(--text)',
+              caretColor: 'var(--accent)',
+            }}
             onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
           />
 
           {error && (
-            <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 mb-4">
-              <p className="text-red-400 text-sm">{error}</p>
+            <div
+              className="rounded-lg p-3 mb-4"
+              style={{
+                backgroundColor: 'var(--accentGlow)',
+                border: '1px solid var(--danger)',
+              }}
+            >
+              <p className="text-sm" style={{ color: 'var(--danger)' }}>{error}</p>
             </div>
           )}
 
           <button
             onClick={handleLogin}
             disabled={loading}
-            className="w-full bg-green-500 hover:bg-green-400 disabled:bg-gray-600 text-white font-bold py-3 rounded-lg transition-all text-lg"
+            className="w-full font-bold py-3 rounded-lg transition-colors text-lg"
+            style={{
+              backgroundColor: 'var(--accent)',
+              color: '#fff',
+              opacity: loading ? 0.6 : 1,
+            }}
+            onMouseEnter={(e) => {
+              if (!loading) e.currentTarget.style.backgroundColor = 'var(--accentLight)';
+            }}
+            onMouseLeave={(e) => {
+              if (!loading) e.currentTarget.style.backgroundColor = 'var(--accent)';
+            }}
           >
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
 
           <button
             onClick={() => navigate('/')}
-            className="w-full mt-3 text-gray-400 hover:text-white py-2 transition-all text-sm"
+            className="w-full mt-3 py-2 transition-colors text-sm"
+            style={{ color: 'var(--textSub)' }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text)')}
+            onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--textSub)')}
           >
             ← Back to plant selection
           </button>

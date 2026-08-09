@@ -93,33 +93,41 @@ function ReactorDetail() {
         <ReactorStats reactor={reactor} />
       </div>
 
-      {/* Live Charts */}
-      <div className="grid grid-cols-2 gap-6 mb-8">
-        <MetricLineChart
-          data={history}
-          dataKey="temperature"
-          stroke="#f97316"
-          title="Temperature (°C)"
-        />
-        <MetricLineChart
-          data={history}
-          dataKey="pressure"
-          stroke="#60a5fa"
-          title="Pressure (bar)"
-        />
+      {/* Live sensor ticker — cockpit view */}
+      <div
+        className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 mb-8"
+      >
+        {[
+          { label: "Temperature", value: `${reactor.temperature}°C`, color: reactor.temperature > 160 ? "var(--danger)" : "var(--text)" },
+          { label: "Pressure", value: `${reactor.pressure} bar`, color: reactor.pressure > 8 ? "var(--danger)" : "var(--text)" },
+          { label: "Cooling", value: `${Math.round((reactor.cooling_efficiency || 0) * 100)}%`, color: reactor.cooling_efficiency < 0.3 ? "var(--danger)" : "var(--text)" },
+          { label: "Reaction Rate", value: reactor.reaction_rate ?? "—", color: "var(--text)" },
+          { label: "ΔTemp/Cycle", value: `${reactor.temp_rate_of_change ?? 0}°C`, color: (reactor.temp_rate_of_change || 0) > 5 ? "var(--danger)" : "var(--text)" },
+          { label: "Risk", value: `${reactor.risk_score}%`, color: reactor.risk_score >= 70 ? "var(--danger)" : reactor.risk_score >= 30 ? "var(--warning)" : "var(--success)" },
+        ].map((s) => (
+          <div
+            key={s.label}
+            className="p-3"
+            style={{ backgroundColor: "var(--card)", border: "1px solid var(--border)", borderRadius: 10 }}
+          >
+            <p className="text-[10px] uppercase tracking-wider" style={{ color: "var(--textMuted)" }}>
+              {s.label}
+            </p>
+            <p className="text-lg font-bold mt-1 tabular-nums" style={{ color: s.color }}>
+              {s.value}
+            </p>
+          </div>
+        ))}
+      </div>
+
+      {/* Single live risk trend (full metric history lives on Analytics) */}
+      <div className="mb-8">
         <MetricLineChart
           data={history}
           dataKey="risk_score"
           stroke="#ef4444"
-          title="AI Risk Score"
+          title="Live AI Risk Score"
           domain={[0, 100]}
-        />
-        <MetricLineChart
-          data={history}
-          dataKey="cooling_efficiency"
-          stroke="#22c55e"
-          title="Cooling Efficiency"
-          domain={[0, 1]}
         />
       </div>
 

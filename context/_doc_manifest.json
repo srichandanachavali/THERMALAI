@@ -1,6 +1,6 @@
 {
   "_comment": "GENERATED -- never hand-edit. Regenerate with scripts/build_doc_manifest.sh",
-  "_generated": "2026-08-09T17:10:43Z",
+  "_generated": "2026-08-09T17:15:27Z",
   "file_to_doc": {
     "backend/controllers/reactorController.js": "context/api-contracts.md",
     "backend/controllers/maintenanceScheduleController.js": "context/api-contracts.md",

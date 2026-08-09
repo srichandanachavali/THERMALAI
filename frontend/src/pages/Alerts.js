@@ -1,20 +1,29 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSocket } from "../context/SocketContext";
-import { getAlerts, resolveAlert } from "../services/api";
+import { getAlerts } from "../services/api";
+import AlertRow from "../components/AlertRow";
 
+const FILTERS = [
+  { key: "all", label: "All" },
+  { key: "warning", label: "Warning" },
+  { key: "critical", label: "Critical" },
+  { key: "gas", label: "Gas Alert" },
+  { key: "resolved", label: "Resolved" },
+];
 
 function Alerts() {
   const { alerts } = useSocket();
   const navigate = useNavigate();
   const [allAlerts, setAllAlerts] = useState([]);
+  const [activeFilter, setActiveFilter] = useState("all");
 
   useEffect(() => {
     const fetchAlerts = async () => {
       try {
         const data = await getAlerts();
         setAllAlerts(data);
-      } catch (err) {
+      } catch {
         // alerts not yet available
       }
     };
@@ -35,155 +44,106 @@ function Alerts() {
     }
   }, [alerts]);
 
-  const handleResolve = async (e, alertId) => {
-    e.stopPropagation();
-    try {
-      await resolveAlert(alertId);
-      setAllAlerts((prev) =>
-        prev.map((a) => (a._id === alertId ? { ...a, resolved: true } : a))
-      );
-    } catch {
-      // resolve failed — alert stays unresolved
-    }
-  };
+  const counts = useMemo(() => ({
+    all: allAlerts.length,
+    warning: allAlerts.filter((a) => a.alert_type === "WARNING").length,
+    critical: allAlerts.filter((a) => a.alert_type === "CRITICAL").length,
+    gas: allAlerts.filter((a) => (a.gas_concentration ?? 0) > 25).length,
+    resolved: allAlerts.filter((a) => a.resolved).length,
+  }), [allAlerts]);
 
-  const unresolvedAlerts = allAlerts.filter((a) => !a.resolved);
-  const criticalCount = allAlerts.filter(
-    (a) => a.alert_type === "CRITICAL",
-  ).length;
-  const warningCount = allAlerts.filter(
-    (a) => a.alert_type === "WARNING",
-  ).length;
-
-  const getAlertStyle = (type) => {
-    if (type === "CRITICAL") return "border-red-500 bg-red-500/10";
-    return "border-yellow-500 bg-yellow-500/10";
-  };
+  const filtered = useMemo(() => {
+    if (activeFilter === "all") return allAlerts;
+    if (activeFilter === "resolved") return allAlerts.filter((a) => a.resolved);
+    if (activeFilter === "gas")
+      return allAlerts.filter((a) => !a.resolved && (a.gas_concentration ?? 0) > 25);
+    return allAlerts.filter(
+      (a) => !a.resolved && a.alert_type === activeFilter.toUpperCase(),
+    );
+  }, [allAlerts, activeFilter]);
 
   return (
     <div>
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white">Alert Center</h1>
-        <p className="text-gray-400 mt-1">
-          AI-triggered safety alerts — real time
+        <h1 className="text-2xl font-bold" style={{ color: "var(--text)" }}>
+          Alert Center
+        </h1>
+        <p className="mt-1" style={{ color: "var(--textSub)" }}>
+          Audit log of AI-triggered safety events — read-only
         </p>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-3 gap-6 mb-8">
-        <div className="bg-gray-800 border-l-4 border-red-500 rounded-lg p-6">
-          <p className="text-gray-400 text-sm uppercase tracking-wide">
-            Critical Alerts
-          </p>
-          <p className="text-4xl font-bold text-red-400 mt-2">
-            {criticalCount}
-          </p>
-        </div>
-        <div className="bg-gray-800 border-l-4 border-yellow-500 rounded-lg p-6">
-          <p className="text-gray-400 text-sm uppercase tracking-wide">
-            Warnings
-          </p>
-          <p className="text-4xl font-bold text-yellow-400 mt-2">
-            {warningCount}
-          </p>
-        </div>
-        <div className="bg-gray-800 border-l-4 border-blue-500 rounded-lg p-6">
-          <p className="text-gray-400 text-sm uppercase tracking-wide">
-            Total Alerts
-          </p>
-          <p className="text-4xl font-bold text-blue-400 mt-2">
-            {allAlerts.length}
-          </p>
-          <p className="text-gray-500 text-xs mt-1">
-            {unresolvedAlerts.length} unresolved
-          </p>
+      {/* Filter bar */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex gap-2">
+          {FILTERS.map((f) => (
+            <button
+              key={f.key}
+              onClick={() => setActiveFilter(f.key)}
+              className="text-sm font-semibold px-4 py-1.5 rounded-full transition-colors"
+              style={{
+                backgroundColor: activeFilter === f.key ? "var(--accent)" : "var(--card)",
+                color: activeFilter === f.key ? "#fff" : "var(--textSub)",
+                border: `1px solid ${activeFilter === f.key ? "var(--accent)" : "var(--border)"}`,
+              }}
+            >
+              {f.label}
+              <span className="ml-1.5 opacity-60">{counts[f.key]}</span>
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Alert Feed */}
-      <div className="bg-gray-800 rounded-lg p-6">
-        <h3 className="text-gray-300 font-semibold text-sm uppercase tracking-wide mb-4">
-          Live Alert Feed
-        </h3>
-        {allAlerts.length === 0 ? (
-          <div className="text-center py-16">
-            <p className="text-green-400 text-lg font-semibold">All reactors safe</p>
-            <p className="text-gray-500 mt-2 text-sm">No alerts at this time</p>
+      {filtered.length === 0 ? (
+        <div
+          className="text-center py-16"
+          style={{
+            backgroundColor: "var(--card)",
+            border: "1px solid var(--border)",
+            borderRadius: 12,
+          }}
+        >
+          <p style={{ color: "var(--success)", fontSize: 18, fontWeight: 600 }}>
+            No alerts in this view
+          </p>
+        </div>
+      ) : (
+        <div
+          style={{
+            backgroundColor: "var(--card)",
+            border: "1px solid var(--border)",
+            borderRadius: 12,
+            overflow: "hidden",
+          }}
+        >
+          {/* Table header */}
+          <div
+            className="grid grid-cols-[110px_1fr_1fr_110px_90px_80px_90px_2fr] gap-3 px-5 py-3 text-[11px] font-bold uppercase tracking-wider"
+            style={{ color: "var(--textMuted)", borderBottom: "1px solid var(--border)" }}
+          >
+            <span>Time</span>
+            <span>Reactor</span>
+            <span>Plant</span>
+            <span>Type</span>
+            <span>Risk</span>
+            <span>Temp</span>
+            <span>Press</span>
+            <span>Message</span>
           </div>
-        ) : (
-          <div className="space-y-3">
-            {allAlerts.map((alert, index) => (
-              <div
-                key={index}
-                onClick={() => navigate(`/reactor/${alert.reactor_id}`)}
-                className={`border-l-4 ${
-                  alert.resolved
-                    ? "border-gray-600 bg-gray-700/30 opacity-60"
-                    : getAlertStyle(alert.alert_type)
-                } rounded-r-lg p-4 cursor-pointer hover:opacity-80 transition-all`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <span
-                      className={`text-xs font-bold px-3 py-1 rounded-full ${
-                        alert.resolved
-                          ? "bg-gray-600 text-gray-400"
-                          : alert.alert_type === "CRITICAL"
-                          ? "bg-red-500 text-white"
-                          : "bg-yellow-500 text-black"
-                      }`}
-                    >
-                      {alert.resolved ? "RESOLVED" : alert.alert_type}
-                    </span>
-                    <span className={`font-semibold ${alert.resolved ? "text-gray-500 line-through" : "text-white"}`}>
-                      Reactor {alert.reactor_id}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <span
-                      className={`font-bold text-lg ${
-                        alert.resolved
-                          ? "text-gray-500"
-                          : alert.alert_type === "CRITICAL"
-                          ? "text-red-400"
-                          : "text-yellow-400"
-                      }`}
-                    >
-                      {alert.risk_score}%
-                    </span>
-                    <span className="text-gray-500 text-sm">
-                      {new Date(alert.timestamp).toLocaleString()}
-                    </span>
-                    {!alert.resolved && (
-                      <button
-                        onClick={(e) => handleResolve(e, alert._id)}
-                        className="bg-green-600 hover:bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-lg transition-all"
-                      >
-                        ✓ Resolve
-                      </button>
-                    )}
-                  </div>
-                </div>
-                <p className="text-gray-400 text-sm mt-2">{alert.message}</p>
-                <div className="flex gap-6 mt-2">
-                  <span className="text-gray-500 text-xs">
-                    🌡️ {alert.temperature}°C
-                  </span>
-                  <span className="text-gray-500 text-xs">
-                    💨 {alert.pressure} bar
-                  </span>
-                  {!alert.resolved && (
-                    <span className="text-blue-400 text-xs">
-                      Click to view reactor →
-                    </span>
-                  )}
-                </div>
-              </div>
+
+          {/* Rows */}
+          <div>
+            {filtered.map((alert) => (
+              <AlertRow
+                key={alert._id}
+                alert={alert}
+                onSelect={(id) => navigate(`/reactor/${id}`)}
+              />
             ))}
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

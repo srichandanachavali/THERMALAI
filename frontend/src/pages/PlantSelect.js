@@ -66,7 +66,9 @@ function PlantSelect() {
                       📍 {plant.city}, {plant.state}
                     </p>
                     <p className="text-gray-500 text-xs mt-1">
-                      {plant.type} · {plant.reactors.length} Reactors · Est. {plant.established}
+                      {plant.type}
+                      {plant.reactors && ` · ${plant.reactors.length} Reactors`}
+                      {plant.established && ` · Est. ${plant.established}`}
                     </p>
                   </div>
                 </div>
