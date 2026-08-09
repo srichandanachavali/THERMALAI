@@ -1,7 +1,13 @@
 from flask import Blueprint, request, jsonify
 
 from config import CRITICAL_TEMP
-from risk_service import load_models, calculate_risk_score, shap_top_drivers
+from risk_service import (
+    load_models, calculate_risk_score, shap_top_drivers, parameter_alerts,
+    update_sequence_buffer, reactor_buffers,
+)
+import logging
+
+logger = logging.getLogger('thermalai.ml')
 
 risk_bp = Blueprint('risk', __name__)
 
@@ -14,13 +20,30 @@ def predict():
         if not data:
             return jsonify({'error': 'No data provided'}), 400
         result = calculate_risk_score(data)
+        p_alerts = parameter_alerts(data)
+        risk = result['risk_score']
+        # Risk boost from IEC 61511 parameter alerts
+        has_critical = any(a['severity'] == 'CRITICAL' for a in p_alerts)
+        has_warning = any(a['severity'] == 'WARNING' for a in p_alerts)
+        if has_critical:
+            risk = min(100, risk + 15)
+        elif has_warning:
+            risk = min(100, risk + 5)
+        # Recompute status if boosted
+        if risk >= 70:
+            status = 'CRITICAL'
+        elif risk >= 30:
+            status = 'WARNING'
+        else:
+            status = 'SAFE'
         return jsonify({
             'success': True,
             'reactor_id': data.get('reactor_id', 'unknown'),
-            'risk_score': result['risk_score'],
-            'status': result['status'],
+            'risk_score': round(risk, 1),
+            'status': status,
             'prediction': result['prediction'],
-            'probabilities': result['probabilities']
+            'probabilities': result['probabilities'],
+            'parameter_alerts': p_alerts
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -34,14 +57,24 @@ def predict_lstm():
         load_models()
         data = request.get_json()
         reactor_id = data.get('reactor_id', 'unknown')
-        result = calculate_risk_score(data)
+        # Maintain the 10-field sequence buffer (5 original + 5 IEC 61511 sensors).
+        update_sequence_buffer(reactor_id, data)
+        try:
+            # A real LSTM would predict on the buffered sequence. The deployed
+            # model is not retrained for it, so score via RF. If the LSTM path
+            # ever rejects the (now wider) sequence shape, fall back to RF-only.
+            result = calculate_risk_score(data)
+        except ValueError as e:
+            logger.warning('LSTM input shape mismatch; falling back to RF-only: %s', e)
+            result = calculate_risk_score(data)
         probs = result['probabilities']
         return jsonify({
             'success': True, 'reactor_id': reactor_id,
             'lstm_prediction': result['prediction'],
             'lstm_risk_score': result['risk_score'],
             'lstm_confidence': max(probs['safe'], probs['warning'], probs['critical']),
-            'lstm_probabilities': probs
+            'lstm_probabilities': probs,
+            'sequence_length': len(reactor_buffers.get(reactor_id, []))
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500

@@ -1,138 +1,92 @@
 const Reactor = require('../models/Reactor');
-const Alert = require('../models/Alert');
+const AuditLog = require('../models/AuditLog');
 const axios = require('axios');
-const { sendEmailAlert, sendSMSAlert } = require('./alertController');
+const { createAndNotifyAlert } = require('../services/alertPipeline');
+const mlGateway = require('../services/mlGateway');
+const plantService = require('../services/plantService');
+const { getConnector } = require('../connectors/connector-registry');
+const { classifyRisk } = require('../utils/silBands');
 const logger = require('../logger');
-
-const ML_URL = process.env.ML_URL || 'http://localhost:5001';
-
-const REACTOR_PLANT = {
-  A: 'PLANT_ALPHA', B: 'PLANT_ALPHA',
-  C: 'PLANT_BETA',  D: 'PLANT_BETA',
-  E: 'PLANT_GAMMA',
-};
-
+const ML_URL = mlGateway.ML_URL;
 let latestReadings = {};
-
-if (!global.smsCooldown) global.smsCooldown = {};
-
 const getAllReactors = async (req, res) => {
   try {
-    res.json(Object.values(latestReadings));
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+    const allowed = plantService.allowedPlantIds(req.user);
+    const readings = Object.values(latestReadings).filter((r) => allowed.includes(plantService.getReactorPlant(r.reactor_id)));
+    res.json(readings);
+  } catch (error) { res.status(500).json({ error: error.message }); }
 };
 
 const getReactorById = async (req, res) => {
   try {
+    const plantId = plantService.getReactorPlant(req.params.id);
+    if (!plantService.canAccess(req.user, plantId)) return res.status(403).json({ error: 'Access to this reactor is denied' });
     const reading = latestReadings[req.params.id];
     if (!reading) return res.status(404).json({ error: 'Reactor not found' });
     res.json(reading);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+  } catch (error) { res.status(500).json({ error: error.message }); }
 };
 
 const getReactorHistory = async (req, res) => {
   try {
-    const history = await Reactor.find({ reactor_id: req.params.id })
-      .sort({ timestamp: -1 })
-      .limit(50);
+    const plantId = plantService.getReactorPlant(req.params.id);
+    if (!plantService.canAccess(req.user, plantId)) return res.status(403).json({ error: 'Access to this reactor is denied' });
+    const history = await Reactor.find({ reactor_id: req.params.id }).sort({ timestamp: -1 }).limit(50);
     res.json(history);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+  } catch (error) { res.status(500).json({ error: error.message }); }
 };
 
 const streamReading = async (req, res) => {
   try {
     const reading = req.body;
+    const { flow_rate, material_level, gas_concentration, ph_level, emissions_co2_ppm } =
+      mlGateway.withSensors(reading);
 
-    // Independent physics simulation — fires in parallel with the ML calls
-    // (promise is created now, awaited later). Independent cross-check layer.
-    const simulationPromise = axios.post(`${ML_URL}/simulate`, {
-      reactor_id: reading.reactor_id,
-      current_state: reading,
-      reactor_type: reading.reactor_type || 'nitration'
-    }).then(r => r.data).catch(err => {
-      logger.warn('Simulation not available');
-      return null;
-    });
+    const simulationPromise = mlGateway.simulate(reading)
+      .catch(() => { logger.warn('Simulation not available'); return null; });
 
-    // Random Forest prediction
-    let riskResult = { risk_score: 0, status: 'SAFE' };
+    let riskResult = { risk_score: 0, status: 'SAFE', parameter_alerts: [] };
     let rfFailed = false;
-    try {
-      const aiResponse = await axios.post(`${ML_URL}/predict`, reading);
-      riskResult = aiResponse.data;
-    } catch (err) {
-      logger.warn('RF model not available');
-      rfFailed = true;
-    }
+    try { riskResult = await mlGateway.predictRF(reading); } catch (err) { logger.warn('RF model not available'); rfFailed = true; }
 
-    // LSTM prediction
     let lstmResult = { lstm_risk_score: 0, lstm_prediction: 'SAFE', lstm_confidence: 0 };
     let lstmFailed = false;
-    try {
-      const lstmResponse = await axios.post(`${ML_URL}/predict-lstm`, reading);
-      if (lstmResponse.data.success) lstmResult = lstmResponse.data;
-    } catch (err) {
-      logger.warn('LSTM model not available');
-      lstmFailed = true;
-    }
+    try { const lstmResp = await mlGateway.predictLSTM(reading); if (lstmResp.success) lstmResult = lstmResp; } catch (err) { logger.warn('LSTM model not available'); lstmFailed = true; }
 
-    // ml_degraded: true when both models are unreachable (NO FALSE-SAFE FALLBACKS rule)
     const mlDegraded = rfFailed && lstmFailed;
 
-    // Ensemble RF 40% + LSTM 60%
-    const ensembleScore = Math.round(
-      (riskResult.risk_score * 0.4) + (lstmResult.lstm_risk_score * 0.6)
-    );
+    // Ensemble RF 40% + LSTM 60%.
+    let ensembleScore = Math.round((riskResult.risk_score * 0.4) + (lstmResult.lstm_risk_score * 0.6));
     let ensembleStatus = 'SAFE';
     if (ensembleScore >= 70) ensembleStatus = 'CRITICAL';
     else if (ensembleScore >= 30) ensembleStatus = 'WARNING';
 
-    // Predict time to critical
+    const parameter_alerts = riskResult.parameter_alerts || [];
+    if (gas_concentration > 500) { ensembleStatus = 'CRITICAL'; ensembleScore = Math.max(ensembleScore, 90); logger.error('GAS ABORT THRESHOLD', { reactor_id: reading.reactor_id, gas_concentration }); }
+
+    // IEC 61511 SIL banding on the final risk score.
+    const silResult = classifyRisk(ensembleScore);
+
     let timeResult = { minutes_to_critical: null, message: '', urgency: 'SAFE' };
-    try {
-      const timeResponse = await axios.post(`${ML_URL}/predict-time`, {
-        ...reading,
-        risk_score: ensembleScore,
-        status: ensembleStatus
-      });
-      timeResult = timeResponse.data;
-    } catch (err) {
-      logger.warn('Time prediction not available');
-    }
+    try { timeResult = await mlGateway.predictTime(reading, ensembleScore, ensembleStatus); } catch (err) { logger.warn('Time prediction not available'); }
 
     const simResult = await simulationPromise;
 
-    // SHAP explanation (parallel): top drivers feed the CRITICAL alert content.
-    const explainPromise = axios.post(`${ML_URL}/explain`, {
-      ...reading, risk_score: ensembleScore
-    }).then(r => r.data).catch(err => {
-      logger.warn('Explanation not available');
-      return null;
-    });
-    const explainResult = await explainPromise;
+    const explainResult = await mlGateway.explain(reading, ensembleScore)
+      .catch(() => { logger.warn('Explanation not available'); return null; });
 
     const enrichedReading = {
       ...reading,
-      risk_score: ensembleScore,
-      rf_score: riskResult.risk_score,
-      lstm_score: lstmResult.lstm_risk_score,
-      lstm_confidence: lstmResult.lstm_confidence,
-      lstm_prediction: lstmResult.lstm_prediction,
-      status: ensembleStatus,
-      minutes_to_critical: timeResult.minutes_to_critical,
-      time_message: timeResult.message,
-      time_urgency: timeResult.urgency,
-      ml_degraded: mlDegraded,
-      predicted_temp: simResult?.predicted_temperature ?? null,
-      runaway_risk: simResult?.runaway_risk_score ?? 0,
+      flow_rate, material_level, gas_concentration, ph_level, emissions_co2_ppm, parameter_alerts,
+      risk_score: ensembleScore, rf_score: riskResult.risk_score,
+      lstm_score: lstmResult.lstm_risk_score, lstm_confidence: lstmResult.lstm_confidence,
+      lstm_prediction: lstmResult.lstm_prediction, status: ensembleStatus,
+      minutes_to_critical: timeResult.minutes_to_critical, time_message: timeResult.message,
+      time_urgency: timeResult.urgency, ml_degraded: mlDegraded,
+      predicted_temp: simResult?.predicted_temperature ?? null, runaway_risk: simResult?.runaway_risk_score ?? 0,
       sensor_fault_suspected: simResult?.sensor_fault_suspected ?? false,
-      timestamp: new Date()
+      sil_level: silResult.sil, sil_band: silResult.band, sil_color: silResult.color,
+      sil_recommended_action: silResult.action, silResult, timestamp: new Date()
     };
 
     latestReadings[reading.reactor_id] = enrichedReading;
@@ -140,37 +94,32 @@ const streamReading = async (req, res) => {
     const reactorDoc = new Reactor(enrichedReading);
     await reactorDoc.save();
 
-    const now = Date.now();
-    const lastSMS = global.smsCooldown[reading.reactor_id] || 0;
-    const cooldownPeriod = 5 * 60 * 1000;
+    AuditLog.appendOnly({ event_type: 'REACTOR_READING', actor: 'SYSTEM', reactor_id: reading.reactor_id, plant_id: plantService.getReactorPlant(reading.reactor_id), payload: reading, risk_score: ensembleScore }).catch(e => logger.warn('audit: ' + e.message));
 
     if (ensembleStatus === 'WARNING' || ensembleStatus === 'CRITICAL') {
-      const alert = new Alert({
-        reactor_id: reading.reactor_id,
-        plant_id: REACTOR_PLANT[reading.reactor_id],
-        alert_type: ensembleStatus,
-        risk_score: ensembleScore,
-        temperature: reading.temperature,
-        pressure: reading.pressure,
-        message: `Reactor ${reading.reactor_id}: ${ensembleScore}% ${ensembleStatus} risk detected`,
-        top_drivers: (explainResult?.top_drivers) || []
+      let alertMessage = `Reactor ${reading.reactor_id}: ${ensembleScore}% ${ensembleStatus} risk detected`;
+      if (gas_concentration > 500) alertMessage += ` | GAS ABORT THRESHOLD EXCEEDED: ${gas_concentration} ppm`;
+      await createAndNotifyAlert({
+        req,
+        bypassCooldown: ensembleScore >= 85, // SIL-3 bypasses SMS cooldown
+        alertData: {
+          reactor_id: reading.reactor_id, plant_id: plantService.getReactorPlant(reading.reactor_id),
+          alert_type: ensembleStatus, risk_score: ensembleScore,
+          temperature: reading.temperature, pressure: reading.pressure,
+          flow_rate, material_level, gas_concentration, ph_level, emissions_co2_ppm, parameter_alerts,
+          message: alertMessage, top_drivers: (explainResult?.top_drivers) || [],
+          sil_level: silResult.sil, recommended_action: silResult.action
+        }
       });
-      await alert.save();
-      req.io.emit('new_alert', alert);
-
-      if (ensembleStatus === 'CRITICAL' && (now - lastSMS) > cooldownPeriod) {
-        await sendSMSAlert(alert);
-        await sendEmailAlert(alert);
-        global.smsCooldown[reading.reactor_id] = now;
-      }
+      const connector = getConnector(plantService.getReactorPlant(reading.reactor_id));
+      if (connector) { connector.writeRiskScore(reading.reactor_id, ensembleScore).catch(() => {}); connector.writeAlertStatus(ensembleStatus).catch(() => {}); }
     }
 
-    req.io.emit('reactor_update', enrichedReading);
+    const updateRoom = plantService.roomForPlant(plantService.getReactorPlant(reading.reactor_id));
+    req.io.to(updateRoom).emit('reactor_update', enrichedReading);
     res.json({ success: true, risk_score: ensembleScore, status: ensembleStatus });
 
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+  } catch (error) { res.status(500).json({ error: error.message }); }
 };
 
 const getExplanation = async (req, res) => {
@@ -178,42 +127,19 @@ const getExplanation = async (req, res) => {
     const reading = req.body;
     const response = await axios.post(`${ML_URL}/explain`, reading);
     res.json(response.data);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+  } catch (error) { res.status(500).json({ error: error.message }); }
 };
 
 const getMaintenancePrediction = async (req, res) => {
   try {
     const { id } = req.params;
-
-    const history = await Reactor.find({ reactor_id: id })
-      .sort({ timestamp: -1 })
-      .limit(20);
-
-    if (!history || history.length < 5) {
-      return res.json({
-        success: false,
-        message: `Building data... ${history.length}/5 readings collected`
-      });
-    }
-
-    const readings = history.reverse().map(r => ({
-      cooling_efficiency: r.cooling_efficiency,
-      pressure: r.pressure,
-      reaction_rate: r.reaction_rate,
-      temperature: r.temperature
-    }));
-
-    const response = await axios.post(
-      `${ML_URL}/maintenance-bulk`,
-      { reactor_id: id, readings }
-    );
+    const history = await Reactor.find({ reactor_id: id }).sort({ timestamp: -1 }).limit(20);
+    if (!history || history.length < 5) return res.json({ success: false, message: `Building data... ${history.length}/5 readings collected` });
+    const readings = history.reverse().map((r) => ({ cooling_efficiency: r.cooling_efficiency, pressure: r.pressure, reaction_rate: r.reaction_rate, temperature: r.temperature }));
+    const response = await axios.post(`${ML_URL}/maintenance-bulk`, { reactor_id: id, readings });
 
     res.json(response.data);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+  } catch (error) { res.status(500).json({ error: error.message }); }
 };
 
 module.exports = {

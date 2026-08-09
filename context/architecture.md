@@ -4,6 +4,8 @@ description: Service topology, data-flow through the three services, Socket.io e
 modules:
   - backend/server.js
   - backend/logger.js
+  - backend/connectors/opcua-connector.js
+  - backend/connectors/connector-registry.js
   - frontend/src/context/SocketContext.js
 tests:
   - backend/tests/reactors.test.js

@@ -34,6 +34,10 @@ jest.mock('../models/Alert', () => {
   return MockAlert;
 });
 
+jest.mock('../models/AuditLog', () => ({
+  appendOnly: jest.fn().mockResolvedValue({}),
+}));
+
 const request = require('supertest');
 const express = require('express');
 const axios = require('axios');
@@ -44,7 +48,7 @@ function buildApp() {
   const app = express();
   app.use(express.json());
   app.use((req, _res, next) => {
-    req.io = { emit: jest.fn() };
+    req.io = { emit: jest.fn(), to: () => ({ emit: jest.fn() }) };
     next();
   });
   app.use('/api/reactors', reactorRoutes);
@@ -103,7 +107,7 @@ describe('POST /api/reactors/stream — ML degraded mode', () => {
     const appWithCapture = express();
     appWithCapture.use(express.json());
     appWithCapture.use((req, _res, next) => {
-      req.io = { emit: mockEmit };
+      req.io = { emit: mockEmit, to: () => ({ emit: mockEmit }) };
       next();
     });
     appWithCapture.use('/api/reactors', reactorRoutes);
@@ -153,7 +157,7 @@ describe('POST /api/reactors/stream — partial ML degradation', () => {
     appWithCapture.use(express.json());
     const mockEmit = jest.fn();
     appWithCapture.use((req, _res, next) => {
-      req.io = { emit: mockEmit };
+      req.io = { emit: mockEmit, to: () => ({ emit: mockEmit }) };
       next();
     });
     appWithCapture.use('/api/reactors', reactorRoutes);

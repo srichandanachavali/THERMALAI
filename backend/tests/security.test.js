@@ -28,6 +28,9 @@ jest.mock('../models/Alert', () => {
   M.findByIdAndUpdate = jest.fn().mockResolvedValue({ _id: 'x', resolved: true });
   return M;
 });
+jest.mock('../models/AuditLog', () => ({
+  appendOnly: jest.fn().mockResolvedValue({}),
+}));
 
 const http = require('http');
 const request = require('supertest');
@@ -204,5 +207,56 @@ describe('Socket.io handshake auth', () => {
       client.close();
       done(err);
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Per-plant access control (plantService scoping)
+// ---------------------------------------------------------------------------
+
+describe('Per-plant access control', () => {
+  const app = buildApp();
+
+  test('public plant list is sanitized (no internal reactor detail)', async () => {
+    const res = await request(app).get('/api/plants');
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+    res.body.forEach((plant) => {
+      expect(plant).not.toHaveProperty('reactors');
+      expect(plant).not.toHaveProperty('established');
+      expect(plant).not.toHaveProperty('location');
+    });
+  });
+
+  test('/api/plants/mine scopes operator to PLANT_ALPHA only', async () => {
+    const res = await request(app).get('/api/plants/mine').set(operatorHeaders());
+    expect(res.status).toBe(200);
+    const ids = res.body.map((p) => p.plant_id);
+    expect(ids).toEqual(['PLANT_ALPHA']);
+  });
+
+  test('/api/plants/mine returns all plants for admin', async () => {
+    const res = await request(app).get('/api/plants/mine').set(adminHeaders());
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveLength(3);
+  });
+
+  test('operator cannot fetch a foreign plant detail (403)', async () => {
+    const res = await request(app)
+      .get('/api/plants/PLANT_BETA')
+      .set(operatorHeaders());
+    expect(res.status).toBe(403);
+  });
+
+  test('operator can fetch their own plant detail (200)', async () => {
+    const res = await request(app)
+      .get('/api/plants/PLANT_ALPHA')
+      .set(operatorHeaders());
+    expect(res.status).toBe(200);
+  });
+
+  test('operator denied foreign reactor C (PLANT_BETA) → 403', async () => {
+    const res = await request(app).get('/api/reactors/C').set(operatorHeaders());
+    expect(res.status).toBe(403);
   });
 });

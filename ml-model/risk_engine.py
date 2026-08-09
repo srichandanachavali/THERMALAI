@@ -22,7 +22,16 @@ FEATURES = [
     'temp_acceleration',
     'pressure_temp_ratio',
     'cooling_danger',
+    'flow_rate',
+    'material_level',
+    'gas_concentration',
+    'ph_level',
+    'emissions_co2_ppm',
 ]
+
+# Columns existing trained artifacts expect; used when a model rejects the
+# full 15-feature vector (not yet retrained).
+ORIGINAL_FEATURES = FEATURES[:10]
 
 
 def calculate_risk_score(reading, model):
@@ -54,11 +63,22 @@ def calculate_risk_score(reading, model):
         'temp_acceleration': reading.get('temp_acceleration', 0),
         'pressure_temp_ratio': round(pressure / temp, 4),
         'cooling_danger': round((1 - cooling) * temp, 2),
+        # IEC 61511 sensor additions (defaulted so old callers keep working)
+        'flow_rate': reading.get('flow_rate', 150.0),
+        'material_level': reading.get('material_level', 75.0),
+        'gas_concentration': reading.get('gas_concentration', 0.0),
+        'ph_level': reading.get('ph_level', 7.0),
+        'emissions_co2_ppm': reading.get('emissions_co2_ppm', 400.0),
     }
 
-    df = pd.DataFrame([features])
-
-    prediction = model.predict(df)[0]
+    try:
+        df = pd.DataFrame([features])
+        prediction = model.predict(df)[0]
+    except ValueError:
+        # Loaded model is still trained on the original 10 features — score on
+        # those to keep inference working until the model is retrained.
+        df = pd.DataFrame([features])[ORIGINAL_FEATURES]
+        prediction = model.predict(df)[0]
     probabilities = model.predict_proba(df)[0]
     prob_dict = dict(zip(model.classes_, probabilities))
 
@@ -86,3 +106,55 @@ def calculate_risk_score(reading, model):
             'critical': round(critical_prob * 100, 1),
         },
     }
+
+
+def parameter_alerts(reading):
+    """
+    IEC 61511 parameter safety checks for the 5 mandatory sensor additions.
+
+    Returns a list of dicts {param, value, severity, reason} for any sensor
+    outside its safe operating envelope. Empty list means all within range.
+    """
+    alerts = []
+    flow = reading.get('flow_rate', 150.0)
+    level = reading.get('material_level', 75.0)
+    gas = reading.get('gas_concentration', 0.0)
+    ph = reading.get('ph_level', 7.0)
+    co2 = reading.get('emissions_co2_ppm', 400.0)
+
+    if flow < 10:
+        alerts.append({'param': 'flow_rate', 'value': flow, 'severity': 'WARNING',
+                       'reason': 'Low coolant flow — heat removal compromised'})
+    elif flow > 480:
+        alerts.append({'param': 'flow_rate', 'value': flow, 'severity': 'WARNING',
+                       'reason': 'High flow rate — check for pipe surge'})
+
+    if level < 5:
+        alerts.append({'param': 'material_level', 'value': level, 'severity': 'CRITICAL',
+                       'reason': 'Tank near empty — reaction starvation risk'})
+    elif level > 95:
+        alerts.append({'param': 'material_level', 'value': level, 'severity': 'WARNING',
+                       'reason': 'Tank near full — overflow risk'})
+
+    if gas > 500:
+        alerts.append({'param': 'gas_concentration', 'value': gas, 'severity': 'CRITICAL',
+                       'reason': 'Hydrogen above abort threshold (500 ppm) — auto-abort'})
+    elif gas > 25:
+        alerts.append({'param': 'gas_concentration', 'value': gas, 'severity': 'CRITICAL',
+                       'reason': 'Toxic gas above safe threshold (25 ppm) — evacuate'})
+
+    if ph < 4:
+        alerts.append({'param': 'ph_level', 'value': ph, 'severity': 'CRITICAL',
+                       'reason': 'Runaway acidification — below safe pH floor (4)'})
+    elif ph > 10:
+        alerts.append({'param': 'ph_level', 'value': ph, 'severity': 'CRITICAL',
+                       'reason': 'Strongly caustic — above safe pH ceiling (10)'})
+
+    if co2 > 4000:
+        alerts.append({'param': 'emissions_co2_ppm', 'value': co2, 'severity': 'CRITICAL',
+                       'reason': 'Stack CO₂ far above limit — vent / scrubber fault'})
+    elif co2 > 2500:
+        alerts.append({'param': 'emissions_co2_ppm', 'value': co2, 'severity': 'WARNING',
+                       'reason': 'Elevated stack CO₂ — check vent scrubber'})
+
+    return alerts

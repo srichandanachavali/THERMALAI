@@ -36,6 +36,10 @@ jest.mock('../models/Alert', () => {
   return MockAlert;
 });
 
+jest.mock('../models/AuditLog', () => ({
+  appendOnly: jest.fn().mockResolvedValue({}),
+}));
+
 const request = require('supertest');
 const express = require('express');
 const axios = require('axios');
@@ -48,7 +52,7 @@ function buildApp() {
   const app = express();
   app.use(express.json());
   app.use((req, _res, next) => {
-    req.io = { emit: jest.fn() };
+    req.io = { emit: jest.fn(), to: () => ({ emit: jest.fn() }) };
     next();
   });
   app.use('/api/reactors', reactorRoutes);
@@ -201,7 +205,7 @@ describe('GET /api/reactors/:id/history', () => {
     expect(res.body[0].reactor_id).toBe('A');
   });
 
-  it('returns an empty array when the reactor has no history', async () => {
+  it('returns an empty array when an accessible reactor has no history', async () => {
     Reactor.find.mockReturnValue({
       sort: jest.fn().mockReturnValue({
         limit: jest.fn().mockResolvedValue([]),
@@ -210,9 +214,18 @@ describe('GET /api/reactors/:id/history', () => {
 
     const app = buildApp();
 
-    const res = await request(app).get('/api/reactors/Z/history').set(operatorHeaders());
+    const res = await request(app).get('/api/reactors/A/history').set(operatorHeaders());
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual([]);
+  });
+
+  it('denies history for a reactor outside the operator plant', async () => {
+    // Operator is scoped to PLANT_ALPHA; reactor C belongs to PLANT_BETA.
+    const app = buildApp();
+
+    const res = await request(app).get('/api/reactors/C/history').set(operatorHeaders());
+
+    expect(res.status).toBe(403);
   });
 });

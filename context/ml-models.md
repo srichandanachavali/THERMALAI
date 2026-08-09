@@ -20,6 +20,7 @@ modules:
   - ml-model/test.py
   - ml-model/routes_simulation.py
   - ml-model/simulation/reactor_simulator.py
+  - ml-model/federated/local_trainer.py
 tests:
   - ml-model/tests/test_risk_engine.py
 references:

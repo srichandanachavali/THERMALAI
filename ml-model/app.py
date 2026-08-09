@@ -4,6 +4,7 @@ from flask import Flask, jsonify
 from flask_cors import CORS
 
 import risk_service
+from risk_service import reactor_buffers
 from config import frontend_origins, service_port
 from routes_risk import risk_bp
 from routes_maintenance import maintenance_bp
@@ -24,15 +25,13 @@ def _apply_security_headers(response):
     return response
 
 
-reactor_buffers = {}
-
-
 @app.route('/health', methods=['GET'])
 def health():
     return jsonify({
         'status': 'ok',
         'models_loaded': risk_service.model is not None,
-        'reactor_buffers': len(reactor_buffers)
+        'reactor_buffers': len(reactor_buffers),
+        'extended_sensors': True
     })
 
 

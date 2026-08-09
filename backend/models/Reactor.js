@@ -17,6 +17,23 @@ const ReactorSchema = new mongoose.Schema({
     default: "SAFE",
   },
   timestamp: { type: Date, default: Date.now },
+  // IEC 61511 sensor additions
+  flow_rate: { type: Number, default: 150 },
+  material_level: { type: Number, default: 75 },
+  gas_concentration: { type: Number, default: 0 },
+  ph_level: { type: Number, default: 7.0 },
+  emissions_co2_ppm: { type: Number, default: 400 },
+  parameter_alerts: [{
+    param: String,
+    value: Number,
+    severity: String,
+    reason: String
+  }],
+  // IEC 61511 SIL banding
+  sil_level: { type: String, default: null },
+  sil_band: { type: String, default: null },
+  sil_color: { type: String, default: null },
+  sil_recommended_action: { type: String, default: '' },
 });
 
 // TTL index: MongoDB automatically deletes documents 7 days after their

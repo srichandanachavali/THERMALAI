@@ -5,6 +5,8 @@ modules:
   - backend/models/Reactor.js
   - backend/models/Alert.js
   - backend/models/User.js
+  - backend/models/FederatedUpdate.js
+  - backend/models/AuditLog.js
 tests:
   - backend/tests/reactors.test.js
   - backend/tests/alerts.test.js
@@ -90,21 +92,27 @@ SMS + email are only sent for CRITICAL alerts with a 5-minute per-reactor cooldo
 | `password` | String | yes | — | bcrypt hashed (cost 10) via `pre('save')` hook |
 | `role` | String (enum) | no | `"operator"` | `"operator"` \| `"admin"` |
 | `name` | String | no | — | display name |
+| `plants` | [String] | no | `[]` | plant_ids the user may access; admins implicitly get all via `plantService` |
 | `createdAt` | Date | no | `Date.now` | — |
 
 **Instance method**: `user.comparePassword(candidate)` → `Promise<boolean>` (bcrypt.compare)
 
 **Seeded users** (via `seedDefaultUsers()` in `authController.js`, runs on every backend startup):
-- `admin` / `admin123` — role: `admin`, name: `"Plant Administrator"`
-- `operator` / `op123` — role: `operator`, name: `"Plant Operator"`
+- `admin` / `admin123` — role: `admin`, name: `"Plant Administrator"`, plants: all (`PLANT_ALPHA`, `PLANT_BETA`, `PLANT_GAMMA`)
+- `operator` / `op123` — role: `operator`, name: `"Plant Operator"`, plants: `["PLANT_ALPHA"]`
 
 Seeding only creates the user if missing or if the password is not bcrypt-hashed.
-A stale `phone_1` index is dropped on startup (legacy schema cleanup).
+An existing account that is already hashed but has an empty `plants` array is backfilled
+(`operator` → `PLANT_ALPHA`, `admin` → all). A stale `phone_1` index is dropped on startup (legacy schema cleanup).
 
 **JWT payload** (signed with `JWT_SECRET`, 24h expiry):
 ```json
-{ "username": "admin", "role": "admin", "name": "Plant Administrator" }
+{ "username": "admin", "role": "admin", "name": "Plant Administrator", "plants": ["PLANT_ALPHA","PLANT_BETA","PLANT_GAMMA"] }
 ```
+
+`plants` rides in the JWT so per-plant authorization is enforced server-side from the
+token — never from the client-selected plant stored in `localStorage`. See
+`backend/services/plantService.js` (`allowedPlantIds`, `canAccess`).
 
 Token is stored in `localStorage` under key `thermalai_token`.
 
@@ -112,7 +120,7 @@ Token is stored in `localStorage` under key `thermalai_token`.
 
 ## Plant
 
-**No MongoDB collection.** Plant data is hardcoded in `backend/routes/plantRoutes.js`.
+**No MongoDB collection.** Plant data is hardcoded in `backend/services/plantService.js` (the access-control abstraction).
 
 Shape of each plant object:
 

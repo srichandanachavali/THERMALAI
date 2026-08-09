@@ -22,6 +22,10 @@ jest.mock('../models/Alert', () => {
   return MockAlert;
 });
 
+jest.mock('../models/AuditLog', () => ({
+  appendOnly: jest.fn().mockResolvedValue({}),
+}));
+
 const request = require('supertest');
 const express = require('express');
 const Alert = require('../models/Alert');

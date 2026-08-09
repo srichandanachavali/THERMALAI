@@ -1,0 +1,13 @@
+{
+  "PLANT_ALPHA": {
+    "endpointUrl": "opc.tcp://localhost:4840",
+    "username": "thermalai",
+    "password": "change-me",
+    "nodeIds": {
+      "temperature": "ns=2;s=ThermalAI.PLANT_ALPHA.Temperature",
+      "pressure": "ns=2;s=ThermalAI.PLANT_ALPHA.Pressure",
+      "riskScore": "ns=2;s=ThermalAI.PLANT_ALPHA.RiskScore",
+      "alertStatus": "ns=2;s=ThermalAI.PLANT_ALPHA.AlertStatus"
+    }
+  }
+}

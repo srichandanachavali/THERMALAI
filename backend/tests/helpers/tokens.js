@@ -11,8 +11,9 @@ function signAdmin() {
 }
 
 function signOperator() {
+  // Mirrors the seeded operator: scoped to PLANT_ALPHA only.
   return jwt.sign(
-    { username: 'operator', role: 'operator', name: 'Test Operator' },
+    { username: 'operator', role: 'operator', name: 'Test Operator', plants: ['PLANT_ALPHA'] },
     process.env.JWT_SECRET,
     { expiresIn: '1h' }
   );
