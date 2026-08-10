@@ -8,6 +8,7 @@ import {
 import { SocketProvider, useSocket } from "./context/SocketContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import Sidebar from "./components/Sidebar";
+import ErrorBoundary from "./components/ErrorBoundary";
 import Home from "./pages/Home";
 import ReactorDetail from "./pages/ReactorDetail";
 import Alerts from "./pages/Alerts";
@@ -44,8 +45,8 @@ function App() {
       <Router>
       <Routes>
         {/* Public routes */}
-        <Route path="/select-plant" element={<PlantSelect />} />
-        <Route path="/login" element={<Login />} />
+        <Route path="/select-plant" element={<ErrorBoundary><PlantSelect /></ErrorBoundary>} />
+        <Route path="/login" element={<ErrorBoundary><Login /></ErrorBoundary>} />
 
         {/* Protected routes */}
         <Route
@@ -58,20 +59,20 @@ function App() {
                   <MLStatusBanner />
                   <div className="flex flex-1">
                     <Sidebar />
-                    <div className="flex-1 ml-[220px] p-6">
+                    <main role="main" className="flex-1 ml-[220px] p-6">
                       <Routes>
-                        <Route path="/" element={<Home />} />
-                        <Route path="/plants" element={<MultiPlant />} />
+                        <Route path="/" element={<ErrorBoundary><Home /></ErrorBoundary>} />
+                        <Route path="/plants" element={<ErrorBoundary><MultiPlant /></ErrorBoundary>} />
                         <Route
                           path="/reactor/:id"
-                          element={<ReactorDetail />}
+                          element={<ErrorBoundary><ReactorDetail /></ErrorBoundary>}
                         />
-                        <Route path="/alerts" element={<Alerts />} />
-                        <Route path="/analytics" element={<Analytics />} />
-                        <Route path="/analytics/:id" element={<Analytics />} />
-                        <Route path="/settings" element={<Settings />} />
+                        <Route path="/alerts" element={<ErrorBoundary><Alerts /></ErrorBoundary>} />
+                        <Route path="/analytics" element={<ErrorBoundary><Analytics /></ErrorBoundary>} />
+                        <Route path="/analytics/:id" element={<ErrorBoundary><Analytics /></ErrorBoundary>} />
+                        <Route path="/settings" element={<ErrorBoundary><Settings /></ErrorBoundary>} />
                       </Routes>
-                    </div>
+                    </main>
                   </div>
                 </div>
               </SocketProvider>

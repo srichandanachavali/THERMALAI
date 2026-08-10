@@ -13,6 +13,7 @@ const {
   sendWelcomeEmail,
 } = require("../services/onboardingService");
 const logger = require("../logger");
+const { sanitize, safeError } = require("../utils/validation");
 
 // POST /api/onboard/plant — provision a plant, its operator account, and an
 // edge-agent config. Idempotency is enforced by the unique plant_id.
@@ -78,7 +79,7 @@ const onboardPlant = async (req, res) => {
     logger.info(`Onboarded plant ${body.plant_id} (${body.name}) by ${req.user?.username}`);
     res.status(201).json({ plant_id: body.plant_id, api_key: apiKey, edge_agent_config: edgeAgentConfig });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: safeError(error) });
   }
 };
 
@@ -115,21 +116,21 @@ const listPlants = async (req, res) => {
         }));
     res.json(plants);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: safeError(error) });
   }
 };
 
 // GET /api/onboard/plants/:id/edge-config — downloadable config.json for the agent.
 const edgeConfig = async (req, res) => {
   try {
-    const plant = await PlantConfig.findOne({ plant_id: req.params.plant_id });
+    const plant = await PlantConfig.findOne({ plant_id: sanitize(req.params.plant_id) });
     if (!plant) return res.status(404).json({ error: "Plant not found" });
     const config = buildEdgeConfig(plant, plant.api_key);
     res.set("Content-Disposition", `attachment; filename="edge-config-${plant.plant_id}.json"`);
     res.set("Content-Type", "application/json");
     res.json(config);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: safeError(error) });
   }
 };
 
@@ -137,7 +138,7 @@ const edgeConfig = async (req, res) => {
 // SAFE dummy reading to the real stream endpoint, timing the round trip.
 const testConnection = async (req, res) => {
   try {
-    const plant = await PlantConfig.findOne({ plant_id: req.params.plant_id });
+    const plant = await PlantConfig.findOne({ plant_id: sanitize(req.params.plant_id) });
     if (!plant) return res.status(404).json({ error: "Plant not found" });
 
     const results = await Promise.all(
@@ -154,13 +155,13 @@ const testConnection = async (req, res) => {
             latency_ms: Date.now() - started,
           };
         } catch (error) {
-          return { reactor_id: r.reactor_id, connection_ok: false, latency_ms: null, error: error.message };
+          return { reactor_id: r.reactor_id, connection_ok: false, latency_ms: null, error: safeError(error) };
         }
       })
     );
     res.json({ plant_id: plant.plant_id, results });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: safeError(error) });
   }
 };
 

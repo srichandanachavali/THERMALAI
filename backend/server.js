@@ -14,18 +14,16 @@ const AuditLog = require("./models/AuditLog");
 
 dotenv.config();
 
-// DNS resilience: this host's only resolver intermittently fails SRV lookups; add public fallbacks.
-const PUBLIC_DNS = ['8.8.8.8', '8.8.4.4'];
+// DNS resilience: this host's resolver intermittently fails SRV lookups; add public fallbacks.
 const dns = require('dns');
 const currentServers = dns.getServers();
-const missing = PUBLIC_DNS.filter((s) => !currentServers.includes(s));
-if (missing.length) {
-  dns.setServers([...currentServers, ...missing]);
-}
+const missing = ['8.8.8.8', '8.8.4.4'].filter((s) => !currentServers.includes(s));
+if (missing.length) dns.setServers([...currentServers, ...missing]);
 
 const ML_URL = process.env.ML_URL || 'http://localhost:5001';
-const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || 'http://localhost:3000';
-const CORS_ORIGINS = FRONTEND_ORIGIN.split(',').map(s => s.trim()).filter(Boolean);
+// CORS allow-list: ALLOWED_ORIGINS (comma-sep) | FRONTEND_ORIGIN alias. Never "*" in prod.
+const CORS_ORIGINS = (process.env.ALLOWED_ORIGINS || process.env.FRONTEND_ORIGIN || 'http://localhost:3000').split(',').map(s => s.trim()).filter(Boolean);
+require("./utils/validateEnv").validateEnv();
 
 const app = express();
 const server = http.createServer(app);
@@ -36,6 +34,17 @@ const io = new Server(server, {
 app.use(helmet());
 app.use(cors({ origin: CORS_ORIGINS, credentials: true }));
 app.use(express.json({ limit: '32kb' }));
+const { generalLimiter } = require("./utils/rateLimit");
+app.use(generalLimiter);
+
+// Request logging — method, path, status, duration to the file transport.
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on('finish', () => {
+    logger.info(`${req.method} ${req.originalUrl} ${res.statusCode} ${Date.now() - start}ms`);
+  });
+  next();
+});
 
 app.use((req, res, next) => {
   req.io = io;
@@ -125,25 +134,13 @@ app.use("/api/federated", federatedRoutes);
 app.use("/api/audit", auditRoutes);
 app.use("/api/admin", requireAuth, requireRole("admin", "superadmin"), adminRoutes);
 app.use("/api/onboard", requireAuth, onboardingRoutes);
-// Health check endpoint
 app.get('/health', async (req, res) => {
-  const health = {
-    status: 'ok',
-    uptime: Math.floor(process.uptime()) + 's',
-    ml: 'unknown'
-  };
-  try {
-    await axios.get(`${ML_URL}/health`, { timeout: 3000 });
-    health.ml = 'ok';
-  } catch {
-    health.ml = 'down';
-  }
-  const code = health.ml === 'down' ? 503 : 200;
-  res.status(code).json(health);
+  let ml = 'ok';
+  try { await axios.get(`${ML_URL}/health`, { timeout: 3000 }); } catch { ml = 'down'; }
+  res.status(ml === 'down' ? 503 : 200).json({ status: 'ok', uptime: Math.floor(process.uptime()) + 's', ml });
 });
 
-// ML watchdog loop
-let mlDown = false;
+let mlDown = false; // ML watchdog state
 
 async function checkMLHealth() {
   try {
@@ -186,7 +183,6 @@ if (process.env.NODE_ENV !== 'test') {
 
 io.on("connection", (socket) => {
   logger.info(`Dashboard connected: ${socket.id} user=${socket.user?.username}`);
-  // Join only the rooms for plants this user is authorized to receive.
   plantService.allowedPlantIds(socket.user).forEach((plantId) => {
     socket.join(plantService.roomForPlant(plantId));
   });
@@ -198,7 +194,12 @@ io.on("connection", (socket) => {
 const { seedDefaultUsers } = require("./controllers/authController");
 
 if (process.env.NODE_ENV !== 'test') {
-  // Retry initial connect so a transient Atlas outage doesn't leave a dead DB connection.
+  // Connection lifecycle handlers — surface + auto-recover from transient DB drops.
+  mongoose.connection.on('error', (err) => logger.error(`MongoDB connection error: ${err.message}`));
+  mongoose.connection.on('disconnected', () => logger.warn('MongoDB disconnected'));
+  mongoose.connection.on('reconnected', () => logger.info('MongoDB reconnected'));
+
+  // Retry initial connect so a transient Atlas outage doesn't leave a dead DB connection
   const connectWithRetry = async (attempt = 0) => {
     try {
       if (mongoose.connection.readyState !== 0) {
@@ -225,5 +226,20 @@ if (process.env.NODE_ENV !== 'test') {
     logger.info(`Server running on port ${PORT}`);
   });
 }
+
+// Graceful shutdown — drain HTTP + Socket.io, close the DB, then exit.
+function gracefulShutdown(signal) {
+  logger.info(`${signal} received — shutting down gracefully`);
+  try { io.close(); } catch (e) { logger.warn(`io.close: ${e.message}`); }
+  server.close(async () => {
+    try { await mongoose.connection.close(); } catch (e) { logger.warn(`db close: ${e.message}`); }
+    logger.info('Shutdown complete');
+    process.exit(0);
+  });
+  // Safety net: if connections hang, force-exit so the orchestrator can restart.
+  setTimeout(() => process.exit(1), 10000).unref();
+}
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
 module.exports = { app, server, io };

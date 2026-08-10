@@ -21,18 +21,22 @@ export const SocketProvider = ({ children }) => {
       return;
     }
 
-    const newSocket = io(API, { auth: { token } });
+    const newSocket = io(API, {
+      auth: { token },
+      reconnection: true,
+      reconnectionAttempts: 10,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+    });
     setSocket(newSocket);
 
     newSocket.on('connect', () => {
-      console.log('✅ Connected to ThermalAI backend');
       setConnected(true);
       setAuthError(false);
     });
 
     newSocket.on('connect_error', (err) => {
       if (err && (err.message === 'unauthorized' || err.message === 'server misconfigured')) {
-        console.warn('🚫 Socket auth failed — clearing token');
         localStorage.removeItem('thermalai_token');
         localStorage.removeItem('token');
         setAuthError(true);
@@ -61,10 +65,8 @@ export const SocketProvider = ({ children }) => {
 
     newSocket.on('system_alert', (data) => {
       if (data.type === 'ML_DOWN') {
-        console.warn('🚨 ML service is DOWN:', data.message);
         setMlStatus('down');
       } else if (data.type === 'ML_RECOVERED') {
-        console.log('✅ ML service recovered');
         setMlStatus('ok');
       }
     });

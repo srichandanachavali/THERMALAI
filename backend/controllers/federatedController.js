@@ -1,5 +1,6 @@
 const FederatedUpdate = require('../models/FederatedUpdate');
 const logger = require('../logger');
+const { safeError } = require('../utils/validation');
 
 const AGGREGATION_WINDOW = 10;
 
@@ -32,7 +33,7 @@ const submitUpdate = async (req, res) => {
     logger.info(`Federated gradient update stored for reactor ${reactor_id}`);
     res.status(201).json({ success: true, id: doc._id, applied: false });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: safeError(error) });
   }
 };
 
@@ -68,7 +69,7 @@ const getGlobalWeights = async (req, res) => {
       last_updated: updates[0].timestamp,
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: safeError(error) });
   }
 };
 

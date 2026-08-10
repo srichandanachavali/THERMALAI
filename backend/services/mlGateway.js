@@ -1,6 +1,11 @@
 const axios = require('axios');
 
 const ML_URL = process.env.ML_URL || 'http://localhost:5001';
+const ML_API_KEY = process.env.ML_API_KEY || '';
+
+// Bearer the Flask service's API-key gate (see ml-model/app.py). Sent on every
+// call when configured; when ML_API_KEY is empty the Flask gate is disabled.
+const headers = () => (ML_API_KEY ? { 'X-ML-Key': ML_API_KEY } : {});
 
 // IEC 61511 sensor defaults — spread so old callers keep working.
 const SENSOR_DEFAULTS = {
@@ -23,12 +28,12 @@ function withSensors(reading) {
 }
 
 async function predictRF(reading) {
-  const { data } = await axios.post(`${ML_URL}/predict`, withSensors(reading));
+  const { data } = await axios.post(`${ML_URL}/predict`, withSensors(reading), { headers: headers() });
   return data;
 }
 
 async function predictLSTM(reading) {
-  const { data } = await axios.post(`${ML_URL}/predict-lstm`, withSensors(reading));
+  const { data } = await axios.post(`${ML_URL}/predict-lstm`, withSensors(reading), { headers: headers() });
   return data;
 }
 
@@ -37,7 +42,7 @@ async function predictTime(reading, riskScore, status) {
     ...reading,
     risk_score: riskScore,
     status
-  });
+  }, { headers: headers() });
   return data;
 }
 
@@ -45,7 +50,7 @@ async function explain(reading, riskScore) {
   const { data } = await axios.post(`${ML_URL}/explain`, {
     ...reading,
     risk_score: riskScore
-  });
+  }, { headers: headers() });
   return data;
 }
 
@@ -54,7 +59,15 @@ async function simulate(reading) {
     reactor_id: reading.reactor_id,
     current_state: reading,
     reactor_type: reading.reactor_type || 'nitration'
-  });
+  }, { headers: headers() });
+  return data;
+}
+
+async function predictMaintenance(reactorId, readings) {
+  const { data } = await axios.post(`${ML_URL}/maintenance-bulk`, {
+    reactor_id: reactorId,
+    readings
+  }, { headers: headers() });
   return data;
 }
 
@@ -66,5 +79,6 @@ module.exports = {
   predictLSTM,
   predictTime,
   explain,
-  simulate
+  simulate,
+  predictMaintenance
 };

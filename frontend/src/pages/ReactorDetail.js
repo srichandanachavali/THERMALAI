@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useSocket } from "../context/SocketContext";
 import RiskGauge from "../components/RiskGauge";
@@ -24,6 +24,10 @@ function ReactorDetail() {
     liveReactor: reactor,
     maxPoints: 20,
   });
+
+  useEffect(() => {
+    document.title = `ThermalAI — Reactor ${reactorId}`;
+  }, [reactorId]);
 
   if (!reactor) {
     return (

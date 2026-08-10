@@ -69,7 +69,12 @@ frontend/src/App.js  -> MLStatusBanner shown (red banner)
   - `backend/services/mlGateway.js`
   - `backend/services/onboardingService.js`
   - `backend/services/plantService.js`
+  - `backend/utils/alertBuilder.js`
+  - `backend/utils/mlClient.js`
+  - `backend/utils/rateLimit.js`
   - `backend/utils/silBands.js`
+  - `backend/utils/validateEnv.js`
+  - `backend/utils/validation.js`
   - `frontend/src/services/api.js`
 
 ### context/architecture.md

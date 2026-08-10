@@ -55,3 +55,8 @@ def frontend_origins():
 
 def service_port():
     return int(os.environ.get('PORT', 5001))
+
+
+def ml_api_key():
+    """Shared secret required via X-ML-Key (1H). Empty disables the gate (dev)."""
+    return os.environ.get('ML_API_KEY', '').strip()

@@ -23,9 +23,7 @@ function ExplainPanel({ reactor }) {
         },
       );
       setExplanation(response.data);
-    } catch (err) {
-      console.log("Explanation error:", err);
-    }
+    } catch {}
     setLoading(false);
   }, [reactor]);
 
@@ -89,7 +87,7 @@ function ExplainPanel({ reactor }) {
           Why risk is high
         </p>
         <div className="space-y-2">
-          {explanation.reasons.map((reason, index) => (
+          {(explanation.reasons || []).map((reason, index) => (
             <div
               key={index}
               className="bg-gray-700 rounded-lg p-3 text-sm text-gray-200"
@@ -106,7 +104,7 @@ function ExplainPanel({ reactor }) {
           Recommended actions
         </p>
         <div className="space-y-2">
-          {explanation.recommendations.map((rec, index) => (
+          {(explanation.recommendations || []).map((rec, index) => (
             <div
               key={index}
               className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3 text-sm text-blue-300"

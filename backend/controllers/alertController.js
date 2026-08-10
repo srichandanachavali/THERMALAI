@@ -3,6 +3,7 @@ const AuditLog = require("../models/AuditLog");
 const nodemailer = require("nodemailer");
 const twilio = require("twilio");
 const logger = require("../logger");
+const { sanitize, safeError } = require("../utils/validation");
 
 // Email transporter setup
 const transporter = nodemailer.createTransport({
@@ -101,7 +102,7 @@ const getAllAlerts = async (req, res) => {
     const alerts = await Alert.find().sort({ timestamp: -1 }).limit(50);
     res.json(alerts);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: safeError(error) });
   }
 };
 
@@ -109,7 +110,7 @@ const getAllAlerts = async (req, res) => {
 const resolveAlert = async (req, res) => {
   try {
     const alert = await Alert.findByIdAndUpdate(
-      req.params.id,
+      sanitize(req.params.id),
       { resolved: true },
       { new: true },
     );
@@ -126,7 +127,7 @@ const resolveAlert = async (req, res) => {
     }).catch((err) => logger.warn(`Audit log write failed: ${err.message}`));
     res.json({ success: true, alert });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: safeError(error) });
   }
 };
 

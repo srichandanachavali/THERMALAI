@@ -1,5 +1,6 @@
 const AuditLog = require('../models/AuditLog');
 const logger = require('../logger');
+const { safeError } = require('../utils/validation');
 
 // Shared filter builder for the audit read endpoints. Reactor/plant/event
 // filters are exact; from/to bound the timestamp window.
@@ -29,7 +30,7 @@ const getAuditLogs = async (req, res) => {
     ]);
     res.json({ total, page, limit, logs });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: safeError(error) });
   }
 };
 
@@ -57,7 +58,7 @@ const exportAuditCsv = async (req, res) => {
     res.end();
   } catch (error) {
     logger.error(`Audit CSV export failed: ${error.message}`);
-    if (!res.headersSent) res.status(500).json({ error: error.message });
+    if (!res.headersSent) res.status(500).json({ error: safeError(error) });
     else res.end();
   }
 };

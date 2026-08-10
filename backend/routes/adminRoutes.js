@@ -7,6 +7,7 @@ const reactorController = require("../controllers/reactorController");
 const { getAuditLogs } = require("../controllers/auditController");
 const { requireRole } = require("../middleware/roleGuard");
 const logger = require("../logger");
+const { safeError } = require("../utils/validation");
 
 // Latest live state per plant, derived from in-memory reactor readings.
 const latestByPlant = () => {
@@ -46,7 +47,7 @@ router.get("/stats", async (req, res) => {
       plants,
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: safeError(error) });
   }
 });
 
@@ -56,7 +57,7 @@ router.get("/users", requireRole("superadmin"), async (req, res) => {
     const users = await User.find().select("-password").sort({ createdAt: -1 });
     res.json(users);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: safeError(error) });
   }
 });
 
@@ -71,7 +72,7 @@ router.post("/users", requireRole("superadmin"), async (req, res) => {
     logger.info(`User created by ${req.user.username}: ${username} (${role || "operator"})`);
     res.status(201).json({ success: true, user: { _id: user._id, username: user.username, name: user.name, email: user.email, role: user.role, plants: user.plants } });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: safeError(error) });
   }
 });
 
@@ -84,7 +85,7 @@ router.put("/users/:id/role", requireRole("superadmin"), async (req, res) => {
     if (!user) return res.status(404).json({ error: "User not found" });
     res.json({ success: true, user });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: safeError(error) });
   }
 });
 

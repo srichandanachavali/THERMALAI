@@ -97,7 +97,7 @@ function Login() {
         {/* Role cards */}
         <div className="grid grid-cols-2 gap-3 mb-6">
           <div
-            onClick={() => { setUsername('admin'); setPassword('admin123'); }}
+            onClick={() => setUsername('admin')}
             className="rounded-lg p-3 cursor-pointer transition-colors text-center"
             style={{
               backgroundColor: 'var(--accentGlow)',
@@ -108,7 +108,7 @@ function Login() {
             <p className="text-xs mt-1" style={{ color: 'var(--textMuted)' }}>Full access</p>
           </div>
           <div
-            onClick={() => { setUsername('operator'); setPassword('op123'); }}
+            onClick={() => setUsername('operator')}
             className="rounded-lg p-3 cursor-pointer transition-colors text-center"
             style={{
               backgroundColor: 'var(--accentGlow)',

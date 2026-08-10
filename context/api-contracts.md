@@ -24,6 +24,11 @@ modules:
   - backend/services/mlGateway.js
   - backend/services/alertPipeline.js
   - backend/utils/silBands.js
+  - backend/utils/validation.js
+  - backend/utils/validateEnv.js
+  - backend/utils/rateLimit.js
+  - backend/utils/mlClient.js
+  - backend/utils/alertBuilder.js
   - frontend/src/services/api.js
 tests:
   - backend/tests/reactors.test.js

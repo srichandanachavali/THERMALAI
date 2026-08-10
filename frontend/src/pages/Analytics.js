@@ -38,6 +38,10 @@ function Analytics() {
     if (id) setSelectedReactor(id);
   }, [id]);
 
+  useEffect(() => {
+    document.title = `ThermalAI — Analytics (${selectedReactor})`;
+  }, [selectedReactor]);
+
   const { history } = useReactorHistory(selectedReactor, {
     format: formatHistory,
   });

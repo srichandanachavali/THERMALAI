@@ -14,15 +14,27 @@ import { useSocket } from "../context/SocketContext";
 import useReactorHistory from "../hooks/useReactorHistory";
 import ReactorCard from "../components/ReactorCard";
 import AlertFeed from "../components/AlertFeed";
+import { ReactorCardSkeleton } from "../components/Skeletons";
 
 function Home() {
-  const { reactors, alerts } = useSocket();
+  const { reactors, alerts, connected } = useSocket();
   const navigate = useNavigate();
   const [now, setNow] = useState(new Date());
+  const [showGuide, setShowGuide] = useState(false);
 
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(t);
+  }, []);
+
+  useEffect(() => {
+    document.title = "ThermalAI — Plant Overview";
+  }, []);
+
+  // If no reactor data arrives within 10s, swap the skeleton for a setup guide.
+  useEffect(() => {
+    const t = setTimeout(() => setShowGuide(true), 10000);
+    return () => clearTimeout(t);
   }, []);
 
   const warningCount = reactors.filter((r) => r.status === "WARNING").length;
@@ -81,10 +93,10 @@ function Home() {
       {/* Header — command center */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold" style={{ color: "var(--text)" }}>
+          <h1 className="text-2xl font-bold text-white mb-1">
             Plant Overview
           </h1>
-          <p className="mt-1" style={{ color: "var(--textSub)" }}>
+          <p className="text-gray-400 text-sm mb-6">
             Real-time thermal runaway prevention — {reactors.length} reactors monitored
           </p>
         </div>
@@ -94,6 +106,8 @@ function Home() {
           {aggregatePills.map((p) => (
             <span
               key={p.label}
+              role="status"
+              aria-label={`${p.count} ${p.label} reactors`}
               className="text-[11px] font-bold px-3 py-1 rounded-full flex items-center gap-1.5"
               style={{ backgroundColor: p.color, color: "#fff" }}
             >
@@ -114,7 +128,7 @@ function Home() {
       </div>
 
       {/* Stat cards */}
-      <div className="grid grid-cols-4 gap-5 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-8">
         {statCards.map((card) => (
           <div
             key={card.label}
@@ -205,19 +219,38 @@ function Home() {
       </div>
 
       {/* Reactor grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {sortedReactors.length === 0 ? (
-          <div
-            className="p-8 text-center text-sm col-span-full"
-            style={{
-              backgroundColor: "var(--card)",
-              border: "1px solid var(--border)",
-              borderRadius: 12,
-              color: "var(--textSub)",
-            }}
-          >
-            Waiting for reactor data...
-          </div>
+          connected && !showGuide ? (
+            <>
+              <ReactorCardSkeleton />
+              <ReactorCardSkeleton />
+              <ReactorCardSkeleton />
+              <ReactorCardSkeleton />
+            </>
+          ) : connected ? (
+            <div
+              className="p-8 col-span-full"
+              style={{ backgroundColor: "var(--card)", border: "1px solid var(--border)", borderRadius: 12 }}
+            >
+              <p className="text-gray-300 font-semibold mb-1">
+                Waiting for reactor data...
+              </p>
+              <p className="text-gray-400 text-sm mb-4">
+                Make sure stream_data.py is running:
+              </p>
+              <pre className="bg-black text-green-400 text-sm p-4 rounded-lg overflow-x-auto">
+                python stream_data.py
+              </pre>
+            </div>
+          ) : (
+            <div
+              className="p-8 text-center text-sm col-span-full"
+              style={{ backgroundColor: "var(--card)", border: "1px solid var(--border)", borderRadius: 12, color: "var(--textSub)" }}
+            >
+              Connecting to server...
+            </div>
+          )
         ) : (
           sortedReactors.map((reactor) => (
             <ReactorCard

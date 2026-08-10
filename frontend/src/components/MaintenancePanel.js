@@ -18,9 +18,7 @@ function MaintenancePanel({ reactor }) {
       if (response.data.success) {
         setMaintenance(response.data);
       }
-    } catch (err) {
-      console.log('Maintenance fetch error:', err);
-    }
+    } catch {}
     setLoading(false);
   }, [reactor]);
 

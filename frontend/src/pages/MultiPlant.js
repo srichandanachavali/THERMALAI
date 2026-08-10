@@ -26,9 +26,7 @@ function MultiPlant() {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       setPlants(response.data);
-    } catch (err) {
-      console.log('Plants fetch error:', err);
-    }
+    } catch {}
   };
 
   const criticalCount = reactors.filter(r => r.status === 'CRITICAL').length;

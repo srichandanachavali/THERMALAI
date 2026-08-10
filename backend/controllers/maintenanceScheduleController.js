@@ -1,5 +1,6 @@
 const Reactor = require('../models/Reactor');
 const axios = require('axios');
+const { sanitize, safeError } = require('../utils/validation');
 
 const ML_URL = process.env.ML_URL || 'http://localhost:5001';
 
@@ -9,7 +10,7 @@ const SCHEDULE_TTL_MS = 15 * 60 * 1000;
 
 const getMaintenanceSchedule = async (req, res) => {
   try {
-    const { id } = req.params;
+    const id = sanitize(req.params.id);
 
     const cached = scheduleCache.get(id);
     if (cached && Date.now() - cached.at < SCHEDULE_TTL_MS) {
@@ -44,7 +45,7 @@ const getMaintenanceSchedule = async (req, res) => {
     scheduleCache.set(id, { at: Date.now(), data: response.data });
     res.json(response.data);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: safeError(error) });
   }
 };
 

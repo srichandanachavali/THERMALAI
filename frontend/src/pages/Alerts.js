@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useSocket } from "../context/SocketContext";
 import { getAlerts } from "../services/api";
 import AlertRow from "../components/AlertRow";
+import { AlertRowSkeleton } from "../components/Skeletons";
 
 const FILTERS = [
   { key: "all", label: "All" },
@@ -17,6 +18,11 @@ function Alerts() {
   const navigate = useNavigate();
   const [allAlerts, setAllAlerts] = useState([]);
   const [activeFilter, setActiveFilter] = useState("all");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    document.title = `ThermalAI — Alerts (${allAlerts.length})`;
+  }, [allAlerts.length]);
 
   useEffect(() => {
     const fetchAlerts = async () => {
@@ -25,6 +31,8 @@ function Alerts() {
         setAllAlerts(data);
       } catch {
         // alerts not yet available
+      } finally {
+        setLoading(false);
       }
     };
     fetchAlerts();
@@ -66,10 +74,10 @@ function Alerts() {
     <div>
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold" style={{ color: "var(--text)" }}>
+        <h1 className="text-2xl font-bold text-white mb-1">
           Alert Center
         </h1>
-        <p className="mt-1" style={{ color: "var(--textSub)" }}>
+        <p className="text-gray-400 text-sm mb-6">
           Audit log of AI-triggered safety events — read-only
         </p>
       </div>
@@ -95,17 +103,48 @@ function Alerts() {
         </div>
       </div>
 
-      {filtered.length === 0 ? (
+      {loading && allAlerts.length === 0 ? (
         <div
-          className="text-center py-16"
+          style={{
+            backgroundColor: "var(--card)",
+            border: "1px solid var(--border)",
+            borderRadius: 12,
+            overflow: "hidden",
+          }}
+        >
+          <AlertRowSkeleton />
+          <AlertRowSkeleton />
+          <AlertRowSkeleton />
+          <AlertRowSkeleton />
+          <AlertRowSkeleton />
+        </div>
+      ) : filtered.length === 0 ? (
+        <div
+          className="flex flex-col items-center justify-center text-center py-16"
           style={{
             backgroundColor: "var(--card)",
             border: "1px solid var(--border)",
             borderRadius: 12,
           }}
         >
-          <p style={{ color: "var(--success)", fontSize: 18, fontWeight: 600 }}>
-            No alerts in this view
+          <svg
+            className="w-16 h-16 mb-4"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="var(--success)"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+            <polyline points="22 4 12 14.01 9 11.01" />
+          </svg>
+          <p className="text-lg font-semibold" style={{ color: "var(--success)" }}>
+            All reactors nominal
+          </p>
+          <p className="text-sm mt-1" style={{ color: "var(--textSub)" }}>
+            No alerts in the last 24 hours
           </p>
         </div>
       ) : (
@@ -119,17 +158,17 @@ function Alerts() {
         >
           {/* Table header */}
           <div
-            className="grid grid-cols-[110px_1fr_1fr_110px_90px_80px_90px_2fr] gap-3 px-5 py-3 text-[11px] font-bold uppercase tracking-wider"
+            className="grid grid-cols-[110px_1fr_110px_90px] md:grid-cols-[110px_1fr_1fr_110px_90px_80px_90px_2fr] gap-3 px-5 py-3 text-[11px] font-bold uppercase tracking-wider"
             style={{ color: "var(--textMuted)", borderBottom: "1px solid var(--border)" }}
           >
             <span>Time</span>
             <span>Reactor</span>
-            <span>Plant</span>
+            <span className="hidden md:block">Plant</span>
             <span>Type</span>
             <span>Risk</span>
-            <span>Temp</span>
-            <span>Press</span>
-            <span>Message</span>
+            <span className="hidden md:block">Temp</span>
+            <span className="hidden md:block">Press</span>
+            <span className="hidden md:block">Message</span>
           </div>
 
           {/* Rows */}

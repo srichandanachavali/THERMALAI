@@ -2,8 +2,21 @@ const User = require('../models/User');
 const AuditLog = require('../models/AuditLog');
 const jwt = require('jsonwebtoken');
 const logger = require('../logger');
+const { safeError } = require('../utils/validation');
 
 const ALL_PLANTS = ['PLANT_ALPHA', 'PLANT_BETA', 'PLANT_GAMMA'];
+
+// Seed passwords come from env (defaults keep local demo working). Never
+// hardcode real credentials — the defaults are dev-only demo accounts.
+const SEED_CREDS = {
+  admin: process.env.SEED_ADMIN_PASSWORD || 'admin123',
+  superadmin: process.env.SEED_SUPERADMIN_PASSWORD || 'super123',
+  operator: process.env.SEED_OPERATOR_PASSWORD || 'op123',
+};
+
+// Operators get a full day; admin/superadmin tokens are short-lived (8h) so a
+// leaked admin JWT expires quickly. Roles are server-authoritative.
+const TOKEN_EXPIRY = { operator: '24h', admin: '8h', superadmin: '8h' };
 
 // Ensure a default user exists with a fresh bcrypt hash and the given plants.
 const seedUser = async ({ username, password, role, name, plants }) => {
@@ -25,9 +38,9 @@ const seedDefaultUsers = async () => {
     // Drop stale phone index if it exists
     try { await User.collection.dropIndex('phone_1'); } catch(e) {}
 
-    await seedUser({ username: 'admin', password: 'admin123', role: 'admin', name: 'Plant Administrator', plants: ALL_PLANTS });
-    await seedUser({ username: 'superadmin', password: 'super123', role: 'superadmin', name: 'Super Administrator', plants: ALL_PLANTS });
-    await seedUser({ username: 'operator', password: 'op123', role: 'operator', name: 'Plant Operator', plants: ['PLANT_ALPHA'] });
+    await seedUser({ username: 'admin', password: SEED_CREDS.admin, role: 'admin', name: 'Plant Administrator', plants: ALL_PLANTS });
+    await seedUser({ username: 'superadmin', password: SEED_CREDS.superadmin, role: 'superadmin', name: 'Super Administrator', plants: ALL_PLANTS });
+    await seedUser({ username: 'operator', password: SEED_CREDS.operator, role: 'operator', name: 'Plant Operator', plants: ['PLANT_ALPHA'] });
 
   } catch (error) {
     logger.error(`User seed error: ${error.message}`);
@@ -63,7 +76,7 @@ const login = async (req, res) => {
     const token = jwt.sign(
       { username: user.username, role: user.role, name: user.name, plants: user.plants },
       process.env.JWT_SECRET,
-      { expiresIn: '24h' }
+      { expiresIn: TOKEN_EXPIRY[user.role] || '8h' }
     );
 
     logger.info(`Login successful: ${user.name} (${user.role})`);
@@ -83,7 +96,7 @@ const login = async (req, res) => {
     });
 
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: safeError(error) });
   }
 };
 
@@ -107,7 +120,7 @@ const register = async (req, res) => {
     res.status(201).json({ success: true, user: { username: user.username, role: user.role, name: user.name } });
 
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: safeError(error) });
   }
 };
 
@@ -122,7 +135,7 @@ const logout = async (req, res) => {
     }).catch((err) => logger.warn(`Audit log write failed: ${err.message}`));
     res.json({ success: true });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: safeError(error) });
   }
 };
 

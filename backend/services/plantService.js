@@ -112,7 +112,8 @@ const getPlantsForUserAsync = async (user) => {
 };
 
 const getPlantByIdAsync = async (id) => {
-  const plant = await dbOrFallback().then((all) => all.find((p) => p.plant_id === id));
+  const all = await dbOrFallback();
+  const plant = all.find((p) => p.plant_id === id);
   return plant ? toApiPlant(plant) : null;
 };
 

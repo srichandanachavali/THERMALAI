@@ -1,6 +1,6 @@
 {
   "_comment": "GENERATED -- never hand-edit. Regenerate with scripts/build_doc_manifest.sh",
-  "_generated": "2026-08-10T03:26:22Z",
+  "_generated": "2026-08-10T07:04:03Z",
   "file_to_doc": {
     "backend/controllers/reactorController.js": "context/api-contracts.md",
     "backend/controllers/maintenanceScheduleController.js": "context/api-contracts.md",
@@ -24,6 +24,11 @@
     "backend/services/mlGateway.js": "context/api-contracts.md",
     "backend/services/alertPipeline.js": "context/api-contracts.md",
     "backend/utils/silBands.js": "context/api-contracts.md",
+    "backend/utils/validation.js": "context/api-contracts.md",
+    "backend/utils/validateEnv.js": "context/api-contracts.md",
+    "backend/utils/rateLimit.js": "context/api-contracts.md",
+    "backend/utils/mlClient.js": "context/api-contracts.md",
+    "backend/utils/alertBuilder.js": "context/api-contracts.md",
     "frontend/src/services/api.js": "context/api-contracts.md",
     "backend/server.js": "context/architecture.md",
     "backend/logger.js": "context/architecture.md",
@@ -120,6 +125,11 @@
       "backend/services/mlGateway.js",
       "backend/services/alertPipeline.js",
       "backend/utils/silBands.js",
+      "backend/utils/validation.js",
+      "backend/utils/validateEnv.js",
+      "backend/utils/rateLimit.js",
+      "backend/utils/mlClient.js",
+      "backend/utils/alertBuilder.js",
       "frontend/src/services/api.js"
     ],
     "context/architecture.md": [

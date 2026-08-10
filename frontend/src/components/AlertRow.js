@@ -32,7 +32,7 @@ function AlertRow({ alert, onSelect }) {
   return (
     <div
       onClick={() => onSelect && onSelect(alert.reactor_id)}
-      className="grid grid-cols-[110px_1fr_1fr_110px_90px_80px_90px_2fr] gap-3 px-5 py-3 items-center cursor-pointer transition-opacity"
+      className="grid grid-cols-[110px_1fr_110px_90px] md:grid-cols-[110px_1fr_1fr_110px_90px_80px_90px_2fr] gap-3 px-5 py-3 items-center cursor-pointer transition-opacity"
       style={{
         borderBottom: "1px solid var(--border)",
         opacity: alert.resolved ? 0.5 : 1,
@@ -58,7 +58,7 @@ function AlertRow({ alert, onSelect }) {
       >
         Reactor {alert.reactor_id}
       </span>
-      <span className="text-sm" style={{ color: "var(--textSub)" }}>
+      <span className="hidden md:block text-sm" style={{ color: "var(--textSub)" }}>
         {alert.plant_id || "—"}
       </span>
       <span>
@@ -69,13 +69,13 @@ function AlertRow({ alert, onSelect }) {
       <span className="font-bold text-sm" style={{ color: riskColor() }}>
         {alert.risk_score}%
       </span>
-      <span className="text-sm" style={{ color: "var(--text)" }}>
+      <span className="hidden md:block text-sm" style={{ color: "var(--text)" }}>
         {alert.temperature}°C
       </span>
-      <span className="text-sm" style={{ color: "var(--text)" }}>
+      <span className="hidden md:block text-sm" style={{ color: "var(--text)" }}>
         {alert.pressure} bar
       </span>
-      <span className="min-w-0">
+      <span className="hidden md:block min-w-0">
         <span className="block text-sm truncate" style={{ color: "var(--textSub)" }}>
           {alert.message}
         </span>
