@@ -1,14 +1,17 @@
 const Reactor = require('../models/Reactor');
 const AuditLog = require('../models/AuditLog');
+const Alert = require('../models/Alert');
 const mlGateway = require('../services/mlGateway');
 const plantService = require('../services/plantService');
 const { classifyRisk } = require('../utils/silBands');
 const { sanitize, safeError, validateReading } = require('../utils/validation');
 const { runEnsemble, simulateAsync, predictTime, explain } = require('../utils/mlClient');
 const { handleAlert } = require('../utils/alertBuilder');
+const { AlarmRationalization, ALARM_PRIORITIES } = require('../utils/alarmRationalization');
 const logger = require('../logger');
 const ML_URL = mlGateway.ML_URL;
 let latestReadings = {};
+const alarmSystem = new AlarmRationalization(); // singleton
 const getAllReactors = async (req, res) => {
   try {
     const allowed = plantService.allowedPlantIds(req.user);
@@ -90,11 +93,42 @@ const streamReading = async (req, res) => {
 
     AuditLog.appendOnly({ event_type: 'REACTOR_READING', actor: 'SYSTEM', reactor_id: reactorId, plant_id: plantService.getReactorPlant(reactorId), payload: reading, risk_score: ensembleScore }).catch(e => logger.warn('audit: ' + e.message));
 
-    if (ensembleStatus === 'WARNING' || ensembleStatus === 'CRITICAL') {
-      await handleAlert({
-        req, reading: enrichedReading, ensembleScore, ensembleStatus, silResult,
-        explainResult, plantId: plantService.getReactorPlant(reactorId), gasConcentration: gas_concentration,
-      });
+    // Alarm Rationalization (ISA-18.2) — replaces direct alert logic
+    const alarmType = alarmSystem.classifyAlarm(enrichedReading, ensembleScore);
+    if (alarmType) {
+      const decision = alarmSystem.shouldAlert(reactorId, alarmType, ensembleScore);
+      if (decision.should_alert) {
+        const alert = new Alert({
+          reactor_id: reactorId,
+          plant_id: plantService.getReactorPlant(reactorId),
+          alert_type: alarmType.startsWith('CRITICAL') ? 'CRITICAL' : 'WARNING',
+          risk_score: ensembleScore,
+          temperature: enrichedReading.temperature,
+          pressure: enrichedReading.pressure,
+          message: decision.is_flood_notification
+            ? decision.message
+            : `Reactor ${reactorId}: ${alarmType} — Risk ${ensembleScore}%`,
+          top_drivers: explainResult?.top_drivers || [],
+          sil_level: silResult.sil,
+          recommended_action: silResult.action,
+          priority: ALARM_PRIORITIES[alarmType]?.label || 'P2-PROMPT',
+          is_flood_notification: decision.is_flood_notification || false,
+          suppressed_count: 0,
+          flow_rate: enrichedReading.flow_rate,
+          material_level: enrichedReading.material_level,
+          gas_concentration: enrichedReading.gas_concentration,
+          ph_level: enrichedReading.ph_level,
+          emissions_co2_ppm: enrichedReading.emissions_co2_ppm,
+          parameter_alerts: enrichedReading.parameter_alerts || [],
+        });
+        await alert.save();
+        const { sendEmailAlert, sendSMSAlert } = require('./alertController');
+        sendEmailAlert(alert);
+        sendSMSAlert(alert);
+        req.io.to('operators').emit('new_alert', alert);
+      } else {
+        logger.info('Alert suppressed by rationalization', { reactor_id: reactorId, reason: decision.reason, alarm_type: alarmType });
+      }
     }
 
     const updateRoom = plantService.roomForPlant(plantService.getReactorPlant(reactorId));

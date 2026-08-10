@@ -1,6 +1,6 @@
 {
   "_comment": "GENERATED -- never hand-edit. Regenerate with scripts/build_doc_manifest.sh",
-  "_generated": "2026-08-10T14:19:53Z",
+  "_generated": "2026-08-10T16:00:22Z",
   "file_to_doc": {
     "backend/controllers/reactorController.js": "context/api-contracts.md",
     "backend/controllers/maintenanceScheduleController.js": "context/api-contracts.md",
@@ -29,6 +29,7 @@
     "backend/utils/rateLimit.js": "context/api-contracts.md",
     "backend/utils/mlClient.js": "context/api-contracts.md",
     "backend/utils/alertBuilder.js": "context/api-contracts.md",
+    "backend/utils/alarmRationalization.js": "context/api-contracts.md",
     "frontend/src/services/api.js": "context/api-contracts.md",
     "backend/server.js": "context/architecture.md",
     "backend/logger.js": "context/architecture.md",
@@ -105,7 +106,9 @@
     "ml-model/safety_alerts.py": "context/ml-models.md",
     "ml-model/sequence_buffer.py": "context/ml-models.md",
     "ml-model/explain_service.py": "context/ml-models.md",
-    "ml-model/features.py": "context/ml-models.md"
+    "ml-model/features.py": "context/ml-models.md",
+    "ml-model/sensor_voting.py": "context/ml-models.md",
+    "ml-model/kalman_filter.py": "context/ml-models.md"
   },
   "doc_to_files": {
     "context/api-contracts.md": [
@@ -136,6 +139,7 @@
       "backend/utils/rateLimit.js",
       "backend/utils/mlClient.js",
       "backend/utils/alertBuilder.js",
+      "backend/utils/alarmRationalization.js",
       "frontend/src/services/api.js"
     ],
     "context/architecture.md": [
@@ -223,7 +227,9 @@
       "ml-model/safety_alerts.py",
       "ml-model/sequence_buffer.py",
       "ml-model/explain_service.py",
-      "ml-model/features.py"
+      "ml-model/features.py",
+      "ml-model/sensor_voting.py",
+      "ml-model/kalman_filter.py"
     ],
     "context/open_work.md": [],
     "context/roadmap.md": [],

@@ -69,6 +69,7 @@ frontend/src/App.js  -> MLStatusBanner shown (red banner)
   - `backend/services/mlGateway.js`
   - `backend/services/onboardingService.js`
   - `backend/services/plantService.js`
+  - `backend/utils/alarmRationalization.js`
   - `backend/utils/alertBuilder.js`
   - `backend/utils/mlClient.js`
   - `backend/utils/rateLimit.js`
@@ -148,6 +149,7 @@ frontend/src/App.js  -> MLStatusBanner shown (red banner)
   - `ml-model/feature_engineering.py`
   - `ml-model/features.py`
   - `ml-model/federated/local_trainer.py`
+  - `ml-model/kalman_filter.py`
   - `ml-model/lstm_prepare_data.py`
   - `ml-model/maintenance.py`
   - `ml-model/predictive_maintenance.py`
@@ -158,6 +160,7 @@ frontend/src/App.js  -> MLStatusBanner shown (red banner)
   - `ml-model/routes_simulation.py`
   - `ml-model/safety_alerts.py`
   - `ml-model/schedule_service.py`
+  - `ml-model/sensor_voting.py`
   - `ml-model/sequence_buffer.py`
   - `ml-model/simulation/reactor_simulator.py`
   - `ml-model/test.py`

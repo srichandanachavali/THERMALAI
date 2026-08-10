@@ -5,11 +5,17 @@ from risk_service import load_models, calculate_risk_score, shap_top_drivers
 from safety_alerts import parameter_alerts
 from sequence_buffer import update_sequence_buffer, reactor_buffers, reactor_history
 from explain_service import build_explanation
+from sensor_voting import SensorVotingLayer
+from kalman_filter import ReactorKalmanFilter
 import logging
 
 logger = logging.getLogger('thermalai.ml')
 
 risk_bp = Blueprint('risk', __name__)
+
+# Module-level singletons
+voting_layer = SensorVotingLayer()
+kalman = ReactorKalmanFilter(process_noise=0.05, measurement_noise=0.8)
 
 
 @risk_bp.route('/predict', methods=['POST'])
@@ -19,14 +25,20 @@ def predict():
         data = request.get_json()
         if not data:
             return jsonify({'error': 'No data provided'}), 400
-        # Feed the reactor's sequence buffer BEFORE scoring so online rolling
-        # stats and (if present) the LSTM sequence use prior readings.
-        reactor_id = data.get('reactor_id', 'unknown')
-        history = reactor_history.get(reactor_id, [])
-        result = calculate_risk_score(data, history)
-        update_sequence_buffer(reactor_id, data)
 
-        p_alerts = parameter_alerts(data)
+        # STEP 1: Sensor voting layer — validate temperature via 2-of-3 voting
+        validation = voting_layer.validate_all(data)
+
+        # STEP 2: Kalman filter — smooth validated reading
+        reactor_id = data.get('reactor_id', 'unknown')
+        smoothed_data = kalman.filter_reading(reactor_id, validation['validated_reading'])
+
+        # STEP 3: Risk calculation on smoothed data
+        history = reactor_history.get(reactor_id, [])
+        result = calculate_risk_score(smoothed_data, history)
+        update_sequence_buffer(reactor_id, smoothed_data)
+
+        p_alerts = parameter_alerts(smoothed_data)
         risk = result['risk_score']
         has_critical = any(a['severity'] == 'CRITICAL' for a in p_alerts)
         has_warning = any(a['severity'] == 'WARNING' for a in p_alerts)
@@ -34,12 +46,16 @@ def predict():
             risk = min(100, risk + 15)
         elif has_warning:
             risk = min(100, risk + 5)
-        if risk >= 70:
-            status = 'CRITICAL'
-        elif risk >= 30:
-            status = 'WARNING'
-        else:
-            status = 'SAFE'
+
+        # STEP 4: Boost risk on sensor fault
+        if validation['temp_validation']['sensor_fault_suspected']:
+            risk = min(100, risk + 20)
+            if risk >= 70:
+                status = 'CRITICAL'
+            elif risk >= 30:
+                status = 'WARNING'
+            else:
+                status = 'SAFE'
 
         return jsonify({
             'success': True,
@@ -55,6 +71,14 @@ def predict():
             'minutes_to_runaway': result['minutes_to_runaway'],
             'top_risk_factors': result['top_risk_factors'],
             'parameter_alerts': p_alerts,
+            # Sensor validation metadata
+            'data_quality': validation['data_quality'],
+            'sensor_validation': {
+                'voter_spread_celsius': validation['temp_validation']['voter_spread_celsius'],
+                'sensor_fault_suspected': validation['temp_validation']['sensor_fault_suspected'],
+                'sensor_faults': validation['sensor_faults'],
+                'fault_note': validation['temp_validation']['fault_note'],
+            }
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500

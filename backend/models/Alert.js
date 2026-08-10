@@ -21,6 +21,10 @@ const AlertSchema = new mongoose.Schema({
   ph_level: { type: Number, default: 7.0 },
   emissions_co2_ppm: { type: Number, default: 400 },
   parameter_alerts: [{ param: String, value: Number, severity: String, reason: String }],
+  // ISA-18.2 Alarm Rationalization
+  priority: { type: String, enum: ['P1-IMMEDIATE', 'P2-PROMPT', 'P3-DELAYED'], default: 'P2-PROMPT' },
+  is_flood_notification: { type: Boolean, default: false },
+  suppressed_count: { type: Number, default: 0 },
 });
 
 module.exports = mongoose.model("Alert", AlertSchema);

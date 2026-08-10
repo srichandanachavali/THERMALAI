@@ -29,6 +29,7 @@ modules:
   - backend/utils/rateLimit.js
   - backend/utils/mlClient.js
   - backend/utils/alertBuilder.js
+  - backend/utils/alarmRationalization.js
   - frontend/src/services/api.js
 tests:
   - backend/tests/reactors.test.js

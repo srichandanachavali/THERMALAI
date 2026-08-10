@@ -25,6 +25,8 @@ modules:
   - ml-model/sequence_buffer.py
   - ml-model/explain_service.py
   - ml-model/features.py
+  - ml-model/sensor_voting.py
+  - ml-model/kalman_filter.py
 tests:
   - ml-model/tests/test_risk_engine.py
 references:
