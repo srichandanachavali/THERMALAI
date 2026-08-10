@@ -3,7 +3,7 @@ from flask import Blueprint, request, jsonify
 from config import CRITICAL_TEMP
 from risk_service import load_models, calculate_risk_score, shap_top_drivers
 from safety_alerts import parameter_alerts
-from sequence_buffer import update_sequence_buffer, reactor_buffers
+from sequence_buffer import update_sequence_buffer, reactor_buffers, reactor_history
 from explain_service import build_explanation
 import logging
 
@@ -19,31 +19,42 @@ def predict():
         data = request.get_json()
         if not data:
             return jsonify({'error': 'No data provided'}), 400
-        result = calculate_risk_score(data)
+        # Feed the reactor's sequence buffer BEFORE scoring so online rolling
+        # stats and (if present) the LSTM sequence use prior readings.
+        reactor_id = data.get('reactor_id', 'unknown')
+        history = reactor_history.get(reactor_id, [])
+        result = calculate_risk_score(data, history)
+        update_sequence_buffer(reactor_id, data)
+
         p_alerts = parameter_alerts(data)
         risk = result['risk_score']
-        # Risk boost from IEC 61511 parameter alerts
         has_critical = any(a['severity'] == 'CRITICAL' for a in p_alerts)
         has_warning = any(a['severity'] == 'WARNING' for a in p_alerts)
         if has_critical:
             risk = min(100, risk + 15)
         elif has_warning:
             risk = min(100, risk + 5)
-        # Recompute status if boosted
         if risk >= 70:
             status = 'CRITICAL'
         elif risk >= 30:
             status = 'WARNING'
         else:
             status = 'SAFE'
+
         return jsonify({
             'success': True,
-            'reactor_id': data.get('reactor_id', 'unknown'),
+            'reactor_id': reactor_id,
             'risk_score': round(risk, 1),
             'status': status,
             'prediction': result['prediction'],
+            'confidence': result['confidence'],
+            'rf_weight_used': result['rf_weight_used'],
+            'lstm_weight_used': result['lstm_weight_used'],
+            'models_agree': result['models_agree'],
             'probabilities': result['probabilities'],
-            'parameter_alerts': p_alerts
+            'minutes_to_runaway': result['minutes_to_runaway'],
+            'top_risk_factors': result['top_risk_factors'],
+            'parameter_alerts': p_alerts,
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500

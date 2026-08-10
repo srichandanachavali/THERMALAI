@@ -76,9 +76,9 @@ class LocalModelTrainer:
             if label is None:
                 continue
             try:
-                # build_feature_vector yields the full 15-field vector; slice to
-                # ORIGINAL_FEATURES so it aligns with the base model's width.
-                rows.append(build_feature_vector(r)[:len(ORIGINAL_FEATURES)])
+                # build_feature_vector yields the full 15-field vector; the base
+                # model is now 15-wide, so train local models on the same width.
+                rows.append(build_feature_vector(r))
                 labels.append(label)
             except KeyError:
                 continue

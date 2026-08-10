@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
+import { RISK_THRESHOLDS } from "../constants/reactors";
 
 const API =
   process.env.REACT_APP_API_URL?.replace('/api', '') ||
@@ -47,8 +48,8 @@ function ExplainPanel({ reactor }) {
   if (!explanation) return null;
 
   const getBorderColor = () => {
-    if (explanation.risk_score >= 70) return "border-red-500";
-    if (explanation.risk_score >= 30) return "border-yellow-500";
+    if (explanation.risk_score >= RISK_THRESHOLDS.CRITICAL) return "border-red-500";
+    if (explanation.risk_score >= RISK_THRESHOLDS.WARNING) return "border-yellow-500";
     return "border-green-500";
   };
 
@@ -71,9 +72,9 @@ function ExplainPanel({ reactor }) {
       {/* Overall assessment */}
       <div
         className={`text-sm font-bold mb-4 ${
-          explanation.risk_score >= 70
+          explanation.risk_score >= RISK_THRESHOLDS.CRITICAL
             ? "text-red-400"
-            : explanation.risk_score >= 30
+            : explanation.risk_score >= RISK_THRESHOLDS.WARNING
               ? "text-yellow-400"
               : "text-green-400"
         }`}

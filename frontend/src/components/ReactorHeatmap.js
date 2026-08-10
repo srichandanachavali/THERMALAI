@@ -26,6 +26,10 @@ function ReactorHeatmap({ reactors }) {
             <div
               key={reactor.reactor_id}
               onClick={() => navigate(`/reactor/${reactor.reactor_id}`)}
+              tabIndex={0}
+              role="button"
+              aria-label={`Reactor ${reactor.reactor_id}, status ${reactor.status}, risk ${reactor.risk_score}%. Open reactor detail.`}
+              onKeyDown={(e) => e.key === "Enter" && navigate(`/reactor/${reactor.reactor_id}`)}
               className={`${getColor(reactor.status)} cursor-pointer rounded-lg p-4 flex flex-col items-center justify-center transition-all`}
             >
               <span className="text-white font-bold text-lg">
@@ -33,6 +37,9 @@ function ReactorHeatmap({ reactors }) {
               </span>
               <span className="text-white text-xs mt-1">
                 {reactor.risk_score}%
+              </span>
+              <span className="text-white text-[10px] uppercase tracking-wide mt-0.5">
+                {reactor.status}
               </span>
             </div>
           ))}

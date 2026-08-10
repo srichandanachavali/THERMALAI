@@ -1,23 +1,23 @@
-"""Per-reactor rolling sequence buffer for the LSTM path.
+"""Per-reactor rolling sequence buffers for the LSTM + feature-engineering paths.
 
-Each reading appends a 10-field vector (5 original + 5 IEC 61511 sensors),
-trimmed to SEQUENCE_LENGTH entries. The shared store lets routes_risk and
-app.py read the same buffers without importing the full prediction core.
+Each reading appends (a) a 9-field LSTM vector and (b) the raw reading dict.
+Both are trimmed to SEQUENCE_LENGTH entries. reactor_history feeds online
+rolling statistics (mean/std/min) and temp_acceleration in risk_service.
 """
 
 from config import LSTM_SEQUENCE_FIELDS, SEQUENCE_LENGTH
 
-reactor_buffers = {}
+reactor_buffers = {}      # reactor_id -> list of 9-field LSTM vectors
+reactor_history = {}      # reactor_id -> list of raw reading dicts
 
 
 def lstm_sequence_vector(reading):
-    """Build the per-reading vector in LSTM_SEQUENCE_FIELDS order (10 fields)."""
+    """Build the per-reading vector in LSTM_SEQUENCE_FIELDS order (9 fields)."""
     values = {
         'temperature': reading['temperature'],
         'pressure': reading['pressure'],
         'reaction_rate': reading.get('reaction_rate', 0.5),
         'cooling_efficiency': reading.get('cooling_efficiency', 0.5),
-        'temp_rate_of_change': reading.get('temp_rate_of_change', 0),
         'flow_rate': reading.get('flow_rate', 150.0),
         'material_level': reading.get('material_level', 75.0),
         'gas_concentration': reading.get('gas_concentration', 0.0),
@@ -28,9 +28,14 @@ def lstm_sequence_vector(reading):
 
 
 def update_sequence_buffer(reactor_id, reading):
-    """Append a reading to the reactor's sequence buffer, trimming the tail."""
+    """Append a reading (LSTM vector + raw dict), trimming the tail."""
     buf = reactor_buffers.setdefault(reactor_id, [])
     buf.append(lstm_sequence_vector(reading))
     if len(buf) > SEQUENCE_LENGTH:
         del buf[:-SEQUENCE_LENGTH]
+
+    hist = reactor_history.setdefault(reactor_id, [])
+    hist.append(dict(reading))
+    if len(hist) > SEQUENCE_LENGTH:
+        del hist[:-SEQUENCE_LENGTH]
     return buf

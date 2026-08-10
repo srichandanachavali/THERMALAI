@@ -1,0 +1,40 @@
+{
+  "trained_at": "2026-08-10T11:05:29.233060+00:00",
+  "n_samples": 24000,
+  "classes": [
+    "NOMINAL",
+    "DEGRADING",
+    "WARNING",
+    "CRITICAL",
+    "RECOVERY"
+  ],
+  "feature_names": [
+    "temperature",
+    "pressure",
+    "reaction_rate",
+    "cooling_efficiency",
+    "temp_rate_of_change",
+    "flow_rate",
+    "material_level",
+    "gas_concentration",
+    "ph_level",
+    "emissions_co2_ppm",
+    "cooling_danger",
+    "heat_removal_proxy",
+    "runaway_proximity_nitration",
+    "pressure_temp_ratio",
+    "ph_deviation",
+    "gas_risk",
+    "material_criticality",
+    "temp_acceleration",
+    "temp_rolling_avg",
+    "pressure_rolling_avg",
+    "temp_rolling_std",
+    "cooling_rolling_min"
+  ],
+  "cv_accuracy_mean": 0.9882,
+  "cv_accuracy_std": 0.0028,
+  "critical_false_negative_rate": 0.0483,
+  "roc_auc": 0.9997,
+  "model_version": "2.0"
+}

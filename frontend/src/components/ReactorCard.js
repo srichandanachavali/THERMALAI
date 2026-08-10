@@ -1,7 +1,15 @@
 import React from "react";
+import { FiAlertTriangle } from "react-icons/fi";
+import StatusBadge from "./StatusBadge";
+import { getReactorConfig, RISK_THRESHOLDS } from "../constants/reactors";
 
 // Compact reactor card for the Home grid: risk gauge + sensor progress rows.
-function ReactorCard({ reactor, onClick }) {
+// `critical`/`degrading` enable Level-1 pinning treatments (red pulsing border +
+// IMMEDIATE ACTION banner, and amber degrading border respectively).
+function ReactorCard({ reactor, onClick, critical, degrading }) {
+  const config = getReactorConfig(reactor.reactor_id);
+  const isCritical = critical ?? reactor.status === "CRITICAL";
+  const isDegrading = degrading ?? reactor.status === "DEGRADING";
   const riskColor = (status) =>
     status === "SAFE"
       ? "var(--success)"
@@ -17,28 +25,11 @@ function ReactorCard({ reactor, onClick }) {
     return hasCritical ? "var(--danger)" : riskColor(status);
   };
 
-  const statusPill = (status) => {
-    const bg =
-      status === "SAFE"
-        ? "var(--success)"
-        : status === "WARNING"
-          ? "var(--warning)"
-          : "var(--danger)";
-    return (
-      <span
-        className="text-[11px] font-bold px-2.5 py-1 rounded-full"
-        style={{ color: "#fff", backgroundColor: bg }}
-      >
-        {status}
-      </span>
-    );
-  };
-
   const sensorRows = (r) => {
     const rate = r.reaction_rate || 0;
     return [
-      { label: "Temperature", value: Math.min(100, (r.temperature / 200) * 100), display: `${r.temperature}°C`, color: r.temperature > 160 ? "var(--danger)" : "var(--accent)" },
-      { label: "Pressure", value: Math.min(100, (r.pressure / 10) * 100), display: `${r.pressure} bar`, color: r.pressure > 8 ? "var(--danger)" : "var(--accentLight)" },
+      { label: "Temperature", value: Math.min(100, (r.temperature / 200) * 100), display: `${r.temperature}°C`, color: r.temperature > RISK_THRESHOLDS.TEMP_CRITICAL ? "var(--danger)" : "var(--accent)" },
+      { label: "Pressure", value: Math.min(100, (r.pressure / 10) * 100), display: `${r.pressure} bar`, color: r.pressure > RISK_THRESHOLDS.PRESSURE_CRITICAL ? "var(--danger)" : "var(--accentLight)" },
       { label: "Reaction Rate", value: Math.min(100, rate * 100), display: `${Math.round(rate * 100)}%`, color: rate >= 0.7 ? "var(--danger)" : rate >= 0.4 ? "var(--warning)" : "var(--success)" },
       { label: "Cooling", value: Math.min(100, r.cooling_efficiency * 100), display: `${Math.round(r.cooling_efficiency * 100)}%`, color: r.cooling_efficiency < 0.3 ? "var(--danger)" : "var(--success)" },
     ];
@@ -62,22 +53,22 @@ function ReactorCard({ reactor, onClick }) {
       },
       {
         label: "Gas", display: `${gas} ppm`, value: Math.min(100, (gas / 1000) * 100),
-        color: gas < 25 ? "var(--success)" : gas <= 500 ? "var(--warning)" : "var(--danger)",
-        pulse: gas > 500,
-        warn: gas > 25,
+        color: gas < RISK_THRESHOLDS.GAS_TOXIC ? "var(--success)" : gas <= RISK_THRESHOLDS.GAS_ABORT ? "var(--warning)" : "var(--danger)",
+        pulse: gas > RISK_THRESHOLDS.GAS_ABORT,
+        warn: gas > RISK_THRESHOLDS.GAS_TOXIC,
       },
       {
         label: "pH Level", display: `${ph}`, value: Math.min(100, (ph / 14) * 100),
-        color: ph < 3 || ph > 11 ? "var(--danger)" : ph < 4 || ph > 10 ? "var(--warning)" : "var(--success)",
+        color: ph < RISK_THRESHOLDS.PH_LOW_DANGER || ph > RISK_THRESHOLDS.PH_HIGH_DANGER ? "var(--danger)" : ph < RISK_THRESHOLDS.PH_LOW_WARNING || ph > RISK_THRESHOLDS.PH_HIGH_WARNING ? "var(--warning)" : "var(--success)",
       },
       {
         label: "CO₂", display: `${co2} ppm`, value: Math.min(100, (co2 / 5000) * 100),
-        color: co2 > 4000 ? "var(--danger)" : co2 > 2000 ? "var(--warning)" : "var(--success)",
+        color: co2 > RISK_THRESHOLDS.CO2_CRITICAL ? "var(--danger)" : co2 > RISK_THRESHOLDS.CO2_WARNING ? "var(--warning)" : "var(--success)",
       },
     ];
   };
 
-  const gasAlert = (reactor.gas_concentration ?? 0) > 25;
+  const gasAlert = (reactor.gas_concentration ?? 0) > RISK_THRESHOLDS.GAS_TOXIC;
 
   const RiskGauge = ({ score, status }) => {
     const radius = 42;
@@ -112,17 +103,30 @@ function ReactorCard({ reactor, onClick }) {
   };
 
   const SensorRow = ({ s }) => (
-    <div key={s.label}>
+    <div
+      key={s.label}
+      role="meter"
+      aria-label={`${s.label}: ${s.display}`}
+      aria-valuenow={Math.round(s.value)}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      title={`${s.label}: ${s.display}${s.warn ? " — warning" : ""}`}
+    >
       <div className="flex justify-between text-xs mb-1">
         <span style={{ color: "var(--textSub)" }}>
           {s.label}
-          {s.warn && <span className="ml-1" style={{ color: "var(--danger)" }}>⚠</span>}
+          {s.warn && (
+            <span className="ml-1" style={{ color: "var(--danger)" }} aria-label="warning">
+              <FiAlertTriangle size={10} />
+            </span>
+          )}
         </span>
         <span style={{ color: "var(--text)" }}>{s.display}</span>
       </div>
       <div
         className="h-1 rounded-full"
         style={{ backgroundColor: "var(--border)" }}
+        aria-hidden="true"
       >
         <div
           className="h-1 rounded-full"
@@ -140,18 +144,46 @@ function ReactorCard({ reactor, onClick }) {
   return (
     <div
       onClick={onClick}
-      className="p-5 cursor-pointer transition-colors"
+      tabIndex={0}
+      role="button"
+      aria-label={`${config.tag} ${config.name}, status ${isCritical ? "CRITICAL" : isDegrading ? "DEGRADING" : reactor.status}, risk ${reactor.risk_score}%. Open reactor detail.`}
+      onKeyDown={(e) => e.key === "Enter" && onClick()}
+      className="p-5 cursor-pointer transition-colors relative"
       style={{
         backgroundColor: "var(--card)",
         border: "1px solid var(--border)",
         borderRadius: 12,
+        boxShadow: isCritical
+          ? "-4px 0 0 #ef4444"
+          : isDegrading
+            ? "-4px 0 0 #d97706"
+            : "none",
+        animation: isCritical ? "thermalai-critical-pulse 1.5s ease-in-out infinite" : "none",
       }}
       onMouseEnter={(e) => (e.currentTarget.style.borderColor = "var(--accent)")}
       onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--border)")}
     >
+      {isCritical && (
+        <div
+          className="flex items-center justify-center gap-1.5 text-[11px] font-bold text-center px-2 py-1 rounded-md mb-3 tracking-wide"
+          style={{ backgroundColor: "#ef4444", color: "#fff", animation: "thermalai-pulse 1s infinite" }}
+        >
+          <FiAlertTriangle size={12} aria-hidden="true" />
+          <span>CRITICAL — IMMEDIATE ACTION REQUIRED</span>
+        </div>
+      )}
+      {isDegrading && (
+        <div
+          className="flex items-center justify-center gap-1.5 text-[11px] font-bold text-center px-2 py-1 rounded-md mb-3 tracking-wide"
+          style={{ backgroundColor: "#d97706", color: "#fff" }}
+        >
+          <FiAlertTriangle size={12} aria-hidden="true" />
+          <span>DEGRADING</span>
+        </div>
+      )}
       <div className="flex items-center justify-between mb-3">
         <span className="font-bold" style={{ color: "var(--text)" }}>
-          Reactor {reactor.reactor_id}
+          {config.tag}
         </span>
         <div className="flex items-center gap-2">
           {gasAlert && (
@@ -162,7 +194,7 @@ function ReactorCard({ reactor, onClick }) {
               GAS ALERT
             </span>
           )}
-          {statusPill(reactor.status)}
+          <StatusBadge status={reactor.status} />
         </div>
       </div>
       <RiskGauge score={reactor.risk_score} status={reactor.status} />

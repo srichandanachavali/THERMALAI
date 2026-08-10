@@ -1,4 +1,5 @@
 import React from 'react';
+import { FiCheckCircle, FiAlertTriangle, FiAlertOctagon } from 'react-icons/fi';
 
 function CountdownTimer({ reactor }) {
   if (!reactor) return null;
@@ -8,7 +9,7 @@ function CountdownTimer({ reactor }) {
   if (status === 'SAFE' || !time_message) {
     return (
       <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4 flex items-center gap-3">
-        <span className="text-2xl">✅</span>
+        <FiCheckCircle size={28} style={{ color: "var(--success)" }} aria-hidden="true" />
         <div>
           <p className="text-green-400 font-semibold">Reactor Safe</p>
           <p className="text-gray-400 text-sm">Operating within normal parameters</p>
@@ -29,17 +30,20 @@ function CountdownTimer({ reactor }) {
   };
 
   const getIcon = () => {
-    if (status === 'CRITICAL' || minutes_to_critical === 0) return '🔴';
-    if (minutes_to_critical < 5) return '🚨';
-    if (minutes_to_critical < 15) return '⚠️';
-    return '⚠️';
+    if (status === 'CRITICAL' || minutes_to_critical === 0) {
+      return <FiAlertOctagon size={28} style={{ color: "var(--danger)" }} aria-hidden="true" />;
+    }
+    if (minutes_to_critical < 5) {
+      return <FiAlertTriangle size={28} style={{ color: "var(--danger)" }} aria-hidden="true" />;
+    }
+    return <FiAlertTriangle size={28} style={{ color: "var(--warning)" }} aria-hidden="true" />;
   };
 
   return (
     <div className={`border rounded-lg p-4 ${getBgColor()}`}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <span className="text-3xl">{getIcon()}</span>
+          {getIcon()}
           <div>
             <p className={`font-bold text-lg ${getTextColor()}`}>
               {status === 'CRITICAL' || minutes_to_critical === 0
@@ -50,8 +54,10 @@ function CountdownTimer({ reactor }) {
           </div>
         </div>
         <div className="text-right">
-          <p className={`text-4xl font-bold ${getTextColor()}`}>
-            {minutes_to_critical === 0 ? '🔴' : `${minutes_to_critical}m`}
+          <p className={`text-4xl font-bold ${getTextColor()} flex items-center gap-2`}>
+            {minutes_to_critical === 0
+              ? <FiAlertOctagon aria-hidden="true" />
+              : `${minutes_to_critical}m`}
           </p>
           <p className="text-gray-500 text-xs">to critical</p>
         </div>

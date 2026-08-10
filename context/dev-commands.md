@@ -4,6 +4,7 @@ description: First-time setup, service start order, test commands, MongoDB queri
 modules:
   - ml-model/stream_data.py
   - ml-model/simulate_data.py
+  - ml-model/kinetics.py
   - ml-model/push_to_mongo.py
 tests: []
 references:
@@ -89,8 +90,13 @@ cd ml-model
 python stream_data.py
 ```
 
-Sends a reading for each of the 5 reactors (A–E) every ~2 seconds to
-`POST http://localhost:5000/api/reactors/stream`. This replaces real hardware.
+Sends a reading for each of the 5 ISA S5.1-tagged reactors (R-101…R-301) every
+~2 seconds to `POST http://localhost:5000/api/reactors/stream`. This replaces
+real hardware. The live feed is driven by `ml-model/kinetics.py` — an Arrhenius
+heat-balance engine with a 5-state machine (NOMINAL/DEGRADING/WARNING/CRITICAL/
+RECOVERY) and random fault injection (cooling pump, feed valve, coolant
+contamination, vent blockage). `simulate_data.py` reuses the same engine to
+generate physics-plausible SAFE/WARNING/CRITICAL training data.
 
 ---
 

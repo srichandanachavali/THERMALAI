@@ -4,6 +4,7 @@ import { useSocket } from "../context/SocketContext";
 import { getAlerts } from "../services/api";
 import AlertRow from "../components/AlertRow";
 import { AlertRowSkeleton } from "../components/Skeletons";
+import { RISK_THRESHOLDS } from "../constants/reactors";
 
 const FILTERS = [
   { key: "all", label: "All" },
@@ -56,7 +57,7 @@ function Alerts() {
     all: allAlerts.length,
     warning: allAlerts.filter((a) => a.alert_type === "WARNING").length,
     critical: allAlerts.filter((a) => a.alert_type === "CRITICAL").length,
-    gas: allAlerts.filter((a) => (a.gas_concentration ?? 0) > 25).length,
+    gas: allAlerts.filter((a) => (a.gas_concentration ?? 0) > RISK_THRESHOLDS.GAS_TOXIC).length,
     resolved: allAlerts.filter((a) => a.resolved).length,
   }), [allAlerts]);
 
@@ -64,7 +65,7 @@ function Alerts() {
     if (activeFilter === "all") return allAlerts;
     if (activeFilter === "resolved") return allAlerts.filter((a) => a.resolved);
     if (activeFilter === "gas")
-      return allAlerts.filter((a) => !a.resolved && (a.gas_concentration ?? 0) > 25);
+      return allAlerts.filter((a) => !a.resolved && (a.gas_concentration ?? 0) > RISK_THRESHOLDS.GAS_TOXIC);
     return allAlerts.filter(
       (a) => !a.resolved && a.alert_type === activeFilter.toUpperCase(),
     );

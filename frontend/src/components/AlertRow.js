@@ -1,14 +1,11 @@
 import React from "react";
+import StatusBadge from "./StatusBadge";
+import { getReactorConfig, RISK_THRESHOLDS } from "../constants/reactors";
 
 // One alert as a row in the Alerts audit-log table.
 function AlertRow({ alert, onSelect }) {
-  const gasCritical = (alert.gas_concentration ?? 0) > 25 && !alert.resolved;
-
-  const pillStyle = () => {
-    if (alert.resolved) return { backgroundColor: "var(--textMuted)", color: "var(--card)" };
-    if (alert.alert_type === "CRITICAL") return { backgroundColor: "var(--danger)", color: "#fff" };
-    return { backgroundColor: "var(--warning)", color: "var(--bg)" };
-  };
+  const gasCritical =
+    (alert.gas_concentration ?? 0) > RISK_THRESHOLDS.GAS_TOXIC && !alert.resolved;
 
   const riskColor = () => {
     if (alert.resolved) return "var(--textMuted)";
@@ -23,8 +20,8 @@ function AlertRow({ alert, onSelect }) {
         .join(" • ");
     }
     const parts = [];
-    if ((alert.gas_concentration ?? 0) > 25) parts.push(`Gas ${alert.gas_concentration}ppm`);
-    if ((alert.ph_level ?? 7) < 4 || (alert.ph_level ?? 7) > 10) parts.push(`pH ${alert.ph_level}`);
+    if ((alert.gas_concentration ?? 0) > RISK_THRESHOLDS.GAS_TOXIC) parts.push(`Gas ${alert.gas_concentration}ppm`);
+    if ((alert.ph_level ?? 7) < RISK_THRESHOLDS.PH_LOW_WARNING || (alert.ph_level ?? 7) > RISK_THRESHOLDS.PH_HIGH_WARNING) parts.push(`pH ${alert.ph_level}`);
     if ((alert.material_level ?? 75) < 10) parts.push(`Tank ${alert.material_level}%`);
     return parts.join(" • ");
   };
@@ -32,6 +29,10 @@ function AlertRow({ alert, onSelect }) {
   return (
     <div
       onClick={() => onSelect && onSelect(alert.reactor_id)}
+      tabIndex={0}
+      role="button"
+      aria-label={`${getReactorConfig(alert.reactor_id).tag} alert, ${alert.resolved ? "resolved" : alert.alert_type}, risk ${alert.risk_score}%. Open reactor detail.`}
+      onKeyDown={(e) => e.key === "Enter" && onSelect && onSelect(alert.reactor_id)}
       className="grid grid-cols-[110px_1fr_110px_90px] md:grid-cols-[110px_1fr_1fr_110px_90px_80px_90px_2fr] gap-3 px-5 py-3 items-center cursor-pointer transition-opacity"
       style={{
         borderBottom: "1px solid var(--border)",
@@ -56,15 +57,13 @@ function AlertRow({ alert, onSelect }) {
           textDecoration: alert.resolved ? "line-through" : "none",
         }}
       >
-        Reactor {alert.reactor_id}
+        {getReactorConfig(alert.reactor_id).tag}
       </span>
       <span className="hidden md:block text-sm" style={{ color: "var(--textSub)" }}>
         {alert.plant_id || "—"}
       </span>
       <span>
-        <span className="text-[11px] font-bold px-2.5 py-1 rounded-full" style={pillStyle()}>
-          {alert.resolved ? "RESOLVED" : alert.alert_type}
-        </span>
+        <StatusBadge status={alert.alert_type} resolved={alert.resolved} />
       </span>
       <span className="font-bold text-sm" style={{ color: riskColor() }}>
         {alert.risk_score}%

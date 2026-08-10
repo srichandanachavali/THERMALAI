@@ -5,6 +5,7 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
+import { FiAlertTriangle } from "react-icons/fi";
 import { SocketProvider, useSocket } from "./context/SocketContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import Sidebar from "./components/Sidebar";
@@ -29,8 +30,12 @@ const MLStatusBanner = () => {
   const { mlStatus } = useSocket();
   if (mlStatus !== "down") return null;
   return (
-    <div className="flex items-center justify-center gap-2 bg-red-600 text-white text-sm font-semibold px-4 py-2 text-center">
-      <span>⚠️</span>
+    <div
+      role="status"
+      aria-live="polite"
+      className="flex items-center justify-center gap-2 bg-red-600 text-white text-sm font-semibold px-4 py-2 text-center"
+    >
+      <FiAlertTriangle size={16} aria-hidden="true" />
       <span>
         ML prediction service is DOWN — risk scores may be inaccurate.
         Engineering team has been notified.

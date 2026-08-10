@@ -73,7 +73,7 @@ function Sidebar() {
             <p className="font-extrabold tracking-tight leading-none" style={{ color: "var(--text)", fontSize: 16 }}>
               ThermalAI
             </p>
-            <div className="flex items-center gap-1 mt-1">
+            <div className="flex items-center gap-1 mt-1" role="status" aria-live="polite">
               <FiActivity size={10} style={{ color: connected ? "var(--success)" : "var(--danger)" }} />
               <span style={{ color: "var(--textMuted)", fontSize: 10 }}>
                 {connected ? "Live" : "Offline"}

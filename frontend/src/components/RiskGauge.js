@@ -1,15 +1,16 @@
 import React from 'react';
+import { RISK_THRESHOLDS } from '../constants/reactors';
 
 function RiskGauge({ score, status }) {
   const getColor = () => {
-    if (score < 30) return '#22c55e';
-    if (score < 70) return '#eab308';
+    if (score < RISK_THRESHOLDS.WARNING) return '#22c55e';
+    if (score < RISK_THRESHOLDS.CRITICAL) return '#eab308';
     return '#ef4444';
   };
 
   const getBgColor = () => {
-    if (score < 30) return 'bg-green-500';
-    if (score < 70) return 'bg-yellow-500';
+    if (score < RISK_THRESHOLDS.WARNING) return 'bg-green-500';
+    if (score < RISK_THRESHOLDS.CRITICAL) return 'bg-yellow-500';
     return 'bg-red-500';
   };
 
@@ -27,7 +28,7 @@ function RiskGauge({ score, status }) {
             cy="100"
             r={radius}
             fill="none"
-            stroke="#374151"
+            stroke="var(--border)"
             strokeWidth="16"
           />
           {/* Progress circle */}

@@ -1,3 +1,5 @@
+import { RISK_THRESHOLDS } from "../constants/reactors";
+
 export const getPlantReactors = (reactors, plantReactorIds) =>
   reactors.filter((r) => plantReactorIds.includes(r.reactor_id));
 
@@ -38,13 +40,13 @@ export const getStatusIcon = (status) => {
 };
 
 export const getRiskColor = (score) => {
-  if (score >= 70) return "text-red-400";
-  if (score >= 30) return "text-yellow-400";
+  if (score >= RISK_THRESHOLDS.CRITICAL) return "text-red-400";
+  if (score >= RISK_THRESHOLDS.WARNING) return "text-yellow-400";
   return "text-green-400";
 };
 
 export const getRiskBarColor = (score) => {
-  if (score >= 70) return "bg-red-500";
-  if (score >= 30) return "bg-yellow-500";
+  if (score >= RISK_THRESHOLDS.CRITICAL) return "bg-red-500";
+  if (score >= RISK_THRESHOLDS.WARNING) return "bg-yellow-500";
   return "bg-green-500";
 };

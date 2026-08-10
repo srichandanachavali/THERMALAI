@@ -1,20 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  AreaChart,
-  Area,
-  Line,
-  CartesianGrid,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
+import { FiAlertCircle, FiActivity } from "react-icons/fi";
 import { useSocket } from "../context/SocketContext";
-import useReactorHistory from "../hooks/useReactorHistory";
 import ReactorCard from "../components/ReactorCard";
-import AlertFeed from "../components/AlertFeed";
 import { ReactorCardSkeleton } from "../components/Skeletons";
+import { getReactorConfig } from "../constants/reactors";
+
+// Level 1 (OVERVIEW) priority — CRITICAL pinned first, then DEGRADING,
+// then WARNING, then SAFE; within a band, highest risk first.
+const STATUS_ORDER = { CRITICAL: 0, DEGRADING: 1, WARNING: 2, SAFE: 3 };
 
 function Home() {
   const { reactors, alerts, connected } = useSocket();
@@ -37,56 +31,50 @@ function Home() {
     return () => clearTimeout(t);
   }, []);
 
+  const safeCount = reactors.filter((r) => r.status === "SAFE").length;
   const warningCount = reactors.filter((r) => r.status === "WARNING").length;
   const criticalCount = reactors.filter((r) => r.status === "CRITICAL").length;
-  const safeCount = reactors.filter((r) => r.status === "SAFE").length;
-
-  const aggregatePills = [
-    { label: "SAFE", count: safeCount, color: "var(--success)" },
-    { label: "WARNING", count: warningCount, color: "var(--warning)" },
-    { label: "CRITICAL", count: criticalCount, color: "var(--danger)" },
-  ];
-
-  const sortedReactors = [...reactors].sort(
-    (a, b) => b.risk_score - a.risk_score,
-  );
-  const topReactor = sortedReactors[0];
-  const highestRisk = topReactor ? topReactor.risk_score : 0;
-  const highestStatus = topReactor ? topReactor.status : "SAFE";
-
-  const activeAlerts = alerts.filter((a) => !a.resolved).length;
-
-  const { history: chartData } = useReactorHistory(
-    topReactor ? topReactor.reactor_id : "A",
-    {
-      liveReactor: topReactor,
-      maxPoints: 20,
-      format: (d) => ({
-        time: new Date(d.timestamp || Date.now()).toLocaleTimeString(),
-        risk: d.risk_score,
-      }),
-    },
-  );
 
   const statCards = [
-    { label: "Total Reactors", value: reactors.length, color: "var(--accentLight)" },
-    { label: "Active Alerts", value: activeAlerts, color: "var(--danger)" },
-    {
-      label: "Highest Risk",
-      value: `${highestRisk}%`,
-      color:
-        highestStatus === "SAFE"
-          ? "var(--success)"
-          : highestStatus === "WARNING"
-            ? "var(--warning)"
-            : "var(--danger)",
-    },
-    {
-      label: "System Status",
-      value: criticalCount > 0 ? "CRITICAL" : warningCount > 0 ? "WARNING" : "HEALTHY",
-      color: criticalCount > 0 ? "var(--danger)" : warningCount > 0 ? "var(--warning)" : "var(--success)",
-    },
+    { label: "Total", value: reactors.length, color: "var(--accentLight)" },
+    { label: "Safe", value: safeCount, color: "var(--success)" },
+    { label: "Warning", value: warningCount, color: "var(--warning)" },
+    { label: "Critical", value: criticalCount, color: "var(--danger)" },
   ];
+
+  const sortedReactors = [...reactors].sort((a, b) => {
+    const oa = STATUS_ORDER[a.status] ?? 4;
+    const ob = STATUS_ORDER[b.status] ?? 4;
+    if (oa !== ob) return oa - ob;
+    return (b.risk_score || 0) - (a.risk_score || 0);
+  });
+
+  // Data-source pill — Live Sensors / Simulation Mode / No Data.
+  // Live sensors aren't integrated yet, so a connected, data-bearing socket is
+  // reported as simulation; extend the branch when real telemetry lands.
+  const dataSource = (() => {
+    if (!connected || reactors.length === 0) {
+      return { Icon: FiAlertCircle, label: "No Data", color: "var(--danger)" };
+    }
+    return { Icon: FiActivity, label: "Simulation Mode", color: "#3b82f6" };
+  })();
+  const DataIcon = dataSource.Icon;
+
+  const minutesAgo = (ts) => {
+    const t = new Date(ts).getTime();
+    if (Number.isNaN(t)) return 0;
+    return Math.max(0, Math.round((Date.now() - t) / 60000));
+  };
+
+  // Status summary strip — last 10 alerts as clickable chips.
+  const alertChips = alerts.slice(0, 10).map((a) => ({
+    _id: a._id,
+    reactor_id: a.reactor_id,
+    tag: getReactorConfig(a.reactor_id).tag,
+    severity: a.alert_type,
+    risk: a.risk_score,
+    ageMin: minutesAgo(a.timestamp),
+  }));
 
   return (
     <div>
@@ -101,23 +89,23 @@ function Home() {
           </p>
         </div>
 
-        {/* Aggregate status pills */}
-        <div className="flex items-center gap-2">
-          {aggregatePills.map((p) => (
-            <span
-              key={p.label}
-              role="status"
-              aria-label={`${p.count} ${p.label} reactors`}
-              className="text-[11px] font-bold px-3 py-1 rounded-full flex items-center gap-1.5"
-              style={{ backgroundColor: p.color, color: "#fff" }}
-            >
-              {p.count} {p.label}
-            </span>
-          ))}
-        </div>
+        {/* Data source indicator */}
+        <button
+          onClick={() => navigate("/settings")}
+          title="Data source — click to open Settings"
+          className="flex items-center gap-2 text-[11px] font-bold px-3 py-1.5 rounded-full transition-colors"
+          style={{
+            backgroundColor: "var(--card)",
+            border: "1px solid var(--border)",
+            color: "var(--text)",
+          }}
+        >
+          <DataIcon size={12} aria-hidden="true" />
+          <span>{dataSource.label}</span>
+        </button>
 
         {/* Live clock */}
-        <div className="text-right">
+        <div className="text-right" role="status" aria-live="polite">
           <p className="text-2xl font-bold tabular-nums" style={{ color: "var(--text)" }}>
             {now.toLocaleTimeString()}
           </p>
@@ -149,76 +137,7 @@ function Home() {
         ))}
       </div>
 
-      {/* Trend chart */}
-      <div
-        className="p-5 mb-8"
-        style={{
-          backgroundColor: "var(--card)",
-          border: "1px solid var(--border)",
-          borderRadius: 12,
-        }}
-      >
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold" style={{ color: "var(--text)" }}>
-            Risk Trend
-          </h3>
-          {topReactor && (
-            <span className="text-xs" style={{ color: "var(--textSub)" }}>
-              Reactor {topReactor.reactor_id}
-            </span>
-          )}
-        </div>
-        <ResponsiveContainer width="100%" height={240}>
-          <AreaChart data={chartData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
-            <defs>
-              <linearGradient id="riskGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="var(--accent)" stopOpacity={0.5} />
-                <stop offset="100%" stopColor="var(--accent)" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid stroke="var(--border)" vertical={false} />
-            <XAxis
-              dataKey="time"
-              tick={{ fill: "var(--textMuted)", fontSize: 11 }}
-              stroke="var(--border)"
-              tickLine={false}
-              axisLine={false}
-            />
-            <YAxis
-              domain={[0, 100]}
-              tick={{ fill: "var(--textMuted)", fontSize: 11 }}
-              stroke="var(--border)"
-              tickLine={false}
-              axisLine={false}
-            />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: "var(--card)",
-                border: "1px solid var(--border)",
-                borderRadius: 8,
-                color: "var(--text)",
-              }}
-            />
-            <Area
-              type="monotone"
-              dataKey="risk"
-              stroke="var(--accent)"
-              strokeWidth={2}
-              fill="url(#riskGradient)"
-            />
-            <Line
-              type="monotone"
-              dataKey="avg"
-              stroke="var(--highlight)"
-              strokeDasharray="5 5"
-              dot={false}
-              strokeWidth={1.5}
-            />
-          </AreaChart>
-        </ResponsiveContainer>
-      </div>
-
-      {/* Reactor grid */}
+      {/* Reactor grid — CRITICAL cards span full width and are pinned to top */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {sortedReactors.length === 0 ? (
           connected && !showGuide ? (
@@ -253,23 +172,48 @@ function Home() {
           )
         ) : (
           sortedReactors.map((reactor) => (
-            <ReactorCard
+            <div
               key={reactor.reactor_id}
-              reactor={reactor}
-              onClick={() => navigate(`/reactor/${reactor.reactor_id}`)}
-            />
+              className={reactor.status === "CRITICAL" ? "lg:col-span-2" : ""}
+            >
+              <ReactorCard
+                reactor={reactor}
+                onClick={() => navigate(`/reactor/${reactor.reactor_id}`)}
+              />
+            </div>
           ))
         )}
       </div>
 
-      {/* Live alert feed */}
-      <div className="mt-8">
-        <AlertFeed
-          alerts={alerts}
-          onSelect={(id) => navigate(`/reactor/${id}`)}
-          onViewAll={() => navigate("/alerts")}
-        />
-      </div>
+      {/* Status summary strip — replaces the old AlertFeed */}
+      {alertChips.length > 0 && (
+        <div
+          className="mt-8 p-4"
+          style={{ backgroundColor: "var(--card)", border: "1px solid var(--border)", borderRadius: 12 }}
+        >
+          <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: "var(--textSub)" }}>
+            Recent Alerts
+          </p>
+          <div className="flex gap-2 overflow-x-auto pb-1">
+            {alertChips.map((chip) => (
+              <button
+                key={chip._id}
+                onClick={() => navigate(`/reactor/${chip.reactor_id}`)}
+                className="shrink-0 text-[11px] font-bold px-2.5 py-1.5 rounded-md transition-transform hover:scale-105"
+                style={{
+                  backgroundColor: "var(--bg)",
+                  border: "1px solid var(--border)",
+                  borderLeft: `3px solid ${chip.severity === "CRITICAL" ? "var(--danger)" : "var(--warning)"}`,
+                  color: "var(--text)",
+                }}
+                title={`${chip.tag} ${chip.severity} ${chip.risk}%`}
+              >
+                {chip.tag} {chip.severity} {chip.risk}% {chip.ageMin}m
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,9 +1,9 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { FiLayers, FiMapPin, FiBarChart2, FiBell } from "react-icons/fi";
+import StatusBadge from "./StatusBadge";
 import {
   getStatusColor,
-  getStatusBadge,
-  getStatusIcon,
   getRiskColor,
   getRiskBarColor,
 } from "../utils/plantStatus";
@@ -18,11 +18,11 @@ function PlantCard({ plant, plantReactors, plantStatus, plantRiskScore }) {
       {/* Plant Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
-          <div className="text-4xl">🏭</div>
+          <FiLayers size={36} aria-hidden="true" />
           <div>
             <h2 className="text-xl font-bold text-white">{plant.name}</h2>
-            <p className="text-gray-400 text-sm">
-              📍 {plant.location}, {plant.city}, {plant.state}
+            <p className="text-gray-400 text-sm inline-flex items-center gap-1">
+              <FiMapPin size={13} aria-hidden="true" /> {plant.location}, {plant.city}, {plant.state}
             </p>
             <p className="text-gray-500 text-xs mt-1">
               {plant.type} · Est. {plant.established}
@@ -31,9 +31,7 @@ function PlantCard({ plant, plantReactors, plantStatus, plantRiskScore }) {
         </div>
         <div className="text-right">
           <div className="flex items-center gap-3 mb-2">
-            <span className={`px-4 py-2 rounded-full text-sm font-bold ${getStatusBadge(plantStatus)}`}>
-              {getStatusIcon(plantStatus)} {plantStatus}
-            </span>
+            <StatusBadge status={plantStatus} />
           </div>
           <p className="text-gray-400 text-sm">
             Avg Risk: <span className={`font-bold ${getRiskColor(plantRiskScore)}`}>{plantRiskScore}%</span>
@@ -66,6 +64,10 @@ function PlantCard({ plant, plantReactors, plantStatus, plantRiskScore }) {
               <div
                 key={reactor.reactor_id}
                 onClick={() => navigate(`/reactor/${reactor.reactor_id}`)}
+                tabIndex={0}
+                role="button"
+                aria-label={`Reactor ${reactor.reactor_id}, status ${reactor.status}, risk ${reactor.risk_score}%. Open reactor detail.`}
+                onKeyDown={(e) => e.key === "Enter" && navigate(`/reactor/${reactor.reactor_id}`)}
                 className={`cursor-pointer rounded-lg p-4 text-center transition-all hover:opacity-80 ${
                   reactor.status === "CRITICAL"
                     ? "bg-red-500 animate-pulse"
@@ -93,15 +95,15 @@ function PlantCard({ plant, plantReactors, plantStatus, plantRiskScore }) {
       <div className="flex gap-3 mt-4 pt-4 border-t border-gray-700">
         <button
           onClick={() => navigate("/analytics")}
-          className="bg-blue-500/20 hover:bg-blue-500/40 text-blue-400 text-sm px-4 py-2 rounded-lg transition-all"
+          className="bg-blue-500/20 hover:bg-blue-500/40 text-blue-400 text-sm px-4 py-2 rounded-lg transition-all inline-flex items-center gap-1.5"
         >
-          📊 View Analytics
+          <FiBarChart2 aria-hidden="true" /> View Analytics
         </button>
         <button
           onClick={() => navigate("/alerts")}
-          className="bg-red-500/20 hover:bg-red-500/40 text-red-400 text-sm px-4 py-2 rounded-lg transition-all"
+          className="bg-red-500/20 hover:bg-red-500/40 text-red-400 text-sm px-4 py-2 rounded-lg transition-all inline-flex items-center gap-1.5"
         >
-          🚨 View Alerts
+          <FiBell aria-hidden="true" /> View Alerts
         </button>
       </div>
     </div>

@@ -4,18 +4,24 @@ import pickle
 import numpy as np
 import pandas as pd
 
-from config import FEATURES, ORIGINAL_FEATURES
+from config import FEATURES, CLASSES, LSTM_SEQUENCE_FIELDS, ORIGINAL_FEATURES
+from features import build_feature_vector, compute_minutes_to_runaway
 
 logger = logging.getLogger('thermalai.ml')
 
-# RF model is lazy-loaded on first request so the app starts instantly.
-# LSTM removed — tensorflow-cpu is too large for free-tier deployment.
+# RF lazy-loads on first request. LSTM is optional — when tensorflow isn't
+# installed (free-tier) the ensemble falls back to RF-only (lstm_weight=0).
 model = None
 explainer = None
+lstm_model = None
+lstm_scaler = None
+lstm_label_encoder = None
+
+_CLASS_ORDER = CLASSES
 
 
 def load_models():
-    global model, explainer
+    global model, explainer, lstm_model, lstm_scaler, lstm_label_encoder
     if model is not None:
         return
     with open('saved-models/rf_model.pkl', 'rb') as f:
@@ -23,70 +29,63 @@ def load_models():
     try:
         import shap
         explainer = shap.TreeExplainer(model)
-    except ImportError:
+    except Exception:
         explainer = None
-    print("✅ RF model loaded!")
+    try:
+        from tensorflow.keras.models import load_model as _load
+        lstm_model = _load('saved-models/lstm_model.h5')
+        with open('saved-models/lstm_scaler.pkl', 'rb') as f:
+            lstm_scaler = pickle.load(f)
+        with open('saved-models/lstm_label_encoder.pkl', 'rb') as f:
+            lstm_label_encoder = pickle.load(f)
+        print('LSTM model loaded!')
+    except Exception:
+        lstm_model = None
+    print('RF model loaded!')
 
 
-def build_feature_vector(reading):
-    """Return the ordered feature vector the RF expects (config.FEATURES).
-
-    Mirrors the engineering in calculate_risk_score so SHAP attributions
-    align with the exact inputs the model saw at train time.
-    """
-    temp = reading['temperature']
-    pressure = reading['pressure']
-    cooling = reading['cooling_efficiency']
-    values = [
-        temp, pressure, reading.get('reaction_rate', 0.5), cooling,
-        reading.get('temp_rate_of_change', 0),
-        reading.get('temp_rolling_avg', temp),
-        reading.get('pressure_rolling_avg', pressure),
-        reading.get('temp_acceleration', 0),
-        round(pressure / temp, 4),
-        round((1 - cooling) * temp, 2),
-        # IEC 61511 sensor additions (defaulted so old callers keep working)
-        reading.get('flow_rate', 150.0),
-        reading.get('material_level', 75.0),
-        reading.get('gas_concentration', 0.0),
-        reading.get('ph_level', 7.0),
-        reading.get('emissions_co2_ppm', 400.0),
-    ]
-    return values
+def build_lstm_sequence(history, reading, scaler):
+    """(1, 20, 9) scaled sequence from buffered dicts, padded to SEQUENCE_LENGTH."""
+    from config import SEQUENCE_LENGTH
+    rows = [r for r in (history or [])] + [reading]
+    vecs = [[r.get(f, 0.0) for f in LSTM_SEQUENCE_FIELDS] for r in rows]
+    if len(vecs) < SEQUENCE_LENGTH:
+        pad = [vecs[0]] * (SEQUENCE_LENGTH - len(vecs))
+        vecs = pad + vecs
+    seq = np.array([scaler.transform(np.array(vecs, dtype=float))])
+    return seq
 
 
-def shap_top_drivers(reading):
-    """Return (top_drivers, explanation_confidence) using SHAP values.
+def _probs_to_canonical(probs, class_labels):
+    d = dict(zip(class_labels, probs))
+    return [d.get(c, 0.0) for c in _CLASS_ORDER]
 
-    Uses the predicted class's attributions so the explanation matches the
-    decision the model actually made.
+
+def shap_top_drivers(reading, history=None):
+    """Return (top_drivers, confidence) using SHAP — same contract /explain uses.
+
+    Drivers carry {sensor, contribution, current_value, direction, human_readable}.
     """
     if explainer is None:
         return [], 'medium'
-    engineered = build_feature_vector(reading)
-    # Probe the full 15-feature vector; fall back to the trained 10 columns if
-    # the loaded model hasn't been retrained yet.
+    engineered = np.array([build_feature_vector(reading, history)])
+    active_features = FEATURES
     try:
-        X = np.array([engineered])
+        X = pd.DataFrame(engineered, columns=FEATURES)
         model.predict(X)
-        active_features = FEATURES
     except ValueError:
-        X = np.array([engineered[:len(ORIGINAL_FEATURES)]])
-        active_features = ORIGINAL_FEATURES
+        # Stale-width artifact — fall back to the columns it was trained on.
+        k = getattr(model, 'n_features_in_', len(ORIGINAL_FEATURES))
+        active_features = FEATURES[:k]
+        X = pd.DataFrame(engineered[:, :k], columns=active_features)
     pred = model.predict(X)[0]
     class_idx = list(model.classes_).index(pred)
     shap_values = explainer.shap_values(X)
-    # Multiclass RF: newer shap returns a single (samples, features, classes)
-    # array; older returns a list (one array per class). Normalize to the
-    # predicted class's per-feature contributions.
     if isinstance(shap_values, list):
         vals = np.asarray(shap_values[class_idx][0])
     else:
         sv = np.asarray(shap_values)
-        if sv.ndim == 3:
-            vals = sv[0, :, class_idx]
-        else:
-            vals = sv[0]
+        vals = sv[0, :, class_idx] if sv.ndim == 3 else sv[0]
     top = sorted(zip(active_features, vals), key=lambda x: abs(x[1]), reverse=True)[:3]
     proba = model.predict_proba(X)[0]
     confidence = 'high' if max(proba) > 0.7 else 'medium'
@@ -94,7 +93,7 @@ def shap_top_drivers(reading):
     for rank, (name, contribution) in enumerate(top, start=1):
         label = name.replace('_', ' ').title()
         direction = 'increasing' if contribution >= 0 else 'decreasing'
-        current_value = engineered[active_features.index(name)]
+        current_value = engineered[0][active_features.index(name)]
         drivers.append({
             'sensor': name,
             'contribution': round(float(contribution), 4),
@@ -115,55 +114,97 @@ def _ordinal(n):
     return {1: 'st', 2: 'nd', 3: 'rd'}.get(n % 10, 'th')
 
 
-def calculate_risk_score(reading):
-    temp = reading['temperature']
-    pressure = reading['pressure']
-    cooling = reading['cooling_efficiency']
-    features = {
-        'temperature': temp, 'pressure': pressure,
-        'reaction_rate': reading.get('reaction_rate', 0.5),
-        'cooling_efficiency': cooling,
-        'temp_rate_of_change': reading.get('temp_rate_of_change', 0),
-        'temp_rolling_avg': reading.get('temp_rolling_avg', temp),
-        'pressure_rolling_avg': reading.get('pressure_rolling_avg', pressure),
-        'temp_acceleration': reading.get('temp_acceleration', 0),
-        'pressure_temp_ratio': round(pressure / temp, 4),
-        'cooling_danger': round((1 - cooling) * temp, 2),
-        # IEC 61511 sensor additions (defaulted so old callers keep working)
-        'flow_rate': reading.get('flow_rate', 150.0),
-        'material_level': reading.get('material_level', 75.0),
-        'gas_concentration': reading.get('gas_concentration', 0.0),
-        'ph_level': reading.get('ph_level', 7.0),
-        'emissions_co2_ppm': reading.get('emissions_co2_ppm', 400.0)
-    }
-    df = pd.DataFrame([features])
+def top_risk_factors(vec):
+    """Top 3 drivers by (global importance x current-value magnitude)."""
+    imp = np.asarray(model.feature_importances_)
+    k = len(imp)
+    active = FEATURES[:k]
+    mag = imp * np.abs(vec[:k])
+    order = np.argsort(mag)[::-1][:3]
+    factors = []
+    for i in order:
+        name = active[i]
+        label = name.replace('_', ' ').title()
+        factors.append({
+            'feature': name,
+            'importance': round(float(imp[i]), 4),
+            'value': round(float(vec[i]), 2),
+            'human_readable': f"{label} elevated (importance {imp[i]:.3f})",
+        })
+    return factors
+
+
+def calculate_risk_score(reading, history=None):
+    vec = build_feature_vector(reading, history)
+    df = pd.DataFrame([vec], columns=FEATURES)
     try:
-        prediction = model.predict(df)[0]
-        probabilities = model.predict_proba(df)[0]
+        rf_probs = model.predict_proba(df)[0]
     except ValueError:
-        # Loaded model is still trained on the original 10 features — score on
-        # those to keep inference working until the model is retrained.
-        df = df[ORIGINAL_FEATURES]
-        prediction = model.predict(df)[0]
-        probabilities = model.predict_proba(df)[0]
-    classes = model.classes_
-    prob_dict = dict(zip(classes, probabilities))
-    safe_prob = prob_dict.get('SAFE', 0)
-    warning_prob = prob_dict.get('WARNING', 0)
-    critical_prob = prob_dict.get('CRITICAL', 0)
-    risk_score = round((warning_prob * 50) + (critical_prob * 100), 1)
-    risk_score = min(100, max(0, risk_score))
-    if risk_score < 30:
-        status = 'SAFE'
-    elif risk_score < 70:
+        # Stale-width artifact — fall back to the columns it was trained on.
+        k = getattr(model, 'n_features_in_', len(ORIGINAL_FEATURES))
+        df = pd.DataFrame([vec[:k]], columns=FEATURES[:k])
+        rf_probs = model.predict_proba(df)[0]
+    rf_canon = _probs_to_canonical(rf_probs, list(model.classes_))
+
+    seq_len = len(history) + 1 if history else 1
+    lstm_canon = None
+    if lstm_model is not None and lstm_scaler is not None:
+        seq = build_lstm_sequence(history, reading, lstm_scaler)
+        p = lstm_model.predict(seq, verbose=0)[0]
+        lstm_canon = _probs_to_canonical(p, list(lstm_label_encoder.classes_))
+
+    if lstm_canon is not None:
+        if seq_len >= 20:
+            rf_w, lstm_w = 0.35, 0.65
+        elif seq_len >= 10:
+            rf_w, lstm_w = 0.50, 0.50
+        else:
+            rf_w, lstm_w = 0.80, 0.20
+    else:
+        rf_w, lstm_w = 1.0, 0.0
+
+    if lstm_canon is None:
+        blended = list(rf_canon)
+    else:
+        blended = [rf_w * rf_canon[i] + lstm_w * lstm_canon[i] for i in range(5)]
+    total = sum(blended) or 1.0
+    blended = [b / total for b in blended]
+
+    rf_class = _CLASS_ORDER[int(np.argmax(rf_canon))]
+    lstm_class = (_CLASS_ORDER[int(np.argmax(lstm_canon))]
+                  if lstm_canon is not None else rf_class)
+    agreement = 1.0 if rf_class == lstm_class else 0.0
+
+    _, degrading, warning, critical, _ = blended
+    risk_score = degrading * 25 + warning * 55 + critical * 100
+    risk_score = round(min(100, max(0, risk_score)), 1)
+    prediction = _CLASS_ORDER[int(np.argmax(blended))]
+
+    max_prob = max(blended)
+    if agreement and max_prob > 0.70:
+        confidence = 'high'
+    elif max_prob > 0.50:
+        confidence = 'medium'
+    else:
+        confidence = 'low'
+
+    # 3-state status for the backend Reactor schema / alerting / SIL.
+    if risk_score >= 70:
+        status = 'CRITICAL'
+    elif risk_score >= 30:
         status = 'WARNING'
     else:
-        status = 'CRITICAL'
+        status = 'SAFE'
+
+    probs = {k: round(float(v * 100), 1) for k, v in zip(
+        ('nominal', 'degrading', 'warning', 'critical', 'recovery'), blended)}
     return {
-        'risk_score': risk_score, 'status': status, 'prediction': prediction,
-        'probabilities': {
-            'safe': round(safe_prob * 100, 1),
-            'warning': round(warning_prob * 100, 1),
-            'critical': round(critical_prob * 100, 1)
-        }
+        'risk_score': float(risk_score), 'status': status,
+        'prediction': prediction, 'confidence': confidence,
+        'rf_weight_used': float(rf_w), 'lstm_weight_used': float(lstm_w),
+        'models_agree': bool(agreement),
+        'probabilities': probs,
+        'minutes_to_runaway': compute_minutes_to_runaway(reading, risk_score, status),
+        'top_risk_factors': top_risk_factors(vec),
+        'feature_vector': [round(float(v), 4) for v in vec],
     }

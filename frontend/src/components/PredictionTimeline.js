@@ -9,6 +9,8 @@ import {
   ResponsiveContainer,
   ReferenceLine,
 } from "recharts";
+import { FiTrendingUp, FiAlertTriangle } from "react-icons/fi";
+import { RISK_THRESHOLDS } from "../constants/reactors";
 
 function PredictionTimeline({ reactor }) {
   if (!reactor || !reactor.rf_score) return null;
@@ -54,38 +56,38 @@ function PredictionTimeline({ reactor }) {
   );
 
   const getLineColor = () => {
-    if (maxPredicted >= 70) return "#ef4444";
-    if (maxPredicted >= 30) return "#eab308";
+    if (maxPredicted >= RISK_THRESHOLDS.CRITICAL) return "#ef4444";
+    if (maxPredicted >= RISK_THRESHOLDS.WARNING) return "#eab308";
     return "#22c55e";
   };
 
   return (
     <div className="bg-gray-800 rounded-lg p-6">
-      <h3 className="text-white font-semibold text-lg mb-2">
-        🔮 LSTM Prediction Timeline
+      <h3 className="text-white font-semibold text-lg mb-2 inline-flex items-center gap-2">
+        <FiTrendingUp aria-hidden="true" /> LSTM Prediction Timeline
       </h3>
       <p className="text-gray-400 text-sm mb-4">
         Predicted risk score for next 10 minutes based on time-series analysis
       </p>
 
-      {maxPredicted >= 70 && (
+      {maxPredicted >= RISK_THRESHOLDS.CRITICAL && (
         <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 mb-4">
-          <p className="text-red-400 text-sm font-bold">
-            ⚠️ LSTM predicts CRITICAL state within 10 minutes!
+          <p className="text-red-400 text-sm font-bold inline-flex items-center gap-1.5">
+            <FiAlertTriangle aria-hidden="true" /> LSTM predicts CRITICAL state within 10 minutes!
           </p>
         </div>
       )}
 
       <ResponsiveContainer width="100%" height={200}>
         <LineChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-          <XAxis dataKey="time" stroke="#6b7280" tick={{ fontSize: 10 }} />
-          <YAxis stroke="#6b7280" tick={{ fontSize: 10 }} domain={[0, 100]} />
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+          <XAxis dataKey="time" stroke="var(--textMuted)" tick={{ fontSize: 10 }} />
+          <YAxis stroke="var(--textMuted)" tick={{ fontSize: 10 }} domain={[0, 100]} />
           <Tooltip
             contentStyle={{
-              background: "#1f2937",
-              border: "none",
-              color: "white",
+              background: "var(--card)",
+              border: "1px solid var(--border)",
+              color: "var(--text)",
             }}
             formatter={(value, name) => [
               `${value}%`,
@@ -93,18 +95,18 @@ function PredictionTimeline({ reactor }) {
             ]}
           />
           <ReferenceLine
-            y={70}
+            y={RISK_THRESHOLDS.CRITICAL}
             stroke="#ef4444"
             strokeDasharray="5 5"
             label={{ value: "Critical", fill: "#ef4444", fontSize: 10 }}
           />
           <ReferenceLine
-            y={30}
+            y={RISK_THRESHOLDS.WARNING}
             stroke="#eab308"
             strokeDasharray="5 5"
             label={{ value: "Warning", fill: "#eab308", fontSize: 10 }}
           />
-          <ReferenceLine x="Now" stroke="#6b7280" strokeDasharray="3 3" />
+          <ReferenceLine x="Now" stroke="var(--textMuted)" strokeDasharray="3 3" />
 
           {/* Historical line */}
           <Line

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getReactorHistory } from "../services/api";
 
 // Shared history-fetch + live-append hook.
@@ -8,6 +8,11 @@ import { getReactorHistory } from "../services/api";
 //   maxPoints    : cap history length (used with liveReactor)
 function useReactorHistory(reactorId, { format, liveReactor, maxPoints } = {}) {
   const [history, setHistory] = useState([]);
+  // format is a pure mapper — keep the latest one in a ref so its identity
+  // doesn't trigger the fetch effect on every parent render (callers often
+  // pass an inline arrow). The fetch should only fire when the reactorId changes.
+  const formatRef = useRef(format);
+  formatRef.current = format;
 
   useEffect(() => {
     let cancelled = false;
@@ -16,7 +21,8 @@ function useReactorHistory(reactorId, { format, liveReactor, maxPoints } = {}) {
         const data = await getReactorHistory(reactorId);
         if (cancelled) return;
         const reversed = data.reverse();
-        setHistory(format ? reversed.map((d, i) => format(d, i)) : reversed);
+        const fmt = formatRef.current;
+        setHistory(fmt ? reversed.map((d, i) => fmt(d, i)) : reversed);
       } catch (err) {
         // history not yet available — stream data will populate it
       }
@@ -25,7 +31,7 @@ function useReactorHistory(reactorId, { format, liveReactor, maxPoints } = {}) {
     return () => {
       cancelled = true;
     };
-  }, [reactorId, format]);
+  }, [reactorId]);
 
   useEffect(() => {
     if (liveReactor) {

@@ -7,6 +7,7 @@ modules:
   - frontend/src/config.js
   - frontend/src/context/ThemeContext.js
   - frontend/src/styles/tokens.js
+  - frontend/src/constants/reactors.js
   - frontend/src/pages/Home.js
   - frontend/src/pages/Login.js
   - frontend/src/pages/PlantSelect.js
@@ -33,6 +34,7 @@ modules:
   - frontend/src/components/EnterpriseSummary.js
   - frontend/src/components/ReactorSelector.js
   - frontend/src/components/CurrentStatusCard.js
+  - frontend/src/components/StatusBadge.js
   - frontend/src/components/ErrorBoundary.js
   - frontend/src/components/Skeletons.js
   - frontend/src/hooks/useReactorHistory.js
@@ -143,6 +145,12 @@ All functions are async, throw on non-2xx (axios default).
 
 ## Pages
 
+**SCADA information hierarchy** (one question per level, no widget on two levels):
+- **Level 1 OVERVIEW** (`Home`): "Is everything OK right now?" — fleet status
+- **Level 2 DETAIL** (`ReactorDetail`): "What is this reactor doing right now?" — live cockpit
+- **Level 3 HISTORY** (`Analytics`): "What happened over time?" — trend analysis
+Charts/trends live only on Level 3; live current readings live only on Level 2.
+
 ### PlantSelect (`pages/PlantSelect.js`)
 - Public — accessible before login
 - Shows 3 plant cards (fetches GET /api/plants)
@@ -154,24 +162,46 @@ All functions are async, throw on non-2xx (axios default).
 - Stores `thermalai_role` and `thermalai_name` in localStorage too
 - On success → navigates to `/`
 
-### Home (`pages/Home.js`)
-- Reads `reactors` from `useSocket()`
-- Shows system overview: MetricCard summary stats + ReactorHeatmap grid
+### Home (`pages/Home.js`) — LEVEL 1 OVERVIEW
+- Reads `reactors`/`alerts`/`connected` from `useSocket()`
+- 4 MetricCards (Total/Safe/Warning/Critical) + live clock
+- Reactor grid: **CRITICAL pinned to top as full-width cards** (pulsing red left
+  border via `thermalai-critical-pulse` + "IMMEDIATE ACTION REQUIRED" banner), then
+  DEGRADING (amber border), then WARNING/SAFE by risk score. Sort order defined by
+  `STATUS_ORDER`.
+- Status summary strip replaces AlertFeed — last 10 alerts as clickable chips
+  (`[tag SEVERITY risk% ageMin]`) that navigate to the reactor detail.
+- Data-source indicator pill (🔴 No Data / 🔵 Simulation Mode) top-right, click →
+  `/settings`. No charts here (Level 3 owns trends).
 
-### ReactorDetail (`pages/ReactorDetail.js`)
+### ReactorDetail (`pages/ReactorDetail.js`) — LEVEL 2 DETAIL
 - Route param `:id` is reactor_id (e.g. `"A"`)
 - Reads from `useSocket()` reactors array to find live reading
-- Fetches history and maintenance on mount
-- Components used: RiskGauge, PredictionTimeline, ExplainPanel, MaintenancePanel, AIComparison, CountdownTimer
+- Identity header from `getReactorConfig` (tag/name/process/plant/location + colored
+  process pill by keyword: nitration=orange, hydrogenation=blue, polymerization=purple)
+- Two-column cockpit: left (40%) RiskGauge + **model confidence** (HIGH/MEDIUM/LOW +
+  RF/LSTM weight split, from `confidence`/`rf_weight_used`/`lstm_weight_used` with
+  `lstm_confidence`/40-60 fallback) + **physics context** (runaway threshold + margin
+  to runaway, color-coded) + **Active Parameter Alerts** panel; right (60%) CountdownTimer
+  + live sensor ticker (with trend arrows) + ExplainPanel
+- Below full width: AIComparison, PredictionTimeline, MaintenancePanel, **ReactorHeatmap**
+  (moved here from Home — per-reactor floor context)
+- No trend charts (Level 3 owns them); maintenance fetched on mount
 
 ### Alerts (`pages/Alerts.js`)
 - Reads `alerts` from `useSocket()` (live) + initial fetch via `getAlerts()`
 - Resolved alerts shown with gray/strikethrough styling
 - Resolve button calls `resolveAlert(id)` then updates local state
 
-### Analytics (`pages/Analytics.js`)
+### Analytics (`pages/Analytics.js`) — LEVEL 3 HISTORY
 - Can operate with or without `:id` param
-- Shows historical charts using reactor history data
+- Historical charts only — no live/current values (CurrentStatusCard removed)
+- Sensor tabs for all 9 parameters (Risk/Temp/Pressure/Reaction/Cooling/Flow/Level/Gas/pH/CO₂)
+  with threshold ReferenceLines from `RISK_THRESHOLDS`
+- Correlation ComposedChart (Temperature vs Cooling, dual-axis) — TRL-5 feature
+- Export CSV button (Blob + object URL of filtered history)
+- Time-range selector (30m/2h/8h/24h) filters loaded history client-side by timestamp
+  (no re-fetch)
 
 ### MultiPlant (`pages/MultiPlant.js`)
 - Fetches GET /api/plants
@@ -190,9 +220,16 @@ All functions are async, throw on non-2xx (axios default).
 | `MaintenancePanel` | ReactorDetail | Renders maintenance component health + days-to-failure |
 | `AIComparison` | ReactorDetail | Side-by-side RF vs LSTM score comparison |
 | `CountdownTimer` | ReactorDetail | Shows minutes_to_critical countdown |
-| `AlertFeed` | Alerts | List of alerts with resolve button |
-| `MetricCard` | Home, Analytics | Single stat card (e.g. total reactors, active alerts) |
-| `ReactorHeatmap` | Home | Grid of all reactors colored by status |
+| `AlertRow` | Alerts | Single alert row (severity pill, risk, resolve button) |
+| `MetricCard` | Analytics | Single stat card (e.g. total reactors, active alerts) — Home now uses inline stat cards |
+| `ReactorCard` | Home | Fleet reactor card (sensor grid, status pill, CRITICAL/DEGRADING pinning) |
+| `ReactorSelector` | Analytics | Dropdown to switch the analyzed reactor |
+| `ReactorHeatmap` | ReactorDetail | Grid of all reactors colored by status — moved off Home to Level 2 |
+| `StatusBadge` | ReactorCard, AlertRow, ReactorDetail, MaintenancePanel, PlantCard | Shared status pill with icon + text (never color alone) for colorblind-safe HMI — maps status to a Feather icon + label; pulsing for CRITICAL. See `docs/METHODOLOGY_BRIEF.md` §3 accessibility contract. |
+
+> `AlertFeed` (`components/AlertFeed.js`) is deprecated — Home replaced it with the
+> status-summary chip strip; Alerts renders `AlertRow` directly. Kept in the repo
+> (still doc-owned) but no page imports it.
 
 ---
 

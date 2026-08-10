@@ -24,6 +24,7 @@ modules:
   - ml-model/safety_alerts.py
   - ml-model/sequence_buffer.py
   - ml-model/explain_service.py
+  - ml-model/features.py
 tests:
   - ml-model/tests/test_risk_engine.py
 references:
@@ -33,34 +34,58 @@ references:
 
 # ThermalAI — ML Models
 
-## Feature Set (10 features, same for RF and LSTM)
+## Feature Set (22 features, RF and LSTM)
 
-| # | Feature | Source | Notes |
+The served RF (`rf_model.pkl`) trains on **22 features** (`config.FEATURES`),
+defined in order: **10 base sensors → 8 physics-derived → 4 rolling stats**.
+Online inference builds the identical vector via `features.py`
+(`build_feature_vector`) from the current reading + the reactor's buffered
+history (`sequence_buffer.reactor_history`).
+
+| # | Feature | Group | Notes |
 |---|---|---|---|
-| 1 | `temperature` | sensor | °C, raw reading |
-| 2 | `pressure` | sensor | bar, raw reading |
-| 3 | `reaction_rate` | sensor | 0.0–1.0 |
-| 4 | `cooling_efficiency` | sensor | 0.0–1.0 |
-| 5 | `temp_rate_of_change` | sensor/computed | °C per cycle |
-| 6 | `temp_rolling_avg` | sensor/computed | defaults to `temperature` if not provided |
-| 7 | `pressure_rolling_avg` | sensor/computed | defaults to `pressure` if not provided |
-| 8 | `temp_acceleration` | computed | defaults to 0 if not provided |
-| 9 | `pressure_temp_ratio` | derived | `round(pressure / temperature, 4)` |
-| 10 | `cooling_danger` | derived | `round((1 - cooling_efficiency) * temperature, 2)` |
+| 1 | `temperature` | base | °C, raw reading |
+| 2 | `pressure` | base | bar, raw reading |
+| 3 | `reaction_rate` | base | 0.0–1.0 |
+| 4 | `cooling_efficiency` | base | 0.0–1.0 |
+| 5 | `temp_rate_of_change` | base | °C per cycle |
+| 6 | `flow_rate` | base | L/min |
+| 7 | `material_level` | base | % |
+| 8 | `gas_concentration` | base | ppm |
+| 9 | `ph_level` | base | pH |
+| 10 | `emissions_co2_ppm` | base | ppm |
+| 11 | `cooling_danger` | physics | `(1 - cooling) * temp` |
+| 12 | `heat_removal_proxy` | physics | `flow * cooling * 0.012` |
+| 13 | `runaway_proximity_nitration` | physics | `max(0, (temp-130)/20)` |
+| 14 | `pressure_temp_ratio` | physics | `pressure / temp` |
+| 15 | `ph_deviation` | physics | `abs(ph - 7)` |
+| 16 | `gas_risk` | physics | `min(1, gas/500)` |
+| 17 | `material_criticality` | physics | 1 if level < 10 or > 92 |
+| 18 | `temp_acceleration` | physics | `roc - prev_roc` |
+| 19 | `temp_rolling_avg` | rolling | mean over history window |
+| 20 | `pressure_rolling_avg` | rolling | mean over history window |
+| 21 | `temp_rolling_std` | rolling | std over history window |
+| 22 | `cooling_rolling_min` | rolling | min over history window |
 
-Features 9 and 10 are always computed fresh from the raw reading in `app.py` —
-they are never trusted from the incoming payload.
+`simulate_data.py` generates the 5-class training set (≈24k rows) using the
+Arrhenius physics engine `kinetics.py`; `feature_engineering.py` materializes
+the 22-feature frame for training; `features.py` reproduces it online.
 
 ## Random Forest Model
 
 - **File**: `ml-model/saved-models/rf_model.pkl` (sklearn RandomForestClassifier)
-- **Classes**: `SAFE`, `WARNING`, `CRITICAL`
-- **Inference** (`calculate_risk_score` in `app.py`):
-  1. Build feature dict from reading, compute derived features
-  2. `model.predict(df)` → predicted class label
-  3. `model.predict_proba(df)` → probabilities per class
-  4. `risk_score = (warning_prob × 50) + (critical_prob × 100)`, clamped to [0, 100]
-  5. Status thresholds: < 30 → SAFE, < 70 → WARNING, ≥ 70 → CRITICAL
+- **Classes**: `NOMINAL`, `DEGRADING`, `WARNING`, `CRITICAL`, `RECOVERY` (v2.0)
+- **Hyperparams**: 200 trees, max_depth 12, min_samples_leaf 5, max_features 'sqrt',
+  class_weight 'balanced', n_jobs -1, StratifiedKFold(5) CV
+- **Quality** (trained v2.0): CV accuracy ≈98.8%, ROC-AUC ≈0.9997,
+  CRITICAL FNR ≈4.8% (< 5% target)
+- **Inference** (`calculate_risk_score` in `risk_service.py`):
+  1. `build_feature_vector` → 22-vec from reading + history
+  2. `model.predict_proba` → 5-class probabilities (stale-width ValueError fallback
+     via `model.n_features_in_` for old artifacts)
+  3. Blend with LSTM by sequence length (see Ensemble Formula)
+  4. `risk_score = degrading×25 + warning×55 + critical×100`, clamped [0, 100]
+  5. Status: < 30 → SAFE, < 70 → WARNING, ≥ 70 → CRITICAL (3-state for backend/SIL)
 - **Endpoint**: `POST /predict`
 
 ## LSTM Model
@@ -68,43 +93,44 @@ they are never trusted from the incoming payload.
 - **File**: `ml-model/saved-models/lstm_model.h5` (Keras Sequential)
 - **Scaler**: `ml-model/saved-models/lstm_scaler.pkl` (MinMaxScaler)
 - **Label encoder**: `ml-model/saved-models/lstm_label_encoder.pkl`
-- **Sequence length**: `SEQUENCE_LENGTH = 10`
-- **Per-reactor buffer**: `reactor_buffers` — `dict[reactor_id → deque(maxlen=10)]`
-
-### Buffer Initialization
-When a new `reactor_id` is first seen, the deque is pre-filled with 10 copies of
-the current feature vector (cold-start padding). Each subsequent reading appends
-to the deque, dropping the oldest.
-
-### LSTM Inference (`predict_lstm` in `app.py`)
-1. Build the same 10-feature vector as RF
-2. Append to reactor's deque
-3. Stack deque → numpy array shape `(10, 10)`
-4. `lstm_scaler.transform(sequence)` → normalized
-5. Reshape to `(1, 10, 10)` for Keras
-6. `lstm_model.predict(sequence_input)` → softmax probabilities per class
-7. `lstm_risk_score = (warning_prob × 50) + (critical_prob × 100)`
-8. Returns `lstm_prediction`, `lstm_risk_score`, `lstm_confidence` (max probability × 100)
-- **Endpoint**: `POST /predict-lstm`
+- **Sequence length**: `SEQUENCE_LENGTH = 20`
+- **Per-reactor buffer**: `sequence_buffer.reactor_buffers` (9-field LSTM vectors) +
+  `reactor_history` (raw dicts), both trimmed to `SEQUENCE_LENGTH`.
+- **Architecture**: LSTM(128, return_sequences, dropout .2) → LSTM(64) →
+  Dense(32 relu) → Dropout(.3) → Dense(5 softmax). Adam lr .001, epochs 50, batch 64,
+  EarlyStopping patience 10 + ReduceLROnPlateau.
+- **Endpoint**: `POST /predict-lstm` (RF-based fallback when tensorflow absent —
+  the deployed service has no TF, so `lstm_weight_used = 0` and the ensemble is RF-only)
 
 ## Ensemble Formula
 
-Computed in `backend/controllers/reactorController.js` after both model responses return:
+Computed inside `risk_service.calculate_risk_score` (single `/predict` call):
 
 ```
-ensemble_score = round( RF_score × 0.40 + LSTM_score × 0.60 )
+if seq_len >= 20:   rf_w, lstm_w = 0.35, 0.65
+elif seq_len >= 10: rf_w, lstm_w = 0.50, 0.50
+else:               rf_w, lstm_w = 0.80, 0.20
+# no LSTM model → rf_w, lstm_w = 1.0, 0.0
 
-SAFE     → ensemble_score < 30
-WARNING  → ensemble_score 30–69
-CRITICAL → ensemble_score ≥ 70
+blended = normalize( rf_w*rf_probs + lstm_w*lstm_probs )   # 5 classes
+prediction = argmax(blended)
+models_agree = (rf_class == lstm_class)
+confidence = high if agree & max>0.70; medium if >0.50; else low
+
+risk_score = degrading*25 + warning*55 + critical*100   # clamped [0,100]
+status: SAFE <30 | WARNING 30-69 | CRITICAL >=70
 ```
 
-The backend handles ML unavailability gracefully: if either model call fails,
-its score defaults to 0 and the other model's score still contributes.
+`/predict` also returns `minutes_to_runaway`, `top_risk_factors`, `parameter_alerts`,
+`rf_weight_used`, `lstm_weight_used`, `models_agree`, and 5-class `probabilities`
+(`nominal/degrading/warning/critical/recovery`). The backend
+(`reactorController.js`) reads only `risk_score` and `parameter_alerts` from
+`/predict`, so the key change (SAFE→NOMINAL labels, 5-class probs) is transparent.
 
 ## Time-to-Critical Prediction
 
-Computed in Flask `POST /predict-time`. Uses a linear projection — no ML model.
+Computed inline in `features.compute_minutes_to_runaway` and mirrored by Flask
+`POST /predict-time` (kept for backend compat). Linear projection — no ML model.
 
 ```
 CRITICAL_TEMP = 162°C

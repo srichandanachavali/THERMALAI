@@ -1,4 +1,6 @@
 import React from 'react';
+import { FiCpu, FiActivity } from 'react-icons/fi';
+import { RISK_THRESHOLDS } from '../constants/reactors';
 
 
 function AIComparison({ reactor }) {
@@ -10,21 +12,21 @@ function AIComparison({ reactor }) {
   const lstmConfidence = reactor.lstm_confidence || 0;
 
   const getBarColor = (score) => {
-    if (score >= 70) return 'bg-red-500';
-    if (score >= 30) return 'bg-yellow-500';
+    if (score >= RISK_THRESHOLDS.CRITICAL) return 'bg-red-500';
+    if (score >= RISK_THRESHOLDS.WARNING) return 'bg-yellow-500';
     return 'bg-green-500';
   };
 
   const getTextColor = (score) => {
-    if (score >= 70) return 'text-red-400';
-    if (score >= 30) return 'text-yellow-400';
+    if (score >= RISK_THRESHOLDS.CRITICAL) return 'text-red-400';
+    if (score >= RISK_THRESHOLDS.WARNING) return 'text-yellow-400';
     return 'text-green-400';
   };
 
   return (
     <div className="bg-gray-800 rounded-lg p-6">
-      <h3 className="text-white font-semibold text-lg mb-2">
-        🤖 AI Model Comparison
+      <h3 className="text-white font-semibold text-lg mb-2 inline-flex items-center gap-2">
+        <FiCpu aria-hidden="true" /> AI Model Comparison
       </h3>
       <p className="text-gray-400 text-sm mb-6">
         Two independent AI models cross-validating each other
@@ -104,8 +106,8 @@ function AIComparison({ reactor }) {
             ? 'bg-yellow-500/10 border-yellow-500/30'
             : 'bg-green-500/10 border-green-500/30'
         }`}>
-          <p className="text-gray-300 text-sm">
-            🧠 LSTM time-series analysis detected: 
+          <p className="text-gray-300 text-sm inline-flex items-center gap-1.5">
+            <FiActivity aria-hidden="true" /> LSTM time-series analysis detected:
             <span className={`font-bold ml-1 ${
               reactor.lstm_prediction === 'CRITICAL' ? 'text-red-400' :
               reactor.lstm_prediction === 'WARNING' ? 'text-yellow-400' : 'text-green-400'

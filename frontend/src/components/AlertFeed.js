@@ -1,4 +1,5 @@
 import React from "react";
+import { getReactorConfig } from "../constants/reactors";
 
 // Horizontal live alert strip used on the Home command center.
 function AlertFeed({ alerts, limit = 8, onSelect, onViewAll }) {
@@ -50,7 +51,7 @@ function AlertFeed({ alerts, limit = 8, onSelect, onViewAll }) {
                   className="text-[10px] font-bold uppercase tracking-wider"
                   style={{ color: "var(--textMuted)" }}
                 >
-                  Reactor {alert.reactor_id}
+                  {getReactorConfig(alert.reactor_id).tag}
                 </span>
                 <span className="text-xs font-bold" style={{ color: "var(--text)" }}>
                   {alert.risk_score}%

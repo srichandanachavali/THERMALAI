@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
+import { FiTool, FiClock, FiCheckCircle } from 'react-icons/fi';
+import StatusBadge from './StatusBadge';
 
 const API =
   process.env.REACT_APP_API_URL?.replace('/api', '') ||
@@ -49,7 +51,7 @@ function MaintenancePanel({ reactor }) {
   if (loading) {
     return (
       <div className="bg-gray-800 rounded-lg p-6">
-        <h3 className="text-white font-semibold text-lg mb-4">🔧 Predictive Maintenance</h3>
+        <h3 className="text-white font-semibold text-lg mb-4 inline-flex items-center gap-2"><FiTool aria-hidden="true" /> Predictive Maintenance</h3>
         <div className="text-gray-400 text-center py-4">Analyzing equipment health...</div>
       </div>
     );
@@ -58,7 +60,7 @@ function MaintenancePanel({ reactor }) {
   if (!maintenance) {
     return (
       <div className="bg-gray-800 rounded-lg p-6">
-        <h3 className="text-white font-semibold text-lg mb-4">🔧 Predictive Maintenance</h3>
+        <h3 className="text-white font-semibold text-lg mb-4 inline-flex items-center gap-2"><FiTool aria-hidden="true" /> Predictive Maintenance</h3>
         <div className="text-gray-400 text-center py-4">
           Building maintenance data... start the stream first.
         </div>
@@ -68,8 +70,8 @@ function MaintenancePanel({ reactor }) {
 
   return (
     <div className="bg-gray-800 rounded-lg p-6">
-      <h3 className="text-white font-semibold text-lg mb-2">
-        🔧 Predictive Maintenance
+      <h3 className="text-white font-semibold text-lg mb-2 inline-flex items-center gap-2">
+        <FiTool aria-hidden="true" /> Predictive Maintenance
       </h3>
       <p className="text-gray-400 text-sm mb-6">
         AI-predicted equipment health based on sensor trends
@@ -102,8 +104,8 @@ function MaintenancePanel({ reactor }) {
           ></div>
         </div>
         {maintenance.next_maintenance !== null && maintenance.next_maintenance < 30 && (
-          <p className="text-gray-400 text-xs mt-2">
-            ⏰ Next maintenance recommended in{' '}
+          <p className="text-gray-400 text-xs mt-2 inline-flex items-center gap-1.5">
+            <FiClock aria-hidden="true" /> Next maintenance recommended in{' '}
             <span className="text-yellow-400 font-bold">
               {maintenance.next_maintenance} days
             </span>
@@ -132,13 +134,7 @@ function MaintenancePanel({ reactor }) {
                     <span className="text-sm font-bold">
                       Health: {comp.current_health}%
                     </span>
-                    <span className={`text-xs font-bold px-2 py-1 rounded-full ${
-                      comp.urgency === 'CRITICAL' ? 'bg-red-500 text-white' :
-                      comp.urgency === 'WARNING' ? 'bg-yellow-500 text-black' :
-                      'bg-blue-500 text-white'
-                    }`}>
-                      {comp.urgency}
-                    </span>
+                    <StatusBadge status={comp.urgency === 'NORMAL' || comp.urgency === 'LOW' ? 'NOMINAL' : comp.urgency} />
                   </div>
                 </div>
                 <p className="text-sm mb-2">{comp.message}</p>
@@ -151,7 +147,9 @@ function MaintenancePanel({ reactor }) {
         </div>
       ) : (
         <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4 text-center">
-          <p className="text-green-400 font-bold">✅ All components healthy</p>
+          <p className="text-green-400 font-bold inline-flex items-center justify-center gap-1.5">
+            <FiCheckCircle aria-hidden="true" /> All components healthy
+          </p>
           <p className="text-gray-400 text-sm mt-1">No maintenance required at this time</p>
         </div>
       )}

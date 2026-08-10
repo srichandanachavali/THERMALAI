@@ -93,6 +93,7 @@ frontend/src/App.js  -> MLStatusBanner shown (red banner)
   - `backend/models/User.js`
 
 ### context/dev-commands.md
+  - `ml-model/kinetics.py`
   - `ml-model/push_to_mongo.py`
   - `ml-model/simulate_data.py`
   - `ml-model/stream_data.py`
@@ -119,7 +120,9 @@ frontend/src/App.js  -> MLStatusBanner shown (red banner)
   - `frontend/src/components/RiskGauge.js`
   - `frontend/src/components/Sidebar.js`
   - `frontend/src/components/Skeletons.js`
+  - `frontend/src/components/StatusBadge.js`
   - `frontend/src/config.js`
+  - `frontend/src/constants/reactors.js`
   - `frontend/src/context/ThemeContext.js`
   - `frontend/src/hooks/useReactorHistory.js`
   - `frontend/src/index.js`
@@ -143,6 +146,7 @@ frontend/src/App.js  -> MLStatusBanner shown (red banner)
   - `ml-model/config.py`
   - `ml-model/explain_service.py`
   - `ml-model/feature_engineering.py`
+  - `ml-model/features.py`
   - `ml-model/federated/local_trainer.py`
   - `ml-model/lstm_prepare_data.py`
   - `ml-model/maintenance.py`

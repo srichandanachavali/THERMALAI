@@ -4,13 +4,32 @@ import { getReactors, getAlerts, resolveAlert } from '../api';
 // jest.mock is hoisted before imports by Babel/Jest — the factory runs first.
 // __esModule: true prevents Babel's interop from wrapping the mock in { default: ... },
 // so `import axios from 'axios'` gives the object directly.
-jest.mock('axios', () => ({
-  __esModule: true,
-  default: {
-    get: jest.fn(),
-    put: jest.fn(),
-  },
-}));
+jest.mock('axios', () => {
+  const get = jest.fn();
+  const put = jest.fn();
+  return {
+    __esModule: true,
+    default: {
+      get,
+      put,
+      // api.js calls axios.create({ baseURL }) then uses client.get/client.put.
+      // The client delegates to the shared mock fns but prepends baseURL, so a
+      // relative call like client.get("/reactors") reaches the mock as the full
+      // URL the tests assert against (mirrors real axios.create behavior).
+      create: jest.fn((config) => {
+        const base = config?.baseURL || '';
+        return {
+          get: (url) => get(base + url),
+          put: (url) => put(base + url),
+          interceptors: {
+            request: { use: jest.fn() },
+            response: { use: jest.fn() },
+          },
+        };
+      }),
+    },
+  };
+});
 
 const BASE_URL = 'http://localhost:5000/api';
 

@@ -1,12 +1,14 @@
 import React from "react";
+import { getReactorConfig } from "../constants/reactors";
 
 function CurrentStatusCard({ reactor }) {
   if (!reactor) return null;
+  const config = getReactorConfig(reactor.reactor_id);
 
   return (
     <div className="bg-gray-800 rounded-lg p-6 mb-6">
       <h3 className="text-white font-semibold mb-3">
-        Reactor {reactor.reactor_id} — Current Status
+        {config.tag} — {config.name} · Current Status
       </h3>
       <div className="grid grid-cols-4 gap-4">
         <div className="text-center">

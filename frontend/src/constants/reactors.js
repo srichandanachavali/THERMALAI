@@ -1,0 +1,92 @@
+// ThermalAI reactor registry — ISA S5.1 process tags, plant attribution,
+// and risk thresholds. Single source of truth for how reactor IDs (A–E)
+// map to real equipment, so one change propagates across every view.
+
+export const REACTOR_CONFIG = {
+  A: {
+    tag: 'R-101',
+    name: 'Nitration Train 1',
+    process: 'Aromatic Nitration',
+    plant: 'PLANT_ALPHA',
+    plant_name: 'Alpha Chemical Works',
+    location: 'Patancheru, Hyderabad',
+    runaway_temp: 150,
+    runaway_pressure: 9.0,
+    normal_temp_range: [110, 140],
+    normal_pressure_range: [3.5, 6.0],
+  },
+  B: {
+    tag: 'R-102',
+    name: 'Nitration Train 2',
+    process: 'Aromatic Nitration',
+    plant: 'PLANT_ALPHA',
+    plant_name: 'Alpha Chemical Works',
+    location: 'Patancheru, Hyderabad',
+    runaway_temp: 150,
+    runaway_pressure: 9.0,
+    normal_temp_range: [110, 140],
+    normal_pressure_range: [3.5, 6.0],
+  },
+  C: {
+    tag: 'R-201',
+    name: 'Hydrogenation Train 1',
+    process: 'Catalytic Hydrogenation',
+    plant: 'PLANT_BETA',
+    plant_name: 'Beta Pharma Industries',
+    location: 'Ambernath MIDC, Mumbai',
+    runaway_temp: 120,
+    runaway_pressure: 12.0,
+    normal_temp_range: [80, 110],
+    normal_pressure_range: [5.0, 9.0],
+  },
+  D: {
+    tag: 'R-202',
+    name: 'Hydrogenation Train 2',
+    process: 'Catalytic Hydrogenation',
+    plant: 'PLANT_BETA',
+    plant_name: 'Beta Pharma Industries',
+    location: 'Ambernath MIDC, Mumbai',
+    runaway_temp: 120,
+    runaway_pressure: 12.0,
+    normal_temp_range: [80, 110],
+    normal_pressure_range: [5.0, 9.0],
+  },
+  E: {
+    tag: 'R-301',
+    name: 'Polymerization Reactor',
+    process: 'Free Radical Polymerization',
+    plant: 'PLANT_GAMMA',
+    plant_name: 'Gamma Refinery Ltd',
+    location: 'Manali Estate, Chennai',
+    runaway_temp: 180,
+    runaway_pressure: 7.0,
+    normal_temp_range: [120, 160],
+    normal_pressure_range: [2.0, 5.0],
+  },
+};
+
+export const RISK_THRESHOLDS = {
+  WARNING: 30,
+  CRITICAL: 70,
+  TEMP_CRITICAL: 162,
+  PRESSURE_CRITICAL: 8.0,
+  GAS_TOXIC: 25,
+  GAS_ABORT: 500,
+  PH_LOW_DANGER: 3,
+  PH_HIGH_DANGER: 11,
+  PH_LOW_WARNING: 4,
+  PH_HIGH_WARNING: 10,
+  CO2_WARNING: 2000,
+  CO2_CRITICAL: 4000,
+};
+
+export const getReactorConfig = (id) =>
+  REACTOR_CONFIG[id] || {
+    tag: id,
+    name: `Reactor ${id}`,
+    process: 'Unknown',
+    plant_name: 'Unknown Plant',
+    location: '',
+    runaway_temp: 200,
+    runaway_pressure: 10,
+  };

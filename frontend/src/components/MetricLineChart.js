@@ -28,18 +28,18 @@ function MetricLineChart({
       <h3 className={titleClassName}>{title}</h3>
       <ResponsiveContainer width="100%" height={height}>
         <LineChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-          <XAxis dataKey="time" stroke="#6b7280" tick={{ fontSize: tickFontSize }} />
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+          <XAxis dataKey="time" stroke="var(--textMuted)" tick={{ fontSize: tickFontSize }} />
           <YAxis
-            stroke="#6b7280"
+            stroke="var(--textMuted)"
             tick={{ fontSize: tickFontSize }}
             domain={domain}
           />
           <Tooltip
             contentStyle={{
-              background: "#1f2937",
-              border: "none",
-              color: "white",
+              background: "var(--card)",
+              border: "1px solid var(--border)",
+              color: "var(--text)",
             }}
           />
           {refs &&

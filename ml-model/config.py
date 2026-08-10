@@ -1,29 +1,40 @@
 import os
 
-SEQUENCE_LENGTH = 10
+SEQUENCE_LENGTH = 20
 
-# Full feature vector (engineering layer). The 5 trailing sensor parameters
-# (flow_rate..emissions_co2_ppm) are IEC 61511 mandatory additions. Existing
-# saved models are still trained on the original 10, so inference falls back
-# to ORIGINAL_FEATURES when a model rejects the wider vector.
+# Full feature vector (engineering layer). 22 features = 10 base sensors
+# (9 IEC 61511 sensor parameters + temp_rate_of_change) + 8 physics-derived +
+# 4 rolling statistics. Kept in this exact order so train_model and
+# risk_service.build_feature_vector stay aligned with the model at train time.
 FEATURES = [
-    'temperature', 'pressure', 'reaction_rate',
-    'cooling_efficiency', 'temp_rate_of_change',
-    'temp_rolling_avg', 'pressure_rolling_avg',
-    'temp_acceleration', 'pressure_temp_ratio', 'cooling_danger',
-    'flow_rate', 'material_level', 'gas_concentration',
-    'ph_level', 'emissions_co2_ppm'
-]
-
-# Columns the existing RF/LSTM artifacts were trained on. Used as the fallback
-# slice when a loaded model has not yet been retrained for the full 15.
-ORIGINAL_FEATURES = FEATURES[:10]
-
-# Per-reading vector fed to the LSTM sequence buffer (app.py reactor_buffers).
-# The LSTM input size grows from 5 to 10 with the new sensors.
-LSTM_SEQUENCE_FIELDS = [
+    # BASE SENSORS (10)
     'temperature', 'pressure', 'reaction_rate', 'cooling_efficiency',
     'temp_rate_of_change',
+    'flow_rate', 'material_level', 'gas_concentration', 'ph_level',
+    'emissions_co2_ppm',
+    # PHYSICS-DERIVED (8)
+    'cooling_danger', 'heat_removal_proxy', 'runaway_proximity_nitration',
+    'pressure_temp_ratio', 'ph_deviation', 'gas_risk', 'material_criticality',
+    'temp_acceleration',
+    # ROLLING STATISTICS (4) — 20-reading window
+    'temp_rolling_avg', 'pressure_rolling_avg', 'temp_rolling_std',
+    'cooling_rolling_min',
+]
+
+# 5-class target labels produced by the physics simulator / RF / LSTM.
+CLASSES = ['NOMINAL', 'DEGRADING', 'WARNING', 'CRITICAL', 'RECOVERY']
+
+# First 10 base features — used to build online rolling stats from the
+# sequence buffer before physics features are derived.
+BASE_FEATURES = FEATURES[:10]
+
+# Backward-compat alias (the 10 base features the pre-2.0 models trained on).
+ORIGINAL_FEATURES = FEATURES[:10]
+
+# Per-reading vector fed to the LSTM sequence buffer. 9 raw sensors; the LSTM
+# consumes (SEQUENCE_LENGTH, 9) sequences.
+LSTM_SEQUENCE_FIELDS = [
+    'temperature', 'pressure', 'reaction_rate', 'cooling_efficiency',
     'flow_rate', 'material_level', 'gas_concentration', 'ph_level',
     'emissions_co2_ppm'
 ]
