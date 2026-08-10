@@ -33,6 +33,8 @@ modules:
   - frontend/src/components/EnterpriseSummary.js
   - frontend/src/components/ReactorSelector.js
   - frontend/src/components/CurrentStatusCard.js
+  - frontend/src/components/ErrorBoundary.js
+  - frontend/src/components/Skeletons.js
   - frontend/src/hooks/useReactorHistory.js
   - frontend/src/utils/plantStatus.js
   - frontend/src/reportWebVitals.js

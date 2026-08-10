@@ -105,6 +105,7 @@ frontend/src/App.js  -> MLStatusBanner shown (red banner)
   - `frontend/src/components/CountdownTimer.js`
   - `frontend/src/components/CurrentStatusCard.js`
   - `frontend/src/components/EnterpriseSummary.js`
+  - `frontend/src/components/ErrorBoundary.js`
   - `frontend/src/components/ExplainPanel.js`
   - `frontend/src/components/MaintenancePanel.js`
   - `frontend/src/components/MetricCard.js`
@@ -117,6 +118,7 @@ frontend/src/App.js  -> MLStatusBanner shown (red banner)
   - `frontend/src/components/ReactorStats.js`
   - `frontend/src/components/RiskGauge.js`
   - `frontend/src/components/Sidebar.js`
+  - `frontend/src/components/Skeletons.js`
   - `frontend/src/config.js`
   - `frontend/src/context/ThemeContext.js`
   - `frontend/src/hooks/useReactorHistory.js`
