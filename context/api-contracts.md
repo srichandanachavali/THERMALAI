@@ -16,8 +16,11 @@ modules:
   - backend/routes/federatedRoutes.js
   - backend/routes/auditRoutes.js
   - backend/routes/adminRoutes.js
+  - backend/routes/onboardingRoutes.js
   - backend/controllers/auditController.js
+  - backend/controllers/onboardingController.js
   - backend/services/plantService.js
+  - backend/services/onboardingService.js
   - backend/services/mlGateway.js
   - backend/services/alertPipeline.js
   - backend/utils/silBands.js

@@ -53,6 +53,7 @@ frontend/src/App.js  -> MLStatusBanner shown (red banner)
   - `backend/controllers/authController.js`
   - `backend/controllers/federatedController.js`
   - `backend/controllers/maintenanceScheduleController.js`
+  - `backend/controllers/onboardingController.js`
   - `backend/controllers/reactorController.js`
   - `backend/middleware/auth.js`
   - `backend/middleware/roleGuard.js`
@@ -61,10 +62,12 @@ frontend/src/App.js  -> MLStatusBanner shown (red banner)
   - `backend/routes/auditRoutes.js`
   - `backend/routes/authRoutes.js`
   - `backend/routes/federatedRoutes.js`
+  - `backend/routes/onboardingRoutes.js`
   - `backend/routes/plantRoutes.js`
   - `backend/routes/reactorRoutes.js`
   - `backend/services/alertPipeline.js`
   - `backend/services/mlGateway.js`
+  - `backend/services/onboardingService.js`
   - `backend/services/plantService.js`
   - `backend/utils/silBands.js`
   - `frontend/src/services/api.js`
@@ -80,6 +83,7 @@ frontend/src/App.js  -> MLStatusBanner shown (red banner)
   - `backend/models/Alert.js`
   - `backend/models/AuditLog.js`
   - `backend/models/FederatedUpdate.js`
+  - `backend/models/PlantConfig.js`
   - `backend/models/Reactor.js`
   - `backend/models/User.js`
 

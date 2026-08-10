@@ -59,7 +59,6 @@ app.get("/", (req, res) => {
   res.json({ message: "ThermalAI Backend Running 🔥" });
 });
 
-// Simulate route — admin-only; fabricates critical alerts
 app.post("/api/simulate/:id", verifyToken, adminOnly, async (req, res) => {
   const reactorId = req.params.id;
   logger.info(`Simulate runaway triggered for reactor: ${reactorId} by ${req.user?.username}`);
@@ -77,10 +76,7 @@ app.post("/api/simulate/:id", verifyToken, adminOnly, async (req, res) => {
 
   let riskResult = { risk_score: 99.5, status: "CRITICAL" };
   try {
-    const aiResponse = await axios.post(
-      `${ML_URL}/predict`,
-      criticalReading,
-    );
+    const aiResponse = await axios.post(`${ML_URL}/predict`, criticalReading);
     riskResult = aiResponse.data;
   } catch (err) {
     logger.warn("ML unavailable during simulate — using default critical values");
@@ -119,6 +115,7 @@ const plantRoutes = require("./routes/plantRoutes");
 const federatedRoutes = require("./routes/federatedRoutes");
 const auditRoutes = require("./routes/auditRoutes");
 const adminRoutes = require("./routes/adminRoutes");
+const onboardingRoutes = require("./routes/onboardingRoutes");
 const { requireAuth, requireRole } = require("./middleware/roleGuard");
 app.use("/api/reactors", reactorRoutes);
 app.use("/api/alerts", alertRoutes);
@@ -127,6 +124,7 @@ app.use("/api/plants", plantRoutes);
 app.use("/api/federated", federatedRoutes);
 app.use("/api/audit", auditRoutes);
 app.use("/api/admin", requireAuth, requireRole("admin", "superadmin"), adminRoutes);
+app.use("/api/onboard", requireAuth, onboardingRoutes);
 // Health check endpoint
 app.get('/health', async (req, res) => {
   const health = {

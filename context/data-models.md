@@ -7,6 +7,7 @@ modules:
   - backend/models/User.js
   - backend/models/FederatedUpdate.js
   - backend/models/AuditLog.js
+  - backend/models/PlantConfig.js
 tests:
   - backend/tests/reactors.test.js
   - backend/tests/alerts.test.js

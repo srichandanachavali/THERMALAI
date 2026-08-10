@@ -1,6 +1,6 @@
 {
   "_comment": "GENERATED -- never hand-edit. Regenerate with scripts/build_doc_manifest.sh",
-  "_generated": "2026-08-09T18:49:34Z",
+  "_generated": "2026-08-10T03:26:22Z",
   "file_to_doc": {
     "backend/controllers/reactorController.js": "context/api-contracts.md",
     "backend/controllers/maintenanceScheduleController.js": "context/api-contracts.md",
@@ -16,8 +16,11 @@
     "backend/routes/federatedRoutes.js": "context/api-contracts.md",
     "backend/routes/auditRoutes.js": "context/api-contracts.md",
     "backend/routes/adminRoutes.js": "context/api-contracts.md",
+    "backend/routes/onboardingRoutes.js": "context/api-contracts.md",
     "backend/controllers/auditController.js": "context/api-contracts.md",
+    "backend/controllers/onboardingController.js": "context/api-contracts.md",
     "backend/services/plantService.js": "context/api-contracts.md",
+    "backend/services/onboardingService.js": "context/api-contracts.md",
     "backend/services/mlGateway.js": "context/api-contracts.md",
     "backend/services/alertPipeline.js": "context/api-contracts.md",
     "backend/utils/silBands.js": "context/api-contracts.md",
@@ -32,6 +35,7 @@
     "backend/models/User.js": "context/data-models.md",
     "backend/models/FederatedUpdate.js": "context/data-models.md",
     "backend/models/AuditLog.js": "context/data-models.md",
+    "backend/models/PlantConfig.js": "context/data-models.md",
     "ml-model/stream_data.py": "context/dev-commands.md",
     "ml-model/simulate_data.py": "context/dev-commands.md",
     "ml-model/push_to_mongo.py": "context/dev-commands.md",
@@ -108,8 +112,11 @@
       "backend/routes/federatedRoutes.js",
       "backend/routes/auditRoutes.js",
       "backend/routes/adminRoutes.js",
+      "backend/routes/onboardingRoutes.js",
       "backend/controllers/auditController.js",
+      "backend/controllers/onboardingController.js",
       "backend/services/plantService.js",
+      "backend/services/onboardingService.js",
       "backend/services/mlGateway.js",
       "backend/services/alertPipeline.js",
       "backend/utils/silBands.js",
@@ -127,7 +134,8 @@
       "backend/models/Alert.js",
       "backend/models/User.js",
       "backend/models/FederatedUpdate.js",
-      "backend/models/AuditLog.js"
+      "backend/models/AuditLog.js",
+      "backend/models/PlantConfig.js"
     ],
     "context/dev-commands.md": [
       "ml-model/stream_data.py",

@@ -31,6 +31,14 @@ jest.mock('../models/Alert', () => {
 jest.mock('../models/AuditLog', () => ({
   appendOnly: jest.fn().mockResolvedValue({}),
 }));
+// Empty PlantConfig collection → plantRoutes falls back to the hardcoded PLANTS
+// array, matching the plant-scoping assumptions below.
+jest.mock('../models/PlantConfig', () => {
+  const M = jest.fn().mockImplementation(() => ({ save: jest.fn().mockResolvedValue({}) }));
+  M.findOne = jest.fn().mockResolvedValue(null);
+  M.find = jest.fn(() => ({ lean: () => Promise.resolve([]) }));
+  return M;
+});
 
 const request = require('supertest');
 const express = require('express');
