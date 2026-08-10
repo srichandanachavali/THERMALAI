@@ -17,7 +17,8 @@ function ReactorDetail() {
   const reactorId = id ? id.split(":")[0] : id;
   const navigate = useNavigate();
   const { reactors } = useSocket();
-  const user = JSON.parse(localStorage.getItem("thermalai_user") || "{}");
+  let user = {};
+  try { user = JSON.parse(localStorage.getItem("thermalai_user") || "{}"); } catch { user = {}; }
 
   const reactor = reactors.find((r) => r.reactor_id === reactorId);
   const { history } = useReactorHistory(reactorId, {
@@ -102,12 +103,12 @@ function ReactorDetail() {
         className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 mb-8"
       >
         {[
-          { label: "Temperature", value: `${reactor.temperature}°C`, color: reactor.temperature > 160 ? "var(--danger)" : "var(--text)" },
-          { label: "Pressure", value: `${reactor.pressure} bar`, color: reactor.pressure > 8 ? "var(--danger)" : "var(--text)" },
-          { label: "Cooling", value: `${Math.round((reactor.cooling_efficiency || 0) * 100)}%`, color: reactor.cooling_efficiency < 0.3 ? "var(--danger)" : "var(--text)" },
+          { label: "Temperature", value: `${reactor.temperature ?? "—"}°C`, color: (reactor.temperature || 0) > 160 ? "var(--danger)" : "var(--text)" },
+          { label: "Pressure", value: `${reactor.pressure ?? "—"} bar`, color: (reactor.pressure || 0) > 8 ? "var(--danger)" : "var(--text)" },
+          { label: "Cooling", value: `${Math.round((reactor.cooling_efficiency || 0) * 100)}%`, color: (reactor.cooling_efficiency || 0) < 0.3 ? "var(--danger)" : "var(--text)" },
           { label: "Reaction Rate", value: reactor.reaction_rate ?? "—", color: "var(--text)" },
           { label: "ΔTemp/Cycle", value: `${reactor.temp_rate_of_change ?? 0}°C`, color: (reactor.temp_rate_of_change || 0) > 5 ? "var(--danger)" : "var(--text)" },
-          { label: "Risk", value: `${reactor.risk_score}%`, color: reactor.risk_score >= 70 ? "var(--danger)" : reactor.risk_score >= 30 ? "var(--warning)" : "var(--success)" },
+          { label: "Risk", value: `${reactor.risk_score ?? 0}%`, color: (reactor.risk_score || 0) >= 70 ? "var(--danger)" : (reactor.risk_score || 0) >= 30 ? "var(--warning)" : "var(--success)" },
         ].map((s) => (
           <div
             key={s.label}

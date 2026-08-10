@@ -14,8 +14,9 @@ export const SocketProvider = ({ children }) => {
   const [mlStatus, setMlStatus] = useState('ok');
   const [authError, setAuthError] = useState(false);
 
+  const token = localStorage.getItem('thermalai_token') || localStorage.getItem('token');
+
   useEffect(() => {
-    const token = localStorage.getItem('thermalai_token') || localStorage.getItem('token');
     if (!token) {
       // No token — don't attempt socket connection. Login page handles redirect.
       return;
@@ -27,6 +28,7 @@ export const SocketProvider = ({ children }) => {
       reconnectionAttempts: 10,
       reconnectionDelay: 1000,
       reconnectionDelayMax: 5000,
+      timeout: 20000,
     });
     setSocket(newSocket);
 
@@ -76,8 +78,8 @@ export const SocketProvider = ({ children }) => {
     });
 
     return () => newSocket.close();
-    // Re-run when the token changes (login/logout via storage event or page reload)
-  }, []);
+    // Key on the token so a login/logout swaps the socket (old one is closed, no leak).
+  }, [token]);
 
   return (
     <SocketContext.Provider value={{ socket, reactors, alerts, connected, mlStatus, authError }}>
