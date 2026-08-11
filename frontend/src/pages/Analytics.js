@@ -12,6 +12,7 @@ import {
 } from "recharts";
 import { FiThermometer, FiShield, FiBarChart2, FiWind } from "react-icons/fi";
 import MetricLineChart from "../components/MetricLineChart";
+import AIComparison from "../components/AIComparison";
 import ReactorSelector from "../components/ReactorSelector";
 import useReactorHistory from "../hooks/useReactorHistory";
 import { REACTOR_CONFIG, RISK_THRESHOLDS, getReactorConfig } from "../constants/reactors";
@@ -45,7 +46,7 @@ const RANGES = { "30m": 30, "2h": 2 * 60, "8h": 8 * 60, "24h": 24 * 60 };
 
 function Analytics() {
   const { id } = useParams();
-  const [selectedReactor, setSelectedReactor] = useState(id || "A");
+  const [selectedReactor, setSelectedReactor] = useState(id || "R-101");
   const [activeSensor, setActiveSensor] = useState("temperature");
   const [range, setRange] = useState("2h");
 
@@ -71,6 +72,9 @@ function Analytics() {
     const t = new Date(d.timestamp).getTime();
     return Number.isNaN(t) ? true : t >= cutoffMs;
   });
+
+  // Latest reading in the window — drives the model-comparison bench above.
+  const latestReading = filtered.length ? filtered[filtered.length - 1] : null;
 
   const exportCsv = () => {
     const cols = [
@@ -175,6 +179,11 @@ function Analytics() {
         </div>
       ) : (
         <div>
+          {/* Model-comparison bench — latest reading */}
+          <div className="mb-6">
+            <AIComparison reactor={latestReading} />
+          </div>
+
           {/* Featured sensor chart (threshold reference lines) */}
           <div className="mb-6">
             <MetricLineChart

@@ -40,7 +40,7 @@ AUTH_TOKEN = get_auth_token()
 AUTH_HEADERS = {'Authorization': f'Bearer {AUTH_TOKEN}'}
 print(f"[ThermalAI] Simulator authenticated as {SIM_USER}")
 
-reactors = ['A', 'B', 'C', 'D', 'E']
+reactors = ['R-101', 'R-102', 'R-201', 'R-202', 'R-301']
 states = {rid: init_reactor(rid) for rid in reactors}
 
 STATE_PAD = max(len(s) for s in ('NOMINAL', 'DEGRADING', 'WARNING', 'CRITICAL', 'RECOVERY'))

@@ -60,4 +60,24 @@ describe('RiskGauge', () => {
     const { container } = render(<RiskGauge score={50} status="WARNING" />);
     expect(container.querySelector('svg')).toBeInTheDocument();
   });
+
+  it('renders a default SIL badge at score 0 / SAFE instead of hiding it', () => {
+    render(<RiskGauge score={0} status="SAFE" />);
+    expect(screen.getByText(/SIL-0 · Normal Operations/)).toBeInTheDocument();
+  });
+
+  it('renders the SIL badge alongside a normal-range status', () => {
+    render(<RiskGauge score={15} status="SAFE" />);
+    expect(screen.getByText(/SIL-0 · Normal Operations/)).toBeInTheDocument();
+  });
+
+  it('escalates the SIL band with the risk score', () => {
+    render(<RiskGauge score={60} status="WARNING" />);
+    expect(screen.getByText(/SIL-1 · Warning/)).toBeInTheDocument();
+  });
+
+  it('labels critical scores as SIL-3', () => {
+    render(<RiskGauge score={90} status="CRITICAL" />);
+    expect(screen.getByText(/SIL-3 · Critical/)).toBeInTheDocument();
+  });
 });

@@ -90,8 +90,8 @@ Response `200` (ready):
 ```json
 { "success": true, "overall_health": 80, "overall_status": "MONITOR",
   "overall_message": "Minor maintenance recommended", "next_maintenance": 4.2,
-  "components": [{ "component": "Cooling System", "icon": "❄️",
-    "current_health": 75.0, "days_to_maintenance": 4.2, "urgency": "WARNING",
+  "components": [{ "component": "Coolant Pump", "icon": "🔄",
+    "current_health": 75.0, "days_to_maintenance": 4.2, "rul_hours": 101, "urgency": "WARNING",
     "message": "...", "recommendation": "..." }] }
 ```
 

@@ -7,7 +7,7 @@ jest.mock('../models/AuditLog', () => {
   const log = (over = {}) => ({
     event_type: 'REACTOR_READING',
     actor: 'SYSTEM',
-    reactor_id: 'A',
+    reactor_id: 'R-101',
     plant_id: 'PLANT_ALPHA',
     risk_score: 42,
     timestamp: new Date('2026-08-09T12:00:00Z'),

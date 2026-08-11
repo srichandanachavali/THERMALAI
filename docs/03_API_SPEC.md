@@ -42,7 +42,7 @@ The core payload emitted on `reactor_update` and returned by stream:
 
 ```json
 {
-  "reactor_id": "A",
+  "reactor_id": "R-101",
   "temperature": 148.3,
   "pressure": 5.1,
   "reaction_rate": 0.72,

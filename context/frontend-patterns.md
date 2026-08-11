@@ -176,7 +176,13 @@ Charts/trends live only on Level 3; live current readings live only on Level 2.
 - Historical charts only — no live/current values (CurrentStatusCard removed)
 - Sensor tabs for all 9 parameters (Risk/Temp/Pressure/Reaction/Cooling/Flow/Level/Gas/pH/CO₂)
   with threshold ReferenceLines from `RISK_THRESHOLDS`
+- `SIL_BANDS` + `getSilBand(score)` in `constants/reactors.js` — IEC 61511 SIL banding
+  (SIL-0…SIL-3) mirrored from `backend/utils/silBands.js`, used by `RiskGauge` and
+  `ReactorCard` to always render the safety band (NORMAL renders "SIL-0 · Normal Operations")
 - Correlation ComposedChart (Temperature vs Cooling, dual-axis) — TRL-5 feature
+- Embeds `<AIComparison reactor={latestReading} />` (last reading in the filtered window) at the
+  top, above the featured sensor chart — the 4-model bench (Physics/Arrhenius, XGBoost, Random
+  Forest, LSTM) + the RF×40%/LSTM×60% ensemble score
 - Export CSV button (Blob + object URL of filtered history)
 - Time-range selector (30m/2h/8h/24h) filters loaded history client-side by timestamp
   (no re-fetch)

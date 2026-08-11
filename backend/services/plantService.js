@@ -13,7 +13,7 @@ const PLANTS = [
     city: "Hyderabad",
     state: "Telangana",
     type: "Chemical Processing",
-    reactors: ["A", "B"],
+    reactors: ["R-101", "R-102"],
     established: "2018",
   },
   {
@@ -23,7 +23,7 @@ const PLANTS = [
     city: "Mumbai",
     state: "Maharashtra",
     type: "Pharmaceutical",
-    reactors: ["C", "D"],
+    reactors: ["R-201", "R-202"],
     established: "2015",
   },
   {
@@ -33,16 +33,16 @@ const PLANTS = [
     city: "Chennai",
     state: "Tamil Nadu",
     type: "Petroleum Refinery",
-    reactors: ["E"],
+    reactors: ["R-301"],
     established: "2020",
   },
 ];
 
 // reactor_id -> owning plant_id
 const REACTOR_PLANT = {
-  A: "PLANT_ALPHA", B: "PLANT_ALPHA",
-  C: "PLANT_BETA",  D: "PLANT_BETA",
-  E: "PLANT_GAMMA",
+  "R-101": "PLANT_ALPHA", "R-102": "PLANT_ALPHA",
+  "R-201": "PLANT_BETA",  "R-202": "PLANT_BETA",
+  "R-301": "PLANT_GAMMA",
 };
 
 // Fields safe to expose BEFORE authentication (plant-picker roster).

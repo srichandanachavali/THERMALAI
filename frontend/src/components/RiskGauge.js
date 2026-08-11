@@ -1,5 +1,6 @@
 import React from 'react';
-import { RISK_THRESHOLDS } from '../constants/reactors';
+import { FiShield } from 'react-icons/fi';
+import { RISK_THRESHOLDS, getSilBand } from '../constants/reactors';
 
 function RiskGauge({ score, status }) {
   const getColor = () => {
@@ -17,6 +18,7 @@ function RiskGauge({ score, status }) {
   const radius = 80;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (score / 100) * circumference;
+  const sil = getSilBand(score);
 
   return (
     <div className="flex flex-col items-center justify-center p-6">
@@ -54,6 +56,13 @@ function RiskGauge({ score, status }) {
       <div className={`mt-4 px-6 py-2 rounded-full ${getBgColor()} font-bold text-lg`} style={{ color: "var(--text)" }}>
         {status}
       </div>
+      <span
+        className="mt-3 inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full"
+        style={{ backgroundColor: sil.color, color: "#fff" }}
+      >
+        <FiShield size={12} aria-hidden="true" />
+        {sil.sil} · {sil.label}
+      </span>
     </div>
   );
 }

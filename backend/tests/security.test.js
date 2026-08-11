@@ -71,13 +71,13 @@ describe('Anonymous requests are rejected with 401', () => {
   const app = buildApp();
 
   test.each([
-    ['POST', '/api/simulate/A'],
+    ['POST', '/api/simulate/R-101'],
     ['POST', '/api/reactors/stream'],
     ['POST', '/api/reactors/explain'],
     ['GET',  '/api/reactors'],
-    ['GET',  '/api/reactors/A'],
-    ['GET',  '/api/reactors/A/history'],
-    ['GET',  '/api/reactors/A/maintenance'],
+    ['GET',  '/api/reactors/R-101'],
+    ['GET',  '/api/reactors/R-101/history'],
+    ['GET',  '/api/reactors/R-101/maintenance'],
     ['GET',  '/api/alerts'],
     ['PUT',  '/api/alerts/abc123/resolve'],
     ['GET',  '/api/plants/PLANT_ALPHA'],
@@ -96,7 +96,7 @@ describe('Anonymous requests are rejected with 401', () => {
 
   test('POST /api/simulate/:id with an invalid token → 401', async () => {
     const res = await request(app)
-      .post('/api/simulate/A')
+      .post('/api/simulate/R-101')
       .set('Authorization', 'Bearer not.a.real.token')
       .send({});
     expect(res.status).toBe(401);
@@ -112,7 +112,7 @@ describe('Role enforcement (adminOnly)', () => {
 
   test('POST /api/simulate/:id with operator token → 403', async () => {
     const res = await request(app)
-      .post('/api/simulate/A')
+      .post('/api/simulate/R-101')
       .set(operatorHeaders())
       .send({});
     expect(res.status).toBe(403);
@@ -121,7 +121,7 @@ describe('Role enforcement (adminOnly)', () => {
 
   test('POST /api/simulate/:id with admin token → 200', async () => {
     const res = await request(app)
-      .post('/api/simulate/A')
+      .post('/api/simulate/R-101')
       .set(adminHeaders())
       .send({});
     expect(res.status).toBe(200);
@@ -179,8 +179,8 @@ describe('Per-plant access control', () => {
     expect(res.status).toBe(200);
   });
 
-  test('operator denied foreign reactor C (PLANT_BETA) → 403', async () => {
-    const res = await request(app).get('/api/reactors/C').set(operatorHeaders());
+  test('operator denied foreign reactor R-201 (PLANT_BETA) → 403', async () => {
+    const res = await request(app).get('/api/reactors/R-201').set(operatorHeaders());
     expect(res.status).toBe(403);
   });
 });

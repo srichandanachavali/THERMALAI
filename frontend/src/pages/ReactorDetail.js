@@ -24,7 +24,7 @@ const processColor = (process) => {
 
 function ReactorDetail() {
   const { id } = useParams();
-  const reactorId = id ? id.split(":")[0] : id;
+  const reactorId = id;
   const navigate = useNavigate();
   const { reactors } = useSocket();
   let user = {};

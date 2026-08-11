@@ -1,9 +1,9 @@
 // ThermalAI reactor registry — ISA S5.1 process tags, plant attribution,
-// and risk thresholds. Single source of truth for how reactor IDs (A–E)
+// and risk thresholds. Single source of truth for how reactor IDs (R-101…R-301)
 // map to real equipment, so one change propagates across every view.
 
 export const REACTOR_CONFIG = {
-  A: {
+  'R-101': {
     tag: 'R-101',
     name: 'Nitration Train 1',
     process: 'Aromatic Nitration',
@@ -15,7 +15,7 @@ export const REACTOR_CONFIG = {
     normal_temp_range: [110, 140],
     normal_pressure_range: [3.5, 6.0],
   },
-  B: {
+  'R-102': {
     tag: 'R-102',
     name: 'Nitration Train 2',
     process: 'Aromatic Nitration',
@@ -27,7 +27,7 @@ export const REACTOR_CONFIG = {
     normal_temp_range: [110, 140],
     normal_pressure_range: [3.5, 6.0],
   },
-  C: {
+  'R-201': {
     tag: 'R-201',
     name: 'Hydrogenation Train 1',
     process: 'Catalytic Hydrogenation',
@@ -39,7 +39,7 @@ export const REACTOR_CONFIG = {
     normal_temp_range: [80, 110],
     normal_pressure_range: [5.0, 9.0],
   },
-  D: {
+  'R-202': {
     tag: 'R-202',
     name: 'Hydrogenation Train 2',
     process: 'Catalytic Hydrogenation',
@@ -51,7 +51,7 @@ export const REACTOR_CONFIG = {
     normal_temp_range: [80, 110],
     normal_pressure_range: [5.0, 9.0],
   },
-  E: {
+  'R-301': {
     tag: 'R-301',
     name: 'Polymerization Reactor',
     process: 'Free Radical Polymerization',
@@ -90,3 +90,17 @@ export const getReactorConfig = (id) =>
     runaway_temp: 200,
     runaway_pressure: 10,
   };
+
+// IEC 61511 SIL banding — mirrored from backend/utils/silBands.js so the
+// safety banding is always visible client-side. NORMAL (0–30) renders a
+// default "SIL-0 · Normal Operations" badge rather than hiding it.
+export const SIL_BANDS = [
+  { max: 30, sil: 'SIL-0', label: 'Normal Operations', color: '#22c55e' },
+  { max: 50, sil: 'SIL-0', label: 'Increased Monitoring', color: '#eab308' },
+  { max: 70, sil: 'SIL-1', label: 'Warning', color: '#eab308' },
+  { max: 85, sil: 'SIL-2', label: 'High Risk', color: '#f97316' },
+  { max: 100, sil: 'SIL-3', label: 'Critical', color: '#ef4444' },
+];
+
+export const getSilBand = (score) =>
+  SIL_BANDS.find((b) => score < b.max) || SIL_BANDS[SIL_BANDS.length - 1];

@@ -140,9 +140,9 @@ Shape of each plant object:
 
 | plant_id | name | city | reactors |
 |---|---|---|---|
-| `PLANT_ALPHA` | Alpha Chemical Works | Hyderabad | `["A", "B"]` |
-| `PLANT_BETA` | Beta Pharma Industries | Mumbai | `["C", "D"]` |
-| `PLANT_GAMMA` | Gamma Refinery Ltd | Chennai | `["E"]` |
+| `PLANT_ALPHA` | Alpha Chemical Works | Hyderabad | `["R-101", "R-102"]` |
+| `PLANT_BETA` | Beta Pharma Industries | Mumbai | `["R-201", "R-202"]` |
+| `PLANT_GAMMA` | Gamma Refinery Ltd | Chennai | `["R-301"]` |
 
 **5 reactors total**: A, B, C, D, E — these IDs are the `reactor_id` values
 used in Reactor and Alert documents, and in the Socket.io payloads.

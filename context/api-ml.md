@@ -14,7 +14,7 @@ Models are lazy-loaded on the first prediction request. `/health` can return bef
 ```json
 {
   "success": true,
-  "reactor_id": "A",
+  "reactor_id": "R-101",
   "risk_score": 45.0,
   "status": "WARNING",
   "prediction": "WARNING",
@@ -29,7 +29,7 @@ Models are lazy-loaded on the first prediction request. `/health` can return bef
 ```json
 {
   "success": true,
-  "reactor_id": "A",
+  "reactor_id": "R-101",
   "lstm_prediction": "WARNING",
   "lstm_risk_score": 52.0,
   "lstm_confidence": 68.4,
@@ -37,9 +37,41 @@ Models are lazy-loaded on the first prediction request. `/health` can return bef
 }
 ```
 
+**POST /predict-xgb** — XGBoost (advisory model bench)
+- Request: SensorReading JSON
+- Scores on the 10 original training features; class probs severity-weighted into `xgb_risk_score` [0,100]
+- Response:
+```json
+{
+  "success": true,
+  "reactor_id": "R-101",
+  "xgb_prediction": "WARNING",
+  "xgb_risk_score": 44.0,
+  "xgb_confidence": 63.5,
+  "xgb_probabilities": { "warning": 63.5, "safe": 22.0, "critical": 14.5 }
+}
+```
+- 500 (advisory-down) if `xgb_model.pkl` cannot be loaded; backend treats this as zeroed SAFE, never `ml_degraded`
+
+**POST /predict-physics** — Arrhenius kinetics (advisory model bench)
+- Request: SensorReading JSON (`temperature` required; `cooling_efficiency` optional; `reactor_id` optional)
+- Computes `k = A·exp(-Ea/(R·T))`, `reaction_rate = clamp(0.5·k/k_design)`, `physics_risk_score = (rate-0.5)/0.5×100`
+- Reactors use canonical slugs (R-101…R-301); unknown/missing IDs default to R-101
+- Response:
+```json
+{
+  "success": true,
+  "reactor_id": "R-101",
+  "physics_prediction": "WARNING",
+  "physics_risk_score": 38.0,
+  "reaction_rate": 0.69,
+  "note": "Reaction rate above design nominal — monitor cooling closely."
+}
+```
+
 **POST /predict/batch** — RF batch
 - Request: `[ SensorReading, ... ]`
-- Response: `{ "success": true, "results": [ { "reactor_id": "A", "risk_score": 45.0, "status": "WARNING" }, ... ] }`
+- Response: `{ "success": true, "results": [ { "reactor_id": "R-101", "risk_score": 45.0, "status": "WARNING" }, ... ] }`
 
 **POST /predict-time** — time to critical
 - Request: SensorReading + `risk_score` + `status` fields
@@ -70,7 +102,7 @@ Models are lazy-loaded on the first prediction request. `/health` can return bef
 - Request:
 ```json
 {
-  "reactor_id": "A",
+  "reactor_id": "R-101",
   "readings": [
     { "cooling_efficiency": 0.85, "pressure": 4.2, "reaction_rate": 0.6, "temperature": 120 },
     ...

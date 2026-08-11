@@ -54,11 +54,12 @@ def predict_maintenance(reactor_data):
             message = f"Cooling efficiency trending down — monitor closely"
 
         results.append({
-            'component': 'Cooling System',
-            'icon': '❄️',
+            'component': 'Coolant Pump',
+            'icon': '🔄',
             'current_health': round(current_cooling * 100, 1),
             'trend': round(cooling_slope * 100, 4),
             'days_to_maintenance': days_to_failure,
+            'rul_hours': round(days_to_failure * 24),
             'urgency': urgency,
             'message': message,
             'recommendation': 'Inspect cooling pump, check coolant levels, clean heat exchangers'
@@ -80,12 +81,14 @@ def predict_maintenance(reactor_data):
             urgency = 'MONITOR'
             message = f"Pressure slowly rising — monitor pressure relief valve"
 
+        pressure_days = round(max(0, (PRESSURE_DANGER_THRESHOLD - current_pressure) / max(0.01, pressure_trend) * 2 / 86400), 1)
         results.append({
-            'component': 'Pressure Relief Valve',
-            'icon': '💨',
+            'component': 'Valve Seal',
+            'icon': '🔧',
             'current_health': round(max(0, (8 - current_pressure) / 8 * 100), 1),
             'trend': round(pressure_trend, 4),
-            'days_to_maintenance': round(max(0, (PRESSURE_DANGER_THRESHOLD - current_pressure) / max(0.01, pressure_trend) * 2 / 86400), 1),
+            'days_to_maintenance': pressure_days,
+            'rul_hours': round(pressure_days * 24),
             'urgency': urgency,
             'message': message,
             'recommendation': 'Test pressure relief valve, check for blockages, inspect seals'
@@ -98,12 +101,14 @@ def predict_maintenance(reactor_data):
 
     if current_reaction > 0.80 or reaction_trend > 0.05:
         urgency = 'WARNING' if current_reaction > REACTION_DANGER_THRESHOLD else 'MONITOR'
+        reaction_days = round(max(0, (REACTION_DANGER_THRESHOLD - current_reaction) / max(0.01, reaction_trend) * 2 / 86400), 1)
         results.append({
-            'component': 'Reaction Controller',
-            'icon': '⚡',
+            'component': 'Agitator Bearing',
+            'icon': '⚙️',
             'current_health': round(max(0, (1 - current_reaction) * 100), 1),
             'trend': round(reaction_trend, 4),
-            'days_to_maintenance': round(max(0, (REACTION_DANGER_THRESHOLD - current_reaction) / max(0.01, reaction_trend) * 2 / 86400), 1),
+            'days_to_maintenance': reaction_days,
+            'rul_hours': round(reaction_days * 24),
             'urgency': urgency,
             'message': f"Reaction rate at {round(current_reaction * 100)}% — controller inspection recommended",
             'recommendation': 'Calibrate reaction controller, check catalyst levels'

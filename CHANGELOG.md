@@ -5,6 +5,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [1.3.0] — 2026-08-11
+
+### Added
+
+- **AI model comparison bench** on the Analytics page (`frontend/src/pages/Analytics.js` + `frontend/src/components/AIComparison.js`) — side-by-side Physics (Arrhenius), XGBoost, Random Forest, and LSTM rows with per-model scores, confidence, and ensemble weight summary (RF×40% + LSTM×60%), driven by the latest reading in the selected window
+- Per-model scores/confidence wired end-to-end in `backend/controllers/reactorController.js` + `backend/utils/mlClient.js`
+
 ## [1.2.0] — 2026-07-06
 
 ### Added — Security Hardening (see `docs/SECURITY_AUDIT.md`)

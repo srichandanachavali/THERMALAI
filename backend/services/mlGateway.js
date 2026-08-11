@@ -37,6 +37,16 @@ async function predictLSTM(reading) {
   return data;
 }
 
+async function predictXGB(reading) {
+  const { data } = await axios.post(`${ML_URL}/predict-xgb`, withSensors(reading), { headers: headers() });
+  return data;
+}
+
+async function predictPhysics(reading) {
+  const { data } = await axios.post(`${ML_URL}/predict-physics`, withSensors(reading), { headers: headers() });
+  return data;
+}
+
 async function predictTime(reading, riskScore, status) {
   const { data } = await axios.post(`${ML_URL}/predict-time`, {
     ...reading,
@@ -77,6 +87,8 @@ module.exports = {
   withSensors,
   predictRF,
   predictLSTM,
+  predictXGB,
+  predictPhysics,
   predictTime,
   explain,
   simulate,

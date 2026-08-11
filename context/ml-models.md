@@ -135,6 +135,27 @@ recomputes `status` once (SAFE<30, WARNING30-69, CRITICAL≥70) after all boosts
 boosted risk can never leave a stale SAFE label. A suspected sensor fault floors the
 status at WARNING (never SAFE), per the NO-FALSE-SAFE rule.
 
+## Advisory Model Bench (XGBoost + Arrhenius Physics)
+
+Two **advisory** endpoints added in `routes_risk.py` feed the Analytics model-comparison
+bench. They never feed the ensemble `risk_score` or the alerts path — only the RF+LSTM
+ensemble drives alerting, and `ml_degraded` still tracks the RF+LSTM path.
+
+- **`POST /predict-xgb`** — loads `saved-models/xgb_model.pkl` + `label_encoder.pkl`,
+  scores on the 10 original training features (temperature, pressure, reaction_rate,
+  cooling_efficiency, temp_rate_of_change, temp_rolling_avg, pressure_rolling_avg,
+  temp_acceleration, pressure_temp_ratio, cooling_danger). Class probabilities are
+  severity-weighted by substring (critical=100, warning=55, degrading=25, else 0) into
+  `xgb_risk_score` [0,100]. Returns
+  `{ success, reactor_id, xgb_prediction, xgb_risk_score, xgb_confidence, xgb_probabilities }`.
+  If the model is unavailable the endpoint 500s; the backend treats it as advisory-down
+  (zeroed SAFE default) and does not flag `ml_degraded`.
+- **`POST /predict-physics`** — deterministic Arrhenius risk from `kinetics.py`:
+  `k = A·exp(-Ea/(R·T))`, `reaction_rate = clamp(0.5·k/k_design)`, mapped to
+  `physics_risk_score = (rate - 0.5)/0.5 × 100` (design point → 0, runaway → 100).
+  Reactors use canonical slugs (R-101…R-301); unknown/missing IDs default to R-101.
+  Returns `{ success, reactor_id, physics_prediction, physics_risk_score, reaction_rate, note }`.
+
 ## Time-to-Critical Prediction
 
 Computed inline in `features.compute_minutes_to_runaway` and mirrored by Flask
@@ -168,9 +189,9 @@ Uses `sklearn.linear_model.LinearRegression` for trend slopes (not the RF/LSTM m
 
 | Component | Trigger condition | Urgency thresholds |
 |---|---|---|
-| Cooling System | slope < 0 AND current > 0.50 | < 1 day → CRITICAL, < 3 days → WARNING, else MONITOR |
-| Pressure Relief Valve | current > 5.0 OR avg trend > 0.1 | > 7.0 → CRITICAL, > 5.5 → WARNING, else MONITOR |
-| Reaction Controller | current > 0.80 OR avg trend > 0.05 | > 0.90 → WARNING, else MONITOR |
+| Coolant Pump | slope < 0 AND current > 0.50 | < 1 day → CRITICAL, < 3 days → WARNING, else MONITOR |
+| Valve Seal | current > 5.0 OR avg trend > 0.1 | > 7.0 → CRITICAL, > 5.5 → WARNING, else MONITOR |
+| Agitator Bearing | current > 0.80 OR avg trend > 0.05 | > 0.90 → WARNING, else MONITOR |
 
 ### Response Shape
 ```json
@@ -183,6 +204,12 @@ Uses `sklearn.linear_model.LinearRegression` for trend slopes (not the RF/LSTM m
 }
 ```
 `overall_health`: 30 (CRITICAL) | 60 (WARNING) | 80 (MONITOR) | 95 (HEALTHY)
+
+Each per-component dict in `components` carries `rul_hours` (Remaining Useful Life in
+hours) in addition to `days_to_maintenance` (days): `rul_hours = round(days_to_maintenance * 24)`.
+The frontend `MaintenancePanel` renders `RUL ~{rul_hours} hrs`. Both fields are derived from
+the linear-regression trend projection; when a component has no maintenance projection it is
+simply omitted from `components`.
 
 ## AI Explainability
 
@@ -213,6 +240,6 @@ Uses `sklearn.linear_model.LinearRegression` for trend slopes (not the RF/LSTM m
 | `saved-models/lstm_scaler.pkl` | small | MinMaxScaler for LSTM normalization |
 | `saved-models/lstm_label_encoder.pkl` | small | LabelEncoder for LSTM classes |
 | `saved-models/label_encoder.pkl` | small | Unused in app.py (from older pipeline) |
-| `saved-models/xgb_model.pkl` | ~227 KB | XGBoost model — trained but not used in production |
+| `saved-models/xgb_model.pkl` | ~227 KB | XGBoost model — served by `/predict-xgb` for the Analytics model bench |
 
 All model files are tracked via Git LFS (`.gitattributes`).

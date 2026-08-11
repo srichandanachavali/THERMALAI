@@ -33,10 +33,11 @@ def run_maintenance_prediction(reactor_data):
         urgency = 'CRITICAL' if days_to_failure < 1 else 'WARNING' if days_to_failure < 3 else 'MONITOR'
         message = "Cooling system failing — maintenance required immediately!" if urgency == 'CRITICAL' else f"Cooling efficiency declining — schedule maintenance within {days_to_failure} days"
         results.append({
-            'component': 'Cooling System', 'icon': '❄️',
+            'component': 'Coolant Pump', 'icon': '🔄',
             'current_health': round(current_cooling * 100, 1),
             'trend': round(cooling_slope * 100, 4),
             'days_to_maintenance': days_to_failure,
+            'rul_hours': round(days_to_failure * 24),
             'urgency': urgency, 'message': message,
             'recommendation': 'Inspect cooling pump, check coolant levels, clean heat exchangers'
         })
@@ -47,11 +48,13 @@ def run_maintenance_prediction(reactor_data):
     pressure_trend = float(np.mean(np.diff(pressure_values)))
     if current_pressure > 5.0 or pressure_trend > 0.1:
         urgency = 'CRITICAL' if current_pressure > PRESSURE_DANGER_THRESHOLD else 'WARNING' if current_pressure > 5.5 else 'MONITOR'
+        pressure_days = round(max(0, (PRESSURE_DANGER_THRESHOLD - current_pressure) / max(0.01, pressure_trend) * 2 / 86400), 1)
         results.append({
-            'component': 'Pressure Relief Valve', 'icon': '💨',
+            'component': 'Valve Seal', 'icon': '🔧',
             'current_health': round(max(0, (8 - current_pressure) / 8 * 100), 1),
             'trend': round(pressure_trend, 4),
-            'days_to_maintenance': round(max(0, (PRESSURE_DANGER_THRESHOLD - current_pressure) / max(0.01, pressure_trend) * 2 / 86400), 1),
+            'days_to_maintenance': pressure_days,
+            'rul_hours': round(pressure_days * 24),
             'urgency': urgency,
             'message': f"Pressure at {round(current_pressure, 1)} bar — valve inspection needed",
             'recommendation': 'Test pressure relief valve, check for blockages, inspect seals'
@@ -63,11 +66,13 @@ def run_maintenance_prediction(reactor_data):
     reaction_trend = float(np.mean(np.diff(reaction_values)))
     if current_reaction > 0.80 or reaction_trend > 0.05:
         urgency = 'WARNING' if current_reaction > REACTION_DANGER_THRESHOLD else 'MONITOR'
+        reaction_days = round(max(0, (REACTION_DANGER_THRESHOLD - current_reaction) / max(0.01, reaction_trend) * 2 / 86400), 1)
         results.append({
-            'component': 'Reaction Controller', 'icon': '⚡',
+            'component': 'Agitator Bearing', 'icon': '⚙️',
             'current_health': round(max(0, (1 - current_reaction) * 100), 1),
             'trend': round(reaction_trend, 4),
-            'days_to_maintenance': round(max(0, (REACTION_DANGER_THRESHOLD - current_reaction) / max(0.01, reaction_trend) * 2 / 86400), 1),
+            'days_to_maintenance': reaction_days,
+            'rul_hours': round(reaction_days * 24),
             'urgency': urgency,
             'message': f"Reaction rate at {round(current_reaction * 100)}% — controller inspection recommended",
             'recommendation': 'Calibrate reaction controller, check catalyst levels'

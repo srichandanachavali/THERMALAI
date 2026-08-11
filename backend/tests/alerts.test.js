@@ -50,7 +50,7 @@ describe('GET /api/alerts', () => {
     const mockAlerts = [
       {
         _id: 'abc123',
-        reactor_id: 'A',
+        reactor_id: 'R-101',
         alert_type: 'WARNING',
         risk_score: 45,
         temperature: 145,
@@ -73,7 +73,7 @@ describe('GET /api/alerts', () => {
     expect(res.status).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
     expect(res.body).toHaveLength(1);
-    expect(res.body[0].reactor_id).toBe('A');
+    expect(res.body[0].reactor_id).toBe('R-101');
   });
 
   it('returns an empty array when there are no alerts', async () => {
@@ -101,7 +101,7 @@ describe('PUT /api/alerts/:id/resolve', () => {
   it('sets resolved to true and returns the updated alert', async () => {
     const resolvedAlert = {
       _id: 'abc123',
-      reactor_id: 'B',
+      reactor_id: 'R-102',
       alert_type: 'CRITICAL',
       risk_score: 82,
       temperature: 195,

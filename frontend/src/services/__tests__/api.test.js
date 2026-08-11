@@ -53,8 +53,8 @@ describe('getReactors()', () => {
 
   it('returns the response data', async () => {
     const mockReactors = [
-      { reactor_id: 'A', temperature: 118, risk_score: 12, status: 'SAFE' },
-      { reactor_id: 'B', temperature: 135, risk_score: 45, status: 'WARNING' },
+      { reactor_id: 'R-101', temperature: 118, risk_score: 12, status: 'SAFE' },
+      { reactor_id: 'R-102', temperature: 135, risk_score: 45, status: 'WARNING' },
     ];
     axios.get.mockResolvedValue({ data: mockReactors });
 
@@ -80,7 +80,7 @@ describe('getAlerts()', () => {
 
   it('returns the response data', async () => {
     const mockAlerts = [
-      { _id: 'abc', reactor_id: 'A', alert_type: 'WARNING', resolved: false },
+      { _id: 'abc', reactor_id: 'R-101', alert_type: 'WARNING', resolved: false },
     ];
     axios.get.mockResolvedValue({ data: mockAlerts });
 

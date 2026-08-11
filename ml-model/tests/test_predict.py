@@ -54,7 +54,7 @@ def client(monkeypatch, mock_model):
 
 
 SENSOR_DATA = {
-    'reactor_id': 'A',
+    'reactor_id': 'R-101',
     'temperature': 118.0,
     'pressure': 3.8,
     'reaction_rate': 0.45,
@@ -78,7 +78,7 @@ def test_predict_risk_score_between_0_and_100(client):
 def test_predict_includes_status_and_reactor(client):
     res = client.post('/predict', json=SENSOR_DATA)
     data = res.get_json()
-    assert data['reactor_id'] == 'A'
+    assert data['reactor_id'] == 'R-101'
     assert data['status'] in {'SAFE', 'WARNING', 'CRITICAL'}
 
 

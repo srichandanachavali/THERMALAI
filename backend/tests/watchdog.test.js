@@ -56,7 +56,7 @@ function buildApp() {
 }
 
 const safeReading = {
-  reactor_id: 'A',
+  reactor_id: 'R-101',
   temperature: 118,
   pressure: 3.8,
   reaction_rate: 0.45,

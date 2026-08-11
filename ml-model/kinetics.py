@@ -13,19 +13,19 @@ COOLING_AREA = 4.5     # m2, shared by all reactors
 
 # ISA S5.1 process tags + embedded Arrhenius kinetics.
 REACTOR_CONFIG = {
-    'A': {'tag': 'R-101', 'name': 'Nitration Train 1', 'short': 'Nitration-1', 'process_type': 'aromatic_nitration',
+    'R-101': {'tag': 'R-101', 'name': 'Nitration Train 1', 'short': 'Nitration-1', 'process_type': 'aromatic_nitration',
           'Ea': 85000, 'A': 2e8, 'dH': -165000, 'U': 450, 'Cp': 1850, 'mass': 800,
           'Tc': 15, 'Trun': 150, 'tmin': 110, 'tmax': 140, 'pmin': 3.5, 'pmax': 6.0, 'ph0': 7.0, 'phase': 200},
-    'B': {'tag': 'R-102', 'name': 'Nitration Train 2', 'short': 'Nitration-2', 'process_type': 'aromatic_nitration',
+    'R-102': {'tag': 'R-102', 'name': 'Nitration Train 2', 'short': 'Nitration-2', 'process_type': 'aromatic_nitration',
           'Ea': 85000, 'A': 2e8, 'dH': -165000, 'U': 450, 'Cp': 1850, 'mass': 800,
           'Tc': 15, 'Trun': 150, 'tmin': 110, 'tmax': 140, 'pmin': 3.5, 'pmax': 6.0, 'ph0': 7.0, 'phase': 50},
-    'C': {'tag': 'R-201', 'name': 'Hydrogenation Train 1', 'short': 'Hydrogenation-1', 'process_type': 'catalytic_hydrogenation',
+    'R-201': {'tag': 'R-201', 'name': 'Hydrogenation Train 1', 'short': 'Hydrogenation-1', 'process_type': 'catalytic_hydrogenation',
           'Ea': 62000, 'A': 5e6, 'dH': -92000, 'U': 380, 'Cp': 2100, 'mass': 600,
           'Tc': 10, 'Trun': 120, 'tmin': 80, 'tmax': 110, 'pmin': 5.0, 'pmax': 9.0, 'ph0': 6.5, 'phase': 100},
-    'D': {'tag': 'R-202', 'name': 'Hydrogenation Train 2', 'short': 'Hydrogenation-2', 'process_type': 'catalytic_hydrogenation',
+    'R-202': {'tag': 'R-202', 'name': 'Hydrogenation Train 2', 'short': 'Hydrogenation-2', 'process_type': 'catalytic_hydrogenation',
           'Ea': 62000, 'A': 5e6, 'dH': -92000, 'U': 380, 'Cp': 2100, 'mass': 600,
           'Tc': 10, 'Trun': 120, 'tmin': 80, 'tmax': 110, 'pmin': 5.0, 'pmax': 9.0, 'ph0': 6.5, 'phase': 250},
-    'E': {'tag': 'R-301', 'name': 'Polymerization Reactor', 'short': 'Polymerize', 'process_type': 'polymerization',
+    'R-301': {'tag': 'R-301', 'name': 'Polymerization Reactor', 'short': 'Polymerize', 'process_type': 'polymerization',
           'Ea': 75000, 'A': 1e6, 'dH': -138000, 'U': 320, 'Cp': 2400, 'mass': 1200,
           'Tc': 20, 'Trun': 180, 'tmin': 120, 'tmax': 160, 'pmin': 2.0, 'pmax': 5.0, 'ph0': 7.0, 'phase': 150},
 }

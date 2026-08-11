@@ -12,7 +12,7 @@ Connection: frontend connects to `http://localhost:5000` (or `REACT_APP_API_URL`
 
 ```json
 {
-  "reactor_id": "A",
+  "reactor_id": "R-101",
   "temperature": 148.3,
   "pressure": 5.1,
   "reaction_rate": 0.72,
@@ -23,6 +23,11 @@ Connection: frontend connects to `http://localhost:5000` (or `REACT_APP_API_URL`
   "lstm_score": 53.5,
   "lstm_confidence": 71.2,
   "lstm_prediction": "WARNING",
+  "xgb_score": 44.0,
+  "xgb_confidence": 63.5,
+  "xgb_prediction": "WARNING",
+  "physics_score": 38.0,
+  "physics_prediction": "WARNING",
   "status": "WARNING",
   "minutes_to_critical": 18.4,
   "time_message": "⚠️ Estimated critical in 18.4 minutes — Monitor closely",
@@ -36,3 +41,8 @@ Connection: frontend connects to `http://localhost:5000` (or `REACT_APP_API_URL`
 A degraded reading carries `risk_score: 0 / status: SAFE` by arithmetic default — this is NOT a real
 prediction. The UI must show the MLStatusBanner whenever `mlStatus === 'down'` (see App.js).
 See the NO FALSE-SAFE FALLBACKS standing rule in CLAUDE.md.
+
+`xgb_score` / `xgb_confidence` / `xgb_prediction` and `physics_score` / `physics_prediction` are
+**advisory** bench-model scores (see `ml-models.md` → "Advisory Model Bench"). They never feed the
+ensemble `risk_score`, never drive alerts, and do not affect `ml_degraded` (which tracks only the
+RF+LSTM alerting path). When an advisory model is unavailable the backend stores zeroed SAFE defaults.

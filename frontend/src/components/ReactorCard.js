@@ -1,8 +1,8 @@
 import React from "react";
-import { FiAlertTriangle } from "react-icons/fi";
+import { FiAlertTriangle, FiShield } from "react-icons/fi";
 import StatusBadge from "./StatusBadge";
 import { ReactorGauge, SensorRow, sensorRows, extendedRows } from "./ReactorSensors";
-import { getReactorConfig, RISK_THRESHOLDS } from "../constants/reactors";
+import { getReactorConfig, RISK_THRESHOLDS, getSilBand } from "../constants/reactors";
 
 // Compact reactor card for the Home grid: risk gauge + sensor progress rows.
 // `critical`/`degrading` enable Level-1 pinning treatments (red pulsing border +
@@ -23,6 +23,7 @@ function ReactorCard({ reactor, onClick, critical, degrading, statusClass }) {
   const isCritical = critical ?? reactor.status === "CRITICAL";
   const isDegrading = degrading ?? reactor.status === "DEGRADING";
   const gasAlert = (reactor.gas_concentration ?? 0) > RISK_THRESHOLDS.GAS_TOXIC;
+  const sil = getSilBand(reactor.risk_score || 0);
 
   return (
     <div
@@ -70,6 +71,13 @@ function ReactorCard({ reactor, onClick, critical, degrading, statusClass }) {
             </span>
           )}
           <StatusBadge status={reactor.status} />
+          <span
+            className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full"
+            style={{ backgroundColor: sil.color, color: "#fff" }}
+          >
+            <FiShield size={10} aria-hidden="true" />
+            {sil.sil}
+          </span>
         </div>
       </div>
       <ReactorGauge score={reactor.risk_score} status={reactor.status} reactor={reactor} />

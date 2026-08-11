@@ -80,7 +80,7 @@ describe('GET /api/reactors', () => {
 
 describe('POST /api/reactors/stream', () => {
   const safeReading = {
-    reactor_id: 'A',
+    reactor_id: 'R-101',
     temperature: 118,
     pressure: 3.8,
     reaction_rate: 0.45,
@@ -185,8 +185,8 @@ describe('GET /api/reactors/:id/history', () => {
 
   it('returns an array of historical readings', async () => {
     const mockHistory = [
-      { reactor_id: 'A', temperature: 118, pressure: 3.8, risk_score: 12, status: 'SAFE' },
-      { reactor_id: 'A', temperature: 120, pressure: 3.9, risk_score: 15, status: 'SAFE' },
+      { reactor_id: 'R-101', temperature: 118, pressure: 3.8, risk_score: 12, status: 'SAFE' },
+      { reactor_id: 'R-101', temperature: 120, pressure: 3.9, risk_score: 15, status: 'SAFE' },
     ];
 
     Reactor.find.mockReturnValue({
@@ -197,12 +197,12 @@ describe('GET /api/reactors/:id/history', () => {
 
     const app = buildApp();
 
-    const res = await request(app).get('/api/reactors/A/history').set(operatorHeaders());
+    const res = await request(app).get('/api/reactors/R-101/history').set(operatorHeaders());
 
     expect(res.status).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
     expect(res.body).toHaveLength(2);
-    expect(res.body[0].reactor_id).toBe('A');
+    expect(res.body[0].reactor_id).toBe('R-101');
   });
 
   it('returns an empty array when an accessible reactor has no history', async () => {
@@ -214,17 +214,17 @@ describe('GET /api/reactors/:id/history', () => {
 
     const app = buildApp();
 
-    const res = await request(app).get('/api/reactors/A/history').set(operatorHeaders());
+    const res = await request(app).get('/api/reactors/R-101/history').set(operatorHeaders());
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual([]);
   });
 
   it('denies history for a reactor outside the operator plant', async () => {
-    // Operator is scoped to PLANT_ALPHA; reactor C belongs to PLANT_BETA.
+    // Operator is scoped to PLANT_ALPHA; reactor R-201 belongs to PLANT_BETA.
     const app = buildApp();
 
-    const res = await request(app).get('/api/reactors/C/history').set(operatorHeaders());
+    const res = await request(app).get('/api/reactors/R-201/history').set(operatorHeaders());
 
     expect(res.status).toBe(403);
   });

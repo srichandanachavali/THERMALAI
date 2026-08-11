@@ -26,7 +26,7 @@ function buildApp() {
 }
 
 const VALID_BODY = {
-  reactor_id: 'A',
+  reactor_id: 'R-101',
   plant_id: 'PLANT_ALPHA',
   delta: [0.1, -0.2, 0.3, 0.05, -0.1, 0.2, -0.05, 0.1, 0.0, 0.0],
   n_samples: 60,
@@ -51,7 +51,7 @@ describe('POST /api/federated/submit-update', () => {
     const res = await request(buildApp())
       .post('/api/federated/submit-update')
       .set(adminHeaders())
-      .send({ reactor_id: 'A', delta: 'not-an-array', n_samples: 10 });
+      .send({ reactor_id: 'R-101', delta: 'not-an-array', n_samples: 10 });
     expect(res.status).toBe(400);
   });
 

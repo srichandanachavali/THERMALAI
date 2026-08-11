@@ -81,7 +81,7 @@ Default seeded users (seeded on backend startup if users collection is empty):
 - Request body (SensorReading):
 ```json
 {
-  "reactor_id": "A",
+  "reactor_id": "R-101",
   "temperature": 118.5,
   "pressure": 4.0,
   "reaction_rate": 0.6,
@@ -126,17 +126,18 @@ Default seeded users (seeded on backend startup if users collection is empty):
 ```json
 {
   "success": true,
-  "reactor_id": "A",
+  "reactor_id": "R-101",
   "overall_health": 80,
   "overall_status": "MONITOR",
   "overall_message": "Minor maintenance recommended",
   "components": [
     {
-      "component": "Cooling System",
-      "icon": "❄️",
+      "component": "Coolant Pump",
+      "icon": "🔄",
       "current_health": 75.0,
       "trend": -0.0012,
       "days_to_maintenance": 4.2,
+      "rul_hours": 101,
       "urgency": "WARNING",
       "message": "Cooling efficiency declining — schedule maintenance within 4.2 days",
       "recommendation": "Inspect cooling pump, check coolant levels, clean heat exchangers"
@@ -189,7 +190,7 @@ PlantObject shape:
   "city": "Hyderabad",
   "state": "Telangana",
   "type": "Chemical Processing",
-  "reactors": ["A", "B"],
+  "reactors": ["R-101", "R-102"],
   "established": "2018"
 }
 ```

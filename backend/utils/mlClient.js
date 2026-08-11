@@ -6,7 +6,10 @@
 const mlGateway = require("../services/mlGateway");
 const logger = require("../logger");
 
-// RF + LSTM ensemble inputs. Returns { riskResult, lstmResult, mlDegraded }.
+// RF + LSTM ensemble inputs. Returns { riskResult, lstmResult, xgbResult,
+// physicsResult, mlDegraded }. xgb/physics are advisory bench models — they
+// never feed the ensemble score or mlDegraded (which tracks the RF+LSTM path
+// that drives alerts).
 async function runEnsemble(reading) {
   let riskResult = { risk_score: 0, status: "SAFE", parameter_alerts: [] };
   let rfFailed = false;
@@ -27,7 +30,27 @@ async function runEnsemble(reading) {
     lstmFailed = true;
   }
 
-  return { riskResult, lstmResult, mlDegraded: rfFailed && lstmFailed };
+  let xgbResult = { xgb_risk_score: 0, xgb_prediction: "SAFE", xgb_confidence: 0, success: false };
+  let xgbFailed = false;
+  try {
+    const r = await mlGateway.predictXGB(reading);
+    if (r.success) xgbResult = r;
+  } catch (err) {
+    logger.warn("XGB model not available");
+    xgbFailed = true;
+  }
+
+  let physicsResult = { physics_risk_score: 0, physics_prediction: "SAFE", reaction_rate: 0, success: false };
+  let physicsFailed = false;
+  try {
+    const p = await mlGateway.predictPhysics(reading);
+    if (p.success) physicsResult = p;
+  } catch (err) {
+    logger.warn("Physics model not available");
+    physicsFailed = true;
+  }
+
+  return { riskResult, lstmResult, xgbResult, physicsResult, mlDegraded: rfFailed && lstmFailed };
 }
 
 const SAFE_TIME = { minutes_to_critical: null, message: "", urgency: "SAFE" };

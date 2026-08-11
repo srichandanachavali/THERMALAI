@@ -25,6 +25,7 @@ modules:
 tests:
   - frontend/src/components/__tests__/MetricCard.test.js
   - frontend/src/components/__tests__/RiskGauge.test.js
+  - frontend/src/components/__tests__/MaintenancePanel.test.js
 references:
   - context/frontend-patterns.md
 ---
@@ -40,13 +41,13 @@ and the shared localStorage auth pattern. Page roles and app structure are in
 | Component | Used by | Purpose |
 |---|---|---|
 | `Sidebar` | App layout | Navigation links to all routes |
-| `RiskGauge` | ReactorDetail | Circular gauge showing ensemble risk_score |
-| `ExplainPanel` | ReactorDetail | Renders `/explain` response (reasons + recommendations) |
-| `MaintenancePanel` | ReactorDetail | Renders maintenance component health + days-to-failure |
-| `AIComparison` | ReactorDetail | Side-by-side RF vs LSTM score comparison |
+| `RiskGauge` | ReactorDetail | Circular gauge showing ensemble risk_score. Always renders an IEC 61511 SIL badge (SIL-0…SIL-3) next to the status pill — banding derived from score, mirrored from `backend/utils/silBands.js`; NORMAL (0–30) shows a default "SIL-0 · Normal Operations" badge rather than hiding it |
+| `ExplainPanel` | ReactorDetail | Renders `/explain` response — SHAP feature-contribution bars + reasons + recommendations. Always renders: when `/explain` returns no `top_drivers` (0% risk / no anomalies), falls back to baseline bars (Jacket Temp Delta, Pressure Margin, Agitator RPM at 0%) with "All parameters operating within normal baseline bounds." rather than hiding |
+| `MaintenancePanel` | ReactorDetail | Renders maintenance component health + days-to-failure. Initializes with an instant baseline RUL dataset (Coolant Pump 87%/420 hrs, Agitator Bearing 94%/1120 hrs, Valve Seal 78%/240 hrs) so health bars render immediately even before telemetry; swaps in live `/maintenance` data when available |
+| `AIComparison` | ReactorDetail, Analytics | Model-comparison bench — 4 rows (Physics/Arrhenius `physics_score`, XGBoost `xgb_score`, Random Forest `rf_score`, LSTM `lstm_score`) each with optional confidence, plus the RF×40%/LSTM×60% ensemble `risk_score`. Rows with no score are skipped (no fake zeros); returns null when the reactor has none of the four model scores |
 | `CountdownTimer` | ReactorDetail | Shows minutes_to_critical countdown |
 | `AlertRow` | Alerts | Single alert row (severity pill, risk, priority badge) |
-| `ReactorCard` | Home | Fleet reactor card (sensor grid, status pill, CRITICAL/DEGRADING pinning) |
+| `ReactorCard` | Home | Fleet reactor card (sensor grid, status pill, CRITICAL/DEGRADING pinning). Always renders a compact IEC 61511 SIL pill (SIL-0…SIL-3) beside the status badge, derived from `risk_score` via shared `getSilBand` so safe reactors still show "SIL-0" |
 | `ReactorSensors` | ReactorCard | Sensor-row builders, `SensorRow`, and card `ReactorGauge` (extracted to keep files under the size guardrail) |
 | `ReactorStatePanel` | ReactorDetail | Left cockpit column: gauge, model confidence, physics context, parameter alerts |
 | `SensorTicker` | ReactorDetail | Live sensor tile grid with a11y meters and trend arrows |

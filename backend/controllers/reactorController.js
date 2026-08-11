@@ -52,7 +52,7 @@ const streamReading = async (req, res) => {
       mlGateway.withSensors(reading);
 
     const simulationPromise = simulateAsync(reading);
-    const { riskResult, lstmResult, mlDegraded } = await runEnsemble(reading);
+    const { riskResult, lstmResult, xgbResult, physicsResult, mlDegraded } = await runEnsemble(reading);
 
     // Ensemble RF 40% + LSTM 60%.
     let ensembleScore = Math.round((riskResult.risk_score * 0.4) + (lstmResult.lstm_risk_score * 0.6));
@@ -78,6 +78,10 @@ const streamReading = async (req, res) => {
       risk_score: ensembleScore, rf_score: riskResult.risk_score,
       lstm_score: lstmResult.lstm_risk_score, lstm_confidence: lstmResult.lstm_confidence,
       lstm_prediction: lstmResult.lstm_prediction, status: ensembleStatus,
+      xgb_score: xgbResult.xgb_risk_score ?? 0, xgb_confidence: xgbResult.xgb_confidence ?? 0,
+      xgb_prediction: xgbResult.xgb_prediction ?? 'SAFE',
+      physics_score: physicsResult.physics_risk_score ?? 0,
+      physics_prediction: physicsResult.physics_prediction ?? 'SAFE',
       minutes_to_critical: timeResult.minutes_to_critical, time_message: timeResult.message,
       time_urgency: timeResult.urgency, ml_degraded: mlDegraded,
       predicted_temp: simResult?.predicted_temperature ?? null, runaway_risk: simResult?.runaway_risk_score ?? 0,
