@@ -1,148 +1,178 @@
-# ThermalAI
+# THERMALAI: Real-Time Industrial Reactor Safety & Predictive Intelligence Platform
 
-**AI-powered thermal runaway prevention for chemical and pharmaceutical plants.**
+**THERMALAI** is an enterprise-grade industrial telemetry, safety integrity, and predictive maintenance monitoring platform designed specifically for chemical and process reactors.
 
-![CI](https://github.com/srichandanachavali/THERMALAI/actions/workflows/ci.yml/badge.svg)
-![Version](https://img.shields.io/badge/version-1.0.0-blue)
-![License](https://img.shields.io/badge/license-MIT-green)
+By fusing **first-principles Arrhenius chemical kinetics** with **continuous state estimation (Kalman Filtering)** and a **hybrid ML ensemble (XGBoost + LSTM)**, THERMALAI predicts thermal runaway risks and equipment degradation before critical safety thresholds are breached.
 
-ThermalAI monitors industrial reactors in real time and predicts thermal runaway **10–20 minutes before it occurs** — giving operators time to intervene instead of seconds to react. It combines a Random Forest + LSTM ensemble with a live React dashboard, Socket.io push updates, and automatic SMS/email alerting.
+---
 
-Built for chemical and pharmaceutical plant operators who need prediction, not just detection.
+## 🌟 Key Features & Innovations
 
-## ✨ Features
+* **Hybrid Physics + AI Ensemble:** Combines reaction kinetics simulation (nitration, hydrogenation) with Kalman state estimation, XGBoost, and LSTM sequence models to accurately calculate thermal runaway probability.
 
-- 🔮 **Predictive ML ensemble** — RF × 0.40 + LSTM × 0.60 produces a 0–100 risk score; LSTM captures temporal acceleration that threshold alarms miss
-- ⚡ **Real-time dashboard** — Socket.io pushes every reactor reading to all connected clients with no polling
-- 🏭 **Multi-plant support** — 3 plants, 5 reactors (A–E), ranked by live risk score
-- 🧠 **AI explainability** — per-reading natural language breakdown of why a risk score was assigned
-- 🔧 **Predictive maintenance** — forecasts days-to-maintenance for 4 reactor components
-- 🚨 **Instant alerting** — Twilio SMS + Nodemailer email on WARNING or CRITICAL, per-plant contacts configurable
-- 🔐 **Role-based auth** — JWT-secured, `admin` (full access + simulate) and `operator` (monitor + resolve)
-- 🐳 **Docker-first** — single `docker-compose up` starts all 3 services with healthchecks
 
-## 🏗️ Architecture
+* **Real-Time Telemetry & Socket Streaming:** Live WebSocket pipeline delivering real-time telemetry for reactor temperature, jacket coolant flow, pressure, and agitator speed.
 
-```
-┌─────────────────┐     WebSocket      ┌─────────────────────┐
-│  React 19       │ ◄────────────────► │  Node/Express 5     │
-│  Tailwind CSS   │   Socket.io push   │  Port 5000          │
-│  Port 3000      │                    │  JWT · Winston      │
-└─────────────────┘                    └──────────┬──────────┘
-                                                  │ HTTP
-                                       ┌──────────▼──────────┐
-                                       │  Flask ML API        │
-                                       │  Port 5001           │
-                                       │  Random Forest+LSTM  │
-                                       └──────────┬──────────┘
-                                                  │
-                                       ┌──────────▼──────────┐
-                                       │  MongoDB Atlas       │
-                                       │  7-day TTL · Atlas  │
-                                       └─────────────────────┘
-```
 
-Sensor readings arrive every ~2 s via `stream_data.py` (or real hardware). The backend calls RF then LSTM, combines scores, saves to MongoDB, and broadcasts over Socket.io.
+* **Safety Integrity Level (SIL) Dynamic Banding:** Automated mapping of live reactor telemetry to SIL risk bands with instant alert generation and threshold warnings.
 
-## 🚀 Quick Start
 
-```bash
-git clone https://github.com/srichandanachavali/THERMALAI
-cd THERMALAI
-cp backend/.env.example backend/.env   # fill in MONGO_URI + JWT_SECRET
-docker-compose up --build
-```
+* **Alarm Rationalization & Multi-Sensor Voting:** Cross-checks noisy or degraded sensor feeds using multi-sensor voting logic to suppress false alarms and eliminate operator alarm fatigue.
 
-Open **http://localhost:3000**. The sensor simulator starts automatically. See [DEVELOPMENT.md](DEVELOPMENT.md) for manual setup and all environment variables.
 
-## 📊 ML Model
+* **Explainable AI (SHAP Integration):** Provides operators with live SHAP (SHapley Additive exPlanations) attribution panels showing exactly which sensor variables are contributing to elevated risk scores.
 
-| | Random Forest | LSTM |
-|---|---|---|
-| **Weight** | 0.40 | 0.60 |
-| **Strength** | Snapshot anomalies | Temporal acceleration |
-| **Input** | 10 engineered features | Sliding window (10 readings) |
 
-**Features:** `temperature`, `pressure`, `reaction_rate`, `cooling_efficiency`, `temp_rate_of_change` + derived: `temp_rolling_avg`, `pressure_rolling_avg`, `temp_acceleration`, `pressure_temp_ratio`, `cooling_danger`
+* **High-Performance Industrial HMI:** UI tailored to High-Performance Human-Machine Interface (HMI) standards (resembling Honeywell / Yokogawa DCS panels).
 
-**Thresholds:** SAFE < 30 · WARNING 30–69 · CRITICAL ≥ 70. LSTM is weighted higher because thermal runaway is a temporal process — rising acceleration matters more than instantaneous values.
 
-## 🔐 Default Credentials
+* **Predictive Maintenance & RUL:** RUL (Remaining Useful Life) estimation and component health scoring to automate maintenance interval scheduling.
 
-> ⚠️ Development only — change before any real deployment.
 
-| Username | Password | Role |
-|----------|----------|------|
-| `admin` | `admin123` | Full access + simulate runaway |
-| `operator` | `op123` | Monitor + resolve alerts |
+* **Edge Agent & OPC-UA Integration:** Edge protocol bridges supporting register maps for OPC-UA and Modbus hardware connectivity.
 
-## 🌐 Deployment
 
-[`render.yaml`](render.yaml) defines 3 Render services. Push to `main` → CI (3 parallel test suites) → Render deploy hook via GitHub Actions.
+* **Privacy-Preserving Federated Learning:** Infrastructure for local model training and federated weight aggregation across multiple plant instances.
 
-## 🐳 Docker Deployment
 
-The whole stack is containerized with Docker Compose — 4 services, one command.
 
-**Services:**
+---
 
-| Service | Image | Port | Notes |
-|---------|-------|------|-------|
-| `frontend` | `nginx:alpine` (multi-stage build) | host `3000` → nginx `80` | Serves the React build; reverse-proxies `/api` + `/socket.io` to `backend` |
-| `backend` | `node:18-alpine` | `5000` (internal) | Express + Socket.io; `ML_URL=http://ml:5001` |
-| `ml` | `python:3.11-slim` | `5001` | Flask RF+LSTM prediction service |
-| `simulator` | `python:3.11-slim` | — | Runs `stream_data.py` to feed synthetic reactor readings |
+## 🏗 System Architecture
 
-**Bring it up:**
-```bash
-cp backend/.env.example backend/.env   # fill MONGO_URI + JWT_SECRET
-docker-compose up --build
-```
-
-Open **http://localhost:3000** — nginx serves the SPA and proxies API/socket traffic, so no CORS or cross-origin config is needed.
-
-**Production build (clean images):**
-```bash
-bash scripts/deploy.sh
-```
-This rebuilds with `--no-cache`, starts the stack, waits for the backend health check, and prints the container status.
-
-**Inspect:**
-```bash
-docker-compose ps          # status
-docker-compose logs -f backend
-docker-compose down        # stop (add -v to drop named volumes)
-```
-
-> **Known issue:** `tensorflow-cpu` (~450 MB) times out on Render free tier. Upgrade the ML service to a paid instance. See [`.claude/known-issues.md`](.claude/known-issues.md).
-
-## 📁 Project Structure
+```text
+               +----------------------------------+
+               |   Edge Agent / Protocol Bridge   |
+               |     (OPC-UA / Modbus / PLCs)     |
+               +----------------+-----------------+
+                                |
+                                v
+               +----------------+-----------------+
+               |        Express.js Backend        |
+               |  (Socket.io / REST / Auth / DB)  |
+               +-------+------------------+-------+
+                       |                  |
+           WebSocket / |                  | REST / gRPC
+               HTTP    |                  |
+                       v                  v
++----------------------+--+    +----------+-----------------+
+|   React Frontend HMI    |    |  Python ML & Physics Engine|
+| (High-Perf DCS Displays)|    | (Risk Engine / SHAP / RUL)|
++-------------------------+    +----------------------------+
 
 ```
+
+---
+
+## 📂 Repository Structure
+
+```text
 THERMALAI/
-├── frontend/          # React 19 + Tailwind dashboard (port 3000)
-├── backend/           # Express API + Socket.io (port 5000)
-│   ├── controllers/   # reactorController, alertController, authController
-│   ├── models/        # Reactor, Alert, User
-│   └── tests/         # Jest + supertest
-├── ml-model/          # Flask ML API (port 5001)
-│   ├── app.py         # Prediction endpoints
-│   ├── risk_engine.py # Pure RF scoring logic
-│   └── tests/         # pytest (no TensorFlow required)
-├── .claude/           # AI assistant context files
-├── .github/workflows/ # ci.yml + deploy.yml
-├── docker-compose.yml
-└── render.yaml
+├── backend/            # Node.js/Express REST API, WebSockets, & connectors[cite: 1]
+│   ├── config/         # OPC-UA & system configuration[cite: 1]
+│   ├── connectors/     # OPC-UA protocol drivers & connector registry[cite: 1]
+│   ├── controllers/    # Reactors, alerts, audit, & maintenance controllers[cite: 1]
+│   ├── models/         # MongoDB Mongoose schemas (User, Reactor, Alert, etc.)[cite: 1]
+│   ├── services/       # Alert pipelines, ML gateway, & onboarding[cite: 1]
+│   └── utils/          # Alarm rationalization & SIL banding logic[cite: 1]
+├── frontend/           # React dashboard & High-Performance HMI components[cite: 1]
+│   └── src/
+│       ├── components/ # HMI displays, Risk Gauge, ExplainPanel, Charts[cite: 1]
+│       ├── pages/      # Home, ReactorDetail, MultiPlant, Analytics, Alerts[cite: 1]
+│       └── styles/     # HMI tokens and CSS for industrial themes[cite: 1]
+├── ml-model/           # Python microservices for physics, ML, & explainability[cite: 1]
+│   ├── federated/      # Local trainer & federated learning routines[cite: 1]
+│   ├── simulation/     # Arrhenius kinetics (hydrogenation, nitration)[cite: 1]
+│   ├── risk_engine.py  # Hybrid risk scoring model[cite: 1]
+│   ├── train_lstm.py   # LSTM training pipeline[cite: 1]
+│   └── train_xgboost.py# XGBoost model training script[cite: 1]
+├── edge-agent/         # Edge bridge script & Modbus/OPC-UA register maps[cite: 1]
+├── docs/               # System specs, API docs, TRD, PRD, ML architecture[cite: 1]
+└── scripts/            # Build, deployment, and testing utilities[cite: 1]
+
 ```
 
-## 🤝 Contributing
+---
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) — branch naming, conventional commits, PR checklist.
+## 🚀 Getting Started
+
+### Prerequisites
+
+* **Node.js**: v18.x or higher
+
+
+* **Python**: v3.11.x
+
+
+* **MongoDB**: v6.0+ (Local or Atlas)
+
+
+
+### 1. Environment Setup
+
+Copy `.env.example` to `.env` in both `backend/` and `ml-model/` directories:
+
+```bash
+cp backend/.env.example backend/.env
+cp ml-model/.env.example ml-model/.env
+
+```
+
+### 2. Backend Setup
+
+```bash
+cd backend
+npm install
+npm run dev
+
+```
+
+Backend runs on `http://localhost:5000` by default.
+
+### 3. ML Service Setup
+
+```bash
+cd ml-model
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
+python app.py
+
+```
+
+ML microservice runs on `http://localhost:8000` by default.
+
+### 4. Frontend Setup
+
+```bash
+cd frontend
+npm install
+npm start
+
+```
+
+Frontend runs on `http://localhost:3000` by default.
+
+---
+
+## 🧪 Testing
+
+To execute full test suites across all modules:
+
+```bash
+# Run backend tests
+cd backend && npm test
+
+# Run ML unit tests
+cd ml-model && pytest
+
+# Run frontend tests
+cd frontend && npm test
+
+```
+
+---
 
 ## 📄 License
 
-MIT
-
-## Last Updated
-
-2026-07-02
+Distributed under the MIT License. See `LICENSE` for details.
