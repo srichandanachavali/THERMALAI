@@ -118,7 +118,7 @@ cp ml-model/.env.example ml-model/.env
 
 ```
 
-### 2. Backend Setup
+[### 2. Backend Setup
 
 ```bash
 cd backend
@@ -149,7 +149,7 @@ cd frontend
 npm install
 npm start
 
-```
+```](https://meet.google.com/trj-rbdf-wmy)
 
 Frontend runs on `http://localhost:3000` by default.
 
