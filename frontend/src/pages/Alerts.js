@@ -75,10 +75,10 @@ function Alerts() {
     <div>
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-white mb-1">
+        <h1 className="text-2xl font-bold mb-1" style={{ color: "var(--text)" }}>
           Alert Center
         </h1>
-        <p className="text-gray-400 text-sm mb-6">
+        <p className="text-sm mb-6" style={{ color: "var(--text-sub)" }}>
           Audit log of AI-triggered safety events — read-only
         </p>
       </div>
@@ -93,7 +93,7 @@ function Alerts() {
               className="text-sm font-semibold px-4 py-1.5 rounded-full transition-colors"
               style={{
                 backgroundColor: activeFilter === f.key ? "var(--accent)" : "var(--card)",
-                color: activeFilter === f.key ? "#fff" : "var(--textSub)",
+                color: activeFilter === f.key ? "#fff" : "var(--text-sub)",
                 border: `1px solid ${activeFilter === f.key ? "var(--accent)" : "var(--border)"}`,
               }}
             >
@@ -144,7 +144,7 @@ function Alerts() {
           <p className="text-lg font-semibold" style={{ color: "var(--success)" }}>
             All reactors nominal
           </p>
-          <p className="text-sm mt-1" style={{ color: "var(--textSub)" }}>
+          <p className="text-sm mt-1" style={{ color: "var(--text-sub)" }}>
             No alerts in the last 24 hours
           </p>
         </div>
@@ -160,7 +160,7 @@ function Alerts() {
           {/* Table header */}
           <div
             className="grid grid-cols-[110px_1fr_110px_90px] md:grid-cols-[110px_1fr_1fr_110px_90px_80px_90px_2fr] gap-3 px-5 py-3 text-[11px] font-bold uppercase tracking-wider"
-            style={{ color: "var(--textMuted)", borderBottom: "1px solid var(--border)" }}
+            style={{ color: "var(--text-muted)", borderBottom: "1px solid var(--border)" }}
           >
             <span>Time</span>
             <span>Reactor</span>

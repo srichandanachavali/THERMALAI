@@ -26,7 +26,7 @@ function SensorTicker({ reactor }) {
           className="p-3"
           style={{ backgroundColor: "var(--card)", border: "1px solid var(--border)", borderRadius: 10 }}
         >
-          <p className="text-[10px] uppercase tracking-wider" style={{ color: "var(--textMuted)" }}>
+          <p className="text-[10px] uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
             {s.label}
           </p>
           <p className="text-lg font-bold mt-1 tabular-nums" style={{ color: s.color }}>

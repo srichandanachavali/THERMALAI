@@ -1,37 +1,30 @@
 import React from "react";
-import DataQualityIndicator from "./DataQualityIndicator";
 
-// Last-reading sensor table — shows data quality inline for the COCKPIT view.
-function SensorReadingTable({ reactor }) {
-  const currentReading = {
-    timestamp: reactor.timestamp || new Date().toISOString(),
-    temperature: reactor.temperature,
-    pressure: reactor.pressure,
-    cooling_efficiency: reactor.cooling_efficiency,
-    reaction_rate: reactor.reaction_rate,
-    temp_rate_of_change: reactor.temp_rate_of_change,
-    flow_rate: reactor.flow_rate,
-    material_level: reactor.material_level,
-    gas_concentration: reactor.gas_concentration,
-    ph_level: reactor.ph_level,
-    emissions_co2_ppm: reactor.emissions_co2_ppm,
-    risk_score: reactor.risk_score,
-    status: reactor.status,
-    data_quality: reactor.data_quality,
-    temp_validation: reactor.temp_validation,
-    kalman_smoothed: reactor.kalman_smoothed,
-  };
+// HMI status class drives the left accent on the latest (most recent) row.
+const STATUS_CLASS = {
+  CRITICAL: "status-critical",
+  WARNING: "status-warning",
+  DEGRADING: "status-degrading",
+  RECOVERY: "status-recovery",
+  SAFE: "status-nominal",
+  NOMINAL: "status-nominal",
+};
 
-  const columns = [
-    { key: 'timestamp', label: 'Time', format: (v) => new Date(v).toLocaleTimeString() },
-    { key: 'temperature', label: 'Temp (°C)', format: (v) => v?.toFixed(1) ?? '—' },
-    { key: 'pressure', label: 'Press (bar)', format: (v) => v?.toFixed(2) ?? '—' },
-    { key: 'cooling_efficiency', label: 'Cool (%)', format: (v) => `${Math.round((v || 0) * 100)}%` },
-    { key: 'reaction_rate', label: 'Rate', format: (v) => `${Math.round((v || 0) * 100)}%` },
-    { key: 'temp_rate_of_change', label: 'ΔT/cycle', format: (v) => v?.toFixed(1) ?? '—' },
-    { key: 'risk_score', label: 'Risk %', format: (v) => `${v ?? '—'}%` },
-    { key: 'status', label: 'Status', format: (v) => v ?? '—' },
-  ];
+const columns = [
+  { key: "timestamp", label: "Time", format: (v) => (v ? new Date(v).toLocaleTimeString() : "—") },
+  { key: "temperature", label: "Temp (°C)", format: (v) => v?.toFixed?.(1) ?? "—" },
+  { key: "pressure", label: "Pressure (bar)", format: (v) => v?.toFixed?.(2) ?? "—" },
+  { key: "reaction_rate", label: "Reaction (%)", format: (v) => `${Math.round((v || 0) * 100)}%` },
+  { key: "cooling_efficiency", label: "Cooling (%)", format: (v) => `${Math.round((v || 0) * 100)}%` },
+  { key: "risk_score", label: "Risk (%)", format: (v) => `${v ?? "—"}%` },
+  { key: "status", label: "Status", format: (v) => v ?? "—" },
+];
+
+// Last-10 sensor readings table. The most recent row carries the HMI
+// status-* class, giving it a colored left accent via .sensor-table tr.latest.
+function SensorReadingTable({ readings = [], reactor }) {
+  const rows = readings.slice(-10);
+  const lastIdx = rows.length - 1;
 
   return (
     <table className="sensor-table">
@@ -40,20 +33,41 @@ function SensorReadingTable({ reactor }) {
           {columns.map((col) => (
             <th key={col.key}>{col.label}</th>
           ))}
-          <th>Data Quality</th>
         </tr>
       </thead>
       <tbody>
-        <tr>
-          {columns.map((col) => (
-            <td key={col.key} className={col.key === 'risk_score' && reactor.risk_score >= 70 ? 'param-value critical' : col.key === 'risk_score' && reactor.risk_score >= 30 ? 'param-value warning' : ''}>
-              {col.format(currentReading[col.key])}
+        {rows.length === 0 ? (
+          <tr>
+            <td colSpan={columns.length} style={{ color: "var(--text-muted)" }}>
+              No readings yet — stream data is required
             </td>
-          ))}
-          <td>
-            <DataQualityIndicator reading={currentReading} />
-          </td>
-        </tr>
+          </tr>
+        ) : (
+          rows.map((r, i) => {
+            const statusClass = STATUS_CLASS[r.status] || "status-nominal";
+            const risk = r.risk_score;
+            return (
+              <tr key={i} className={i === lastIdx ? `latest ${statusClass}` : ""}>
+                {columns.map((col) => (
+                  <td
+                    key={col.key}
+                    className={
+                      col.key === "risk_score"
+                        ? risk >= 70
+                          ? "param-value critical"
+                          : risk >= 30
+                            ? "param-value warning"
+                            : ""
+                        : ""
+                    }
+                  >
+                    {col.format(r[col.key])}
+                  </td>
+                ))}
+              </tr>
+            );
+          })
+        )}
       </tbody>
     </table>
   );

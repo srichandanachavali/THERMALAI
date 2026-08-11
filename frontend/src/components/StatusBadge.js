@@ -28,7 +28,7 @@ function StatusBadge({ status, resolved }) {
     return (
       <span
         className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full"
-        style={{ backgroundColor: "var(--textMuted)", color: "var(--card)" }}
+        style={{ backgroundColor: "var(--text-muted)", color: "var(--card)" }}
       >
         <FiCheckCircle size={12} aria-hidden="true" />
         RESOLVED
@@ -38,7 +38,7 @@ function StatusBadge({ status, resolved }) {
   const s =
     STYLES[status] || {
       label: status || "UNKNOWN",
-      color: "var(--textMuted)",
+      color: "var(--text-muted)",
       Icon: FiShield,
       pulse: false,
     };

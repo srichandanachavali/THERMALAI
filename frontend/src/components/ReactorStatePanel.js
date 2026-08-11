@@ -38,14 +38,14 @@ function ReactorStatePanel({ reactor, config }) {
       >
         <RiskGauge score={reactor.risk_score || 0} status={reactor.status || "SAFE"} />
         <div className="mt-4 text-center">
-          <p className="text-[10px] uppercase tracking-wider" style={{ color: "var(--textMuted)" }}>
+          <p className="text-[10px] uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
             Model confidence
           </p>
           <p className="flex items-center justify-center gap-1.5 text-lg font-bold mt-1" style={{ color: conf.color }}>
             <ConfIcon aria-hidden="true" />
             {confidence}
           </p>
-          <p className="text-xs mt-1" style={{ color: "var(--textSub)" }}>
+          <p className="text-xs mt-1" style={{ color: "var(--text-sub)" }}>
             RF {rfW}% + LSTM {lstmW}% weighted
           </p>
         </div>
@@ -55,7 +55,7 @@ function ReactorStatePanel({ reactor, config }) {
         className="p-5"
         style={{ backgroundColor: "var(--card)", border: "1px solid var(--border)", borderRadius: 12 }}
       >
-        <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: "var(--textSub)" }}>
+        <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: "var(--text-sub)" }}>
           Physics Context
         </p>
         <p className="text-sm" style={{ color: "var(--text)" }}>
@@ -88,7 +88,7 @@ function ReactorStatePanel({ reactor, config }) {
                   </span>
                   <StatusBadge status={p.severity} />
                 </div>
-                <p className="text-xs mt-1" style={{ color: "var(--textSub)" }}>
+                <p className="text-xs mt-1" style={{ color: "var(--text-sub)" }}>
                   {p.reason} ({p.value})
                 </p>
               </div>

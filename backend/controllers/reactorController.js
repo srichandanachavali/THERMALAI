@@ -82,6 +82,8 @@ const streamReading = async (req, res) => {
       time_urgency: timeResult.urgency, ml_degraded: mlDegraded,
       predicted_temp: simResult?.predicted_temperature ?? null, runaway_risk: simResult?.runaway_risk_score ?? 0,
       sensor_fault_suspected: simResult?.sensor_fault_suspected ?? false,
+      data_quality: riskResult.data_quality || 'good',
+      sensor_validation: riskResult.sensor_validation || null,
       sil_level: silResult.sil, sil_band: silResult.band, sil_color: silResult.color,
       sil_recommended_action: silResult.action, silResult, timestamp: new Date()
     };

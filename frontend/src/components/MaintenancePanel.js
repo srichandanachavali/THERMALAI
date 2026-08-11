@@ -50,18 +50,18 @@ function MaintenancePanel({ reactor }) {
 
   if (loading) {
     return (
-      <div className="bg-gray-800 rounded-lg p-6">
-        <h3 className="text-white font-semibold text-lg mb-4 inline-flex items-center gap-2"><FiTool aria-hidden="true" /> Predictive Maintenance</h3>
-        <div className="text-gray-400 text-center py-4">Analyzing equipment health...</div>
+      <div className="rounded-lg p-6" style={{ backgroundColor: "var(--card)" }}>
+        <h3 className="font-semibold text-lg mb-4 inline-flex items-center gap-2" style={{ color: "var(--text)" }}><FiTool aria-hidden="true" /> Predictive Maintenance</h3>
+        <div className="text-center py-4" style={{ color: "var(--text-sub)" }}>Analyzing equipment health...</div>
       </div>
     );
   }
 
   if (!maintenance) {
     return (
-      <div className="bg-gray-800 rounded-lg p-6">
-        <h3 className="text-white font-semibold text-lg mb-4 inline-flex items-center gap-2"><FiTool aria-hidden="true" /> Predictive Maintenance</h3>
-        <div className="text-gray-400 text-center py-4">
+      <div className="rounded-lg p-6" style={{ backgroundColor: "var(--card)" }}>
+        <h3 className="font-semibold text-lg mb-4 inline-flex items-center gap-2" style={{ color: "var(--text)" }}><FiTool aria-hidden="true" /> Predictive Maintenance</h3>
+        <div className="text-center py-4" style={{ color: "var(--text-sub)" }}>
           Building maintenance data... start the stream first.
         </div>
       </div>
@@ -69,20 +69,20 @@ function MaintenancePanel({ reactor }) {
   }
 
   return (
-    <div className="bg-gray-800 rounded-lg p-6">
-      <h3 className="text-white font-semibold text-lg mb-2 inline-flex items-center gap-2">
+    <div className="rounded-lg p-6" style={{ backgroundColor: "var(--card)" }}>
+      <h3 className="font-semibold text-lg mb-2 inline-flex items-center gap-2" style={{ color: "var(--text)" }}>
         <FiTool aria-hidden="true" /> Predictive Maintenance
       </h3>
-      <p className="text-gray-400 text-sm mb-6">
+      <p className="text-sm mb-6" style={{ color: "var(--text-sub)" }}>
         AI-predicted equipment health based on sensor trends
       </p>
 
       {/* Overall Health */}
-      <div className="bg-gray-700/50 rounded-lg p-4 mb-6">
+      <div className="rounded-lg p-4 mb-6" style={{ backgroundColor: "var(--border)" }}>
         <div className="flex items-center justify-between mb-3">
           <div>
-            <p className="text-white font-bold text-lg">Overall Equipment Health</p>
-            <p className="text-gray-400 text-sm mt-1">{maintenance.overall_message}</p>
+            <p className="font-bold text-lg" style={{ color: "var(--text)" }}>Overall Equipment Health</p>
+            <p className="text-sm mt-1" style={{ color: "var(--text-sub)" }}>{maintenance.overall_message}</p>
           </div>
           <div className="text-right">
             <p className={`text-4xl font-bold ${getHealthColor(maintenance.overall_health)}`}>
@@ -97,14 +97,14 @@ function MaintenancePanel({ reactor }) {
             </p>
           </div>
         </div>
-        <div className="bg-gray-600 rounded-full h-3">
+        <div className="rounded-full h-3" style={{ backgroundColor: "var(--border)" }}>
           <div
             className={`h-3 rounded-full transition-all ${getHealthBg(maintenance.overall_health)}`}
             style={{ width: `${maintenance.overall_health}%` }}
           ></div>
         </div>
         {maintenance.next_maintenance !== null && maintenance.next_maintenance < 30 && (
-          <p className="text-gray-400 text-xs mt-2 inline-flex items-center gap-1.5">
+          <p className="text-xs mt-2 inline-flex items-center gap-1.5" style={{ color: "var(--text-sub)" }}>
             <FiClock aria-hidden="true" /> Next maintenance recommended in{' '}
             <span className="text-yellow-400 font-bold">
               {maintenance.next_maintenance} days
@@ -116,7 +116,7 @@ function MaintenancePanel({ reactor }) {
       {/* Components */}
       {maintenance.components && maintenance.components.length > 0 ? (
         <div>
-          <p className="text-gray-400 text-xs uppercase tracking-wide mb-3">
+          <p className="text-xs uppercase tracking-wide mb-3" style={{ color: "var(--text-sub)" }}>
             Components needing attention
           </p>
           <div className="space-y-3">
@@ -128,7 +128,7 @@ function MaintenancePanel({ reactor }) {
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
                     <span className="text-xl">{comp.icon}</span>
-                    <span className="font-semibold text-white">{comp.component}</span>
+                    <span className="font-semibold" style={{ color: "var(--text)" }}>{comp.component}</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="text-sm font-bold">
@@ -138,7 +138,7 @@ function MaintenancePanel({ reactor }) {
                   </div>
                 </div>
                 <p className="text-sm mb-2">{comp.message}</p>
-                <p className="text-gray-400 text-xs">
+                <p className="text-xs" style={{ color: "var(--text-sub)" }}>
                   → {comp.recommendation}
                 </p>
               </div>
@@ -150,7 +150,7 @@ function MaintenancePanel({ reactor }) {
           <p className="text-green-400 font-bold inline-flex items-center justify-center gap-1.5">
             <FiCheckCircle aria-hidden="true" /> All components healthy
           </p>
-          <p className="text-gray-400 text-sm mt-1">No maintenance required at this time</p>
+          <p className="text-sm mt-1" style={{ color: "var(--text-sub)" }}>No maintenance required at this time</p>
         </div>
       )}
     </div>

@@ -26,20 +26,21 @@ def predict():
         if not data:
             return jsonify({'error': 'No data provided'}), 400
 
-        # STEP 1: Sensor voting layer — validate temperature via 2-of-3 voting
+        # STEP 1: 2-of-3 temp voting
         validation = voting_layer.validate_all(data)
 
-        # STEP 2: Kalman filter — smooth validated reading
+        # STEP 2: Kalman smooth
         reactor_id = data.get('reactor_id', 'unknown')
         smoothed_data = kalman.filter_reading(reactor_id, validation['validated_reading'])
 
-        # STEP 3: Risk calculation on smoothed data
+        # STEP 3: Risk
         history = reactor_history.get(reactor_id, [])
         result = calculate_risk_score(smoothed_data, history)
         update_sequence_buffer(reactor_id, smoothed_data)
 
         p_alerts = parameter_alerts(smoothed_data)
         risk = result['risk_score']
+        status = result['status']  # safe default
         has_critical = any(a['severity'] == 'CRITICAL' for a in p_alerts)
         has_warning = any(a['severity'] == 'WARNING' for a in p_alerts)
         if has_critical:
@@ -47,15 +48,18 @@ def predict():
         elif has_warning:
             risk = min(100, risk + 5)
 
-        # STEP 4: Boost risk on sensor fault
-        if validation['temp_validation']['sensor_fault_suspected']:
+        # STEP 4: Fault boost
+        fault_suspected = validation['temp_validation']['sensor_fault_suspected']
+        if fault_suspected:
             risk = min(100, risk + 20)
-            if risk >= 70:
-                status = 'CRITICAL'
-            elif risk >= 30:
-                status = 'WARNING'
-            else:
-                status = 'SAFE'
+
+        # Recompute status once; a suspected fault is never SAFE.
+        if risk >= 70:
+            status = 'CRITICAL'
+        elif risk >= 30 or fault_suspected:
+            status = 'WARNING'
+        else:
+            status = 'SAFE'
 
         return jsonify({
             'success': True,
@@ -86,18 +90,16 @@ def predict():
 
 @risk_bp.route('/predict-lstm', methods=['POST'])
 def predict_lstm():
-    # Uses RF model to produce the LSTM-format response expected by the backend.
-    # TensorFlow removed for free-tier compatibility; ensemble score is RF-based.
+    # RF produces the LSTM-format response (TF removed for free tier; RF-based).
     try:
         load_models()
         data = request.get_json()
         reactor_id = data.get('reactor_id', 'unknown')
-        # Maintain the 10-field sequence buffer (5 original + 5 IEC 61511 sensors).
+        # 10-field sequence buffer (5 original + 5 IEC 61511).
         update_sequence_buffer(reactor_id, data)
         try:
-            # A real LSTM would predict on the buffered sequence. The deployed
-            # model is not retrained for it, so score via RF. If the LSTM path
-            # ever rejects the (now wider) sequence shape, fall back to RF-only.
+            # Deployed model isn't LSTM-retrained, so score via RF (fall back
+            # if the wider sequence shape is rejected).
             result = calculate_risk_score(data)
         except ValueError as e:
             logger.warning('LSTM input shape mismatch; falling back to RF-only: %s', e)

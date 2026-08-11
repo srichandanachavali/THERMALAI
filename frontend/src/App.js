@@ -33,7 +33,8 @@ const MLStatusBanner = () => {
     <div
       role="status"
       aria-live="polite"
-      className="flex items-center justify-center gap-2 bg-red-600 text-white text-sm font-semibold px-4 py-2 text-center"
+      className="flex items-center justify-center gap-2 bg-red-600 text-sm font-semibold px-4 py-2 text-center"
+      style={{ color: "var(--text)" }}
     >
       <FiAlertTriangle size={16} aria-hidden="true" />
       <span>

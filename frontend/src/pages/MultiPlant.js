@@ -37,10 +37,10 @@ function MultiPlant() {
     <div>
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white">
+        <h1 className="text-3xl font-bold" style={{ color: "var(--text)" }}>
           🏭 Enterprise Plant Network
         </h1>
-        <p className="text-gray-400 mt-1">
+        <p className="mt-1" style={{ color: "var(--text-sub)" }}>
           Multi-facility monitoring — your authorized plants, one dashboard
         </p>
       </div>
@@ -77,7 +77,7 @@ function MultiPlant() {
         <h3 className="text-blue-400 font-bold text-lg mb-2">
           🏢 Enterprise Scalability
         </h3>
-        <p className="text-gray-400 text-sm leading-relaxed">
+        <p className="text-sm leading-relaxed" style={{ color: "var(--text-sub)" }}>
           ThermalAI scales from a single plant to an entire enterprise network.
           Companies operating multiple facilities across India get unified real-time
           visibility — one dashboard, all plants, instant risk awareness.

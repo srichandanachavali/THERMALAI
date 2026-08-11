@@ -50,7 +50,7 @@ function Settings() {
     padding: 20,
   };
   const labelStyle = { color: "var(--text)", fontWeight: 600, fontSize: 14 };
-  const subStyle = { color: "var(--textMuted)", fontSize: 12 };
+  const subStyle = { color: "var(--text-muted)", fontSize: 12 };
 
   const Toggle = ({ checked, onChange }) => (
     <button
@@ -73,7 +73,7 @@ function Settings() {
           <h1 className="text-2xl font-bold" style={{ color: "var(--text)" }}>
             Settings
           </h1>
-          <p className="mt-1" style={{ color: "var(--textSub)" }}>
+          <p className="mt-1" style={{ color: "var(--text-sub)" }}>
             Preferences are saved locally on this device
           </p>
         </div>
@@ -89,7 +89,7 @@ function Settings() {
 
       {/* Profile */}
       <div className="mb-6" style={cardStyle}>
-        <h2 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: "var(--accentLight)" }}>
+        <h2 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: "var(--accent-light)" }}>
           Profile
         </h2>
         <div className="grid grid-cols-2 gap-4">
@@ -126,7 +126,7 @@ function Settings() {
 
       {/* Alerts & Notifications */}
       <div className="mb-6" style={cardStyle}>
-        <h2 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: "var(--accentLight)" }}>
+        <h2 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: "var(--accent-light)" }}>
           Alerts & Notifications
         </h2>
         <div className="space-y-4">
@@ -155,7 +155,7 @@ function Settings() {
 
       {/* Thresholds */}
       <div className="mb-6" style={cardStyle}>
-        <h2 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: "var(--accentLight)" }}>
+        <h2 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: "var(--accent-light)" }}>
           Risk Thresholds
         </h2>
         <div className="grid grid-cols-2 gap-4">
@@ -204,7 +204,7 @@ function Settings() {
 
       {/* Appearance */}
       <div style={cardStyle}>
-        <h2 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: "var(--accentLight)" }}>
+        <h2 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: "var(--accent-light)" }}>
           Appearance
         </h2>
         <div className="flex items-center justify-between">

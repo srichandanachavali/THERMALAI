@@ -4,27 +4,6 @@
 
 @import './styles/hpmHMI.css';
 
-/* ── Theme-aware neutral utilities ─────────────────────────────────
-   Override Tailwind's hardcoded gray/white/black classes so every
-   surface and text follows the active theme (dark/light). These rules
-   are unlayered, so they beat Tailwind's layered `utilities`. Status
-   colors (bg-green-500/red-500/yellow-500, accent buttons) are left
-   to Tailwind on purpose — they are intentional indicators.          */
-.text-white,
-.text-gray-100,
-.text-gray-200,
-.text-gray-300 { color: var(--text); }
-.text-gray-400 { color: var(--text-sub); }
-.text-gray-500,
-.text-gray-600,
-.text-gray-700 { color: var(--text-muted); }
-.bg-gray-800,
-.bg-gray-750 { background: var(--card); }
-.bg-gray-700 { background: var(--border); }
-.bg-gray-900,
-.bg-black { background: var(--bg); }
-.border-gray-700 { border-color: var(--border); }
-
 /* ── Hixio-style dark dashboard base ───────────────────────────── */
 /* CSS variables are set on :root by ThemeContext from styles/tokens.js.
    These fallbacks only apply before JS hydrates the theme. */
@@ -48,7 +27,6 @@
 }
 
 * {
-  box-shadow: none !important;
   box-sizing: border-box;
 }
 
@@ -154,5 +132,5 @@ svg {
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background-color: var(--textMuted);
+  background-color: var(--text-muted);
 }

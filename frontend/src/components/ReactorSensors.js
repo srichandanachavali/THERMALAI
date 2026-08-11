@@ -6,7 +6,7 @@ import { RISK_THRESHOLDS } from "../constants/reactors";
 export function sensorBarClass(value, warnThreshold, critThreshold) {
   if (value >= critThreshold) return "sensor-bar-critical";
   if (value >= warnThreshold) return "sensor-bar-warning";
-  return "sensor-bar-safe";
+  return "sensor-bar-normal";
 }
 
 // Primary IEC 61511 sensor rows shown on the reactor card.
@@ -18,7 +18,7 @@ export function sensorRows(r) {
   const coolingVal = Math.min(100, r.cooling_efficiency * 100);
   return [
     { label: "Temperature", value: tempVal, barClass: sensorBarClass(r.temperature, RISK_THRESHOLDS.TEMP_WARNING, RISK_THRESHOLDS.TEMP_CRITICAL), display: `${r.temperature}°C`, color: r.temperature > RISK_THRESHOLDS.TEMP_CRITICAL ? "var(--danger)" : "var(--accent)" },
-    { label: "Pressure", value: pressureVal, barClass: sensorBarClass(r.pressure, RISK_THRESHOLDS.PRESSURE_WARNING, RISK_THRESHOLDS.PRESSURE_CRITICAL), display: `${r.pressure} bar`, color: r.pressure > RISK_THRESHOLDS.PRESSURE_CRITICAL ? "var(--danger)" : "var(--accentLight)" },
+    { label: "Pressure", value: pressureVal, barClass: sensorBarClass(r.pressure, RISK_THRESHOLDS.PRESSURE_WARNING, RISK_THRESHOLDS.PRESSURE_CRITICAL), display: `${r.pressure} bar`, color: r.pressure > RISK_THRESHOLDS.PRESSURE_CRITICAL ? "var(--danger)" : "var(--accent-light)" },
     { label: "Reaction Rate", value: rateVal, barClass: sensorBarClass(rate, 0.4, 0.7), display: `${Math.round(rate * 100)}%`, color: rate >= 0.7 ? "var(--danger)" : rate >= 0.4 ? "var(--warning)" : "var(--success)" },
     { label: "Cooling", value: coolingVal, barClass: sensorBarClass(1 - r.cooling_efficiency, 0.5, 0.7), display: `${Math.round(r.cooling_efficiency * 100)}%`, color: r.cooling_efficiency < 0.3 ? "var(--danger)" : "var(--success)" },
   ];
@@ -35,36 +35,36 @@ export function extendedRows(r) {
     {
       label: "Flow Rate", display: `${flow} L/min`, value: Math.min(100, (flow / 500) * 100),
       color: flow < 10 || flow > 480 ? "var(--danger)" : "var(--success)",
-      barClass: flow < 10 || flow > 480 ? "sensor-bar-critical" : "sensor-bar-safe",
+      barClass: flow < 10 || flow > 480 ? "sensor-bar-critical" : "sensor-bar-normal",
     },
     {
       label: "Material Level", display: `${level}%`, value: Math.min(100, level),
       color: level < 5 || level > 95 ? "var(--danger)" : level < 20 ? "var(--warning)" : "var(--success)",
-      barClass: level < 5 || level > 95 ? "sensor-bar-critical" : level < 20 ? "sensor-bar-warning" : "sensor-bar-safe",
+      barClass: level < 5 || level > 95 ? "sensor-bar-critical" : level < 20 ? "sensor-bar-warning" : "sensor-bar-normal",
     },
     {
       label: "Gas", display: `${gas} ppm`, value: Math.min(100, (gas / 1000) * 100),
       color: gas < RISK_THRESHOLDS.GAS_TOXIC ? "var(--success)" : gas <= RISK_THRESHOLDS.GAS_ABORT ? "var(--warning)" : "var(--danger)",
       pulse: gas > RISK_THRESHOLDS.GAS_ABORT,
       warn: gas > RISK_THRESHOLDS.GAS_TOXIC,
-      barClass: gas < RISK_THRESHOLDS.GAS_TOXIC ? "sensor-bar-safe" : gas <= RISK_THRESHOLDS.GAS_ABORT ? "sensor-bar-warning" : "sensor-bar-critical",
+      barClass: gas < RISK_THRESHOLDS.GAS_TOXIC ? "sensor-bar-normal" : gas <= RISK_THRESHOLDS.GAS_ABORT ? "sensor-bar-warning" : "sensor-bar-critical",
     },
     {
       label: "pH Level", display: `${ph}`, value: Math.min(100, (ph / 14) * 100),
       color: ph < RISK_THRESHOLDS.PH_LOW_DANGER || ph > RISK_THRESHOLDS.PH_HIGH_DANGER ? "var(--danger)" : ph < RISK_THRESHOLDS.PH_LOW_WARNING || ph > RISK_THRESHOLDS.PH_HIGH_WARNING ? "var(--warning)" : "var(--success)",
-      barClass: ph < RISK_THRESHOLDS.PH_LOW_DANGER || ph > RISK_THRESHOLDS.PH_HIGH_DANGER ? "sensor-bar-critical" : ph < RISK_THRESHOLDS.PH_LOW_WARNING || ph > RISK_THRESHOLDS.PH_HIGH_WARNING ? "sensor-bar-warning" : "sensor-bar-safe",
+      barClass: ph < RISK_THRESHOLDS.PH_LOW_DANGER || ph > RISK_THRESHOLDS.PH_HIGH_DANGER ? "sensor-bar-critical" : ph < RISK_THRESHOLDS.PH_LOW_WARNING || ph > RISK_THRESHOLDS.PH_HIGH_WARNING ? "sensor-bar-warning" : "sensor-bar-normal",
     },
     {
       label: "CO₂", display: `${co2} ppm`, value: Math.min(100, (co2 / 5000) * 100),
       color: co2 > RISK_THRESHOLDS.CO2_CRITICAL ? "var(--danger)" : co2 > RISK_THRESHOLDS.CO2_WARNING ? "var(--warning)" : "var(--success)",
-      barClass: co2 > RISK_THRESHOLDS.CO2_CRITICAL ? "sensor-bar-critical" : co2 > RISK_THRESHOLDS.CO2_WARNING ? "sensor-bar-warning" : "sensor-bar-safe",
+      barClass: co2 > RISK_THRESHOLDS.CO2_CRITICAL ? "sensor-bar-critical" : co2 > RISK_THRESHOLDS.CO2_WARNING ? "sensor-bar-warning" : "sensor-bar-normal",
     },
   ];
 }
 
 // One sensor as a labeled progress bar (role=meter for a11y).
 export function SensorRow({ s }) {
-  const barClass = s.barClass || (s.color === "var(--danger)" ? "sensor-bar-critical" : s.color === "var(--warning)" ? "sensor-bar-warning" : "sensor-bar-safe");
+  const barClass = s.barClass || (s.color === "var(--danger)" ? "sensor-bar-critical" : s.color === "var(--warning)" ? "sensor-bar-warning" : "sensor-bar-normal");
 
   return (
     <div
@@ -77,7 +77,7 @@ export function SensorRow({ s }) {
       title={`${s.label}: ${s.display}${s.warn ? " — warning" : ""}`}
     >
       <div className="flex justify-between text-xs mb-1">
-        <span style={{ color: "var(--textSub)" }}>
+        <span style={{ color: "var(--text-sub)" }}>
           {s.label}
           {s.warn && (
             <span className="ml-1" style={{ color: "var(--danger)" }} aria-label="warning">
@@ -138,7 +138,7 @@ export function ReactorGauge({ score, status, reactor }) {
         <span className="text-xl font-bold" style={{ color: "var(--text)" }}>
           {score}%
         </span>
-        <span className="text-[10px]" style={{ color: "var(--textMuted)" }}>
+        <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>
           Risk
         </span>
       </div>

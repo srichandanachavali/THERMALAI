@@ -11,6 +11,7 @@ import SensorReadingTable from "../components/SensorReadingTable";
 import DataQualityIndicator from "../components/DataQualityIndicator";
 import { simulateRunaway } from "../services/api";
 import { getReactorConfig } from "../constants/reactors";
+import useReactorHistory from "../hooks/useReactorHistory";
 
 // Process → pill color (ISA S5.1 tag families).
 const processColor = (process) => {
@@ -18,7 +19,7 @@ const processColor = (process) => {
   if (p.includes("nitration")) return "#f97316"; // orange
   if (p.includes("hydrogen")) return "#3b82f6"; // blue
   if (p.includes("polymer")) return "#a855f7"; // purple
-  return "var(--textSub)";
+  return "var(--text-sub)";
 };
 
 function ReactorDetail() {
@@ -31,15 +32,16 @@ function ReactorDetail() {
 
   const reactor = reactors.find((r) => r.reactor_id === reactorId);
   const config = getReactorConfig(reactorId);
+  const { history } = useReactorHistory(reactorId, { liveReactor: reactor });
 
   if (!reactor) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <p className="text-gray-400 text-xl">
+          <p className="text-xl" style={{ color: "var(--text-sub)" }}>
             Waiting for {config.tag} data...
           </p>
-          <p className="text-gray-500 text-sm mt-2">
+          <p className="text-sm mt-2" style={{ color: "var(--text-muted)" }}>
             Make sure the data stream is running
           </p>
         </div>
@@ -54,14 +56,15 @@ function ReactorDetail() {
         <div>
           <button
             onClick={() => navigate("/")}
-            className="text-gray-400 hover:text-white mb-2 flex items-center gap-2"
+            className="mb-2 flex items-center gap-2"
+            style={{ color: "var(--text-sub)" }}
           >
             ← Back to Overview
           </button>
-          <h1 className="text-3xl font-bold text-white">
+          <h1 className="text-3xl font-bold" style={{ color: "var(--text)" }}>
             {config.tag} — {config.name}
           </h1>
-          <p className="text-gray-400 mt-1">
+          <p className="mt-1" style={{ color: "var(--text-sub)" }}>
             {config.process} · {config.plant_name} · {config.location}
           </p>
           <span
@@ -82,7 +85,8 @@ function ReactorDetail() {
                 // simulation error handled silently — alert will appear via socket
               }
             }}
-            className="bg-red-700 hover:bg-red-600 text-white font-semibold px-5 py-2.5 rounded-lg transition-colors text-sm"
+            className="bg-red-700 hover:bg-red-600 font-semibold px-5 py-2.5 rounded-lg transition-colors text-sm"
+            style={{ color: "var(--text)" }}
           >
             Simulate Runaway
           </button>
@@ -100,7 +104,10 @@ function ReactorDetail() {
 
           {/* Data Quality Indicator near sensor ticker */}
           <div className="flex items-center gap-3 mt-2">
-            <DataQualityIndicator reading={reactor} compact />
+            <DataQualityIndicator
+              quality={reactor.data_quality}
+              sensorValidation={reactor.sensor_validation}
+            />
           </div>
 
           <ExplainPanel reactor={reactor} />
@@ -112,16 +119,16 @@ function ReactorDetail() {
         <AIComparison reactor={reactor} />
         <MaintenancePanel reactor={reactor} />
 
-        {/* Sensor Reading Table — last reading with data quality */}
+        {/* Sensor Reading Table — last 10 readings with HMI status accent */}
         <div
           className="p-5"
           style={{ backgroundColor: "var(--card)", border: "1px solid var(--border)", borderRadius: 12 }}
         >
-          <p className="text-xs font-semibold uppercase tracking-wider mb-4" style={{ color: "var(--textSub)" }}>
+          <p className="text-xs font-semibold uppercase tracking-wider mb-4" style={{ color: "var(--text-sub)" }}>
             Recent Sensor Readings (Last 10)
           </p>
           <div style={{ overflowX: 'auto' }}>
-            <SensorReadingTable reactor={reactor} />
+            <SensorReadingTable readings={history} reactor={reactor} />
           </div>
         </div>
       </div>
@@ -129,7 +136,8 @@ function ReactorDetail() {
       <div className="flex justify-end mt-6">
         <button
           onClick={() => navigate(`/analytics/${reactorId}`)}
-          className="bg-blue-700 hover:bg-blue-600 text-white font-semibold px-5 py-2.5 rounded-lg transition-colors text-sm"
+          className="bg-blue-700 hover:bg-blue-600 font-semibold px-5 py-2.5 rounded-lg transition-colors text-sm"
+          style={{ color: "var(--text)" }}
         >
           View Full History
         </button>

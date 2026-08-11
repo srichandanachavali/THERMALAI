@@ -47,11 +47,11 @@ function RiskGauge({ score, status }) {
         </svg>
         {/* Center text */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-4xl font-bold text-white">{score}%</span>
-          <span className="text-gray-400 text-sm">Risk Score</span>
+          <span className="text-4xl font-bold" style={{ color: "var(--text)" }}>{score}%</span>
+          <span className="text-sm" style={{ color: "var(--text-sub)" }}>Risk Score</span>
         </div>
       </div>
-      <div className={`mt-4 px-6 py-2 rounded-full ${getBgColor()} text-white font-bold text-lg`}>
+      <div className={`mt-4 px-6 py-2 rounded-full ${getBgColor()} font-bold text-lg`} style={{ color: "var(--text)" }}>
         {status}
       </div>
     </div>

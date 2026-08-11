@@ -4,11 +4,13 @@ import { dark, light, themeCssVars } from '../styles/tokens';
 const THEME_KEY = 'thermalai_theme';
 const ThemeContext = createContext();
 
-function applyTheme(palette) {
+function applyTheme(palette, isDark) {
   const root = document.documentElement;
   Object.entries(themeCssVars).forEach(([key, cssVar]) => {
     root.style.setProperty(cssVar, palette[key]);
   });
+  // Drive the ASM HMI palette (styles/hpmHMI.css) via [data-theme="light"].
+  root.setAttribute('data-theme', isDark ? 'dark' : 'light');
 }
 
 export const ThemeProvider = ({ children }) => {
@@ -20,7 +22,7 @@ export const ThemeProvider = ({ children }) => {
   });
 
   useEffect(() => {
-    applyTheme(isDark ? dark : light);
+    applyTheme(isDark ? dark : light, isDark);
     localStorage.setItem(THEME_KEY, isDark ? 'dark' : 'light');
   }, [isDark]);
 

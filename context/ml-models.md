@@ -129,6 +129,12 @@ status: SAFE <30 | WARNING 30-69 | CRITICAL >=70
 (`reactorController.js`) reads only `risk_score` and `parameter_alerts` from
 `/predict`, so the key change (SAFE→NOMINAL labels, 5-class probs) is transparent.
 
+`/predict` then boosts the model's `risk_score` by +15 for a CRITICAL parameter
+alert (+5 for WARNING), and +20 when the sensor-voting layer suspects a fault, then
+recomputes `status` once (SAFE<30, WARNING30-69, CRITICAL≥70) after all boosts — so a
+boosted risk can never leave a stale SAFE label. A suspected sensor fault floors the
+status at WARNING (never SAFE), per the NO-FALSE-SAFE rule.
+
 ## Time-to-Critical Prediction
 
 Computed inline in `features.compute_minutes_to_runaway` and mirrored by Flask

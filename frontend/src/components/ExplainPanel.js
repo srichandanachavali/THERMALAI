@@ -36,9 +36,9 @@ function ExplainPanel({ reactor }) {
 
   if (loading) {
     return (
-      <div className="bg-gray-800 rounded-lg p-6">
-        <h3 className="text-white font-semibold mb-4">🧠 AI Explanation</h3>
-        <div className="text-gray-400 text-center py-4">
+      <div className="rounded-lg p-6" style={{ backgroundColor: "var(--card)" }}>
+        <h3 className="font-semibold mb-4" style={{ color: "var(--text)" }}>🧠 AI Explanation</h3>
+        <div className="text-center py-4" style={{ color: "var(--text-sub)" }}>
           Analyzing reactor data...
         </div>
       </div>
@@ -55,9 +55,10 @@ function ExplainPanel({ reactor }) {
 
   return (
     <div
-      className={`bg-gray-800 rounded-lg p-6 border-l-4 ${getBorderColor()}`}
+      className={`rounded-lg p-6 border-l-4 ${getBorderColor()}`}
+      style={{ backgroundColor: "var(--card)" }}
     >
-      <h3 className="text-white font-semibold text-lg mb-2">
+      <h3 className="font-semibold text-lg mb-2" style={{ color: "var(--text)" }}>
         🧠 AI Explanation
       </h3>
 
@@ -66,7 +67,7 @@ function ExplainPanel({ reactor }) {
         <span className="bg-purple-500/20 border border-purple-500/30 text-purple-400 text-xs font-bold px-3 py-1 rounded-full">
           🧠 LSTM + Random Forest Ensemble
         </span>
-        <span className="text-gray-500 text-xs">dual AI analysis</span>
+        <span className="text-xs" style={{ color: "var(--text-muted)" }}>dual AI analysis</span>
       </div>
 
       {/* Overall assessment */}
@@ -84,14 +85,15 @@ function ExplainPanel({ reactor }) {
 
       {/* Reasons */}
       <div className="mb-4">
-        <p className="text-gray-400 text-xs uppercase tracking-wide mb-2">
+        <p className="text-xs uppercase tracking-wide mb-2" style={{ color: "var(--text-sub)" }}>
           Why risk is high
         </p>
         <div className="space-y-2">
           {(explanation.reasons || []).map((reason, index) => (
             <div
               key={index}
-              className="bg-gray-700 rounded-lg p-3 text-sm text-gray-200"
+              className="rounded-lg p-3 text-sm"
+              style={{ backgroundColor: "var(--border)", color: "var(--text)" }}
             >
               {reason}
             </div>
@@ -101,7 +103,7 @@ function ExplainPanel({ reactor }) {
 
       {/* Recommendations */}
       <div>
-        <p className="text-gray-400 text-xs uppercase tracking-wide mb-2">
+        <p className="text-xs uppercase tracking-wide mb-2" style={{ color: "var(--text-sub)" }}>
           Recommended actions
         </p>
         <div className="space-y-2">

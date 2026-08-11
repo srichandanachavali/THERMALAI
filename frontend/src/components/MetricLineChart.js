@@ -17,21 +17,21 @@ function MetricLineChart({
   title,
   domain,
   height = 200,
-  titleClassName = "text-gray-300 font-semibold mb-4 text-sm uppercase tracking-wide",
+  titleClassName = "font-semibold mb-4 text-sm uppercase tracking-wide",
   tickFontSize = 10,
   referenceY,
   referenceLabel,
   refs,
 }) {
   return (
-    <div className="bg-gray-800 rounded-lg p-6">
+    <div className="rounded-lg p-6" style={{ backgroundColor: "var(--card)" }}>
       <h3 className={titleClassName}>{title}</h3>
       <ResponsiveContainer width="100%" height={height}>
         <LineChart data={data}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-          <XAxis dataKey="time" stroke="var(--textMuted)" tick={{ fontSize: tickFontSize }} />
+          <XAxis dataKey="time" stroke="var(--text-muted)" tick={{ fontSize: tickFontSize }} />
           <YAxis
-            stroke="var(--textMuted)"
+            stroke="var(--text-muted)"
             tick={{ fontSize: tickFontSize }}
             domain={domain}
           />

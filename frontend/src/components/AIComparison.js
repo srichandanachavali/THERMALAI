@@ -24,11 +24,11 @@ function AIComparison({ reactor }) {
   };
 
   return (
-    <div className="bg-gray-800 rounded-lg p-6">
-      <h3 className="text-white font-semibold text-lg mb-2 inline-flex items-center gap-2">
+    <div className="rounded-lg p-6" style={{ backgroundColor: "var(--card)" }}>
+      <h3 className="font-semibold text-lg mb-2 inline-flex items-center gap-2" style={{ color: "var(--text)" }}>
         <FiCpu aria-hidden="true" /> AI Model Comparison
       </h3>
-      <p className="text-gray-400 text-sm mb-6">
+      <p className="text-sm mb-6" style={{ color: "var(--text-sub)" }}>
         Two independent AI models cross-validating each other
       </p>
 
@@ -36,14 +36,14 @@ function AIComparison({ reactor }) {
       <div className="mb-5">
         <div className="flex items-center justify-between mb-2">
           <div>
-            <span className="text-white font-medium">Random Forest</span>
-            <span className="text-gray-500 text-xs ml-2">— pattern classifier</span>
+            <span className="font-medium" style={{ color: "var(--text)" }}>Random Forest</span>
+            <span className="text-xs ml-2" style={{ color: "var(--text-muted)" }}>— pattern classifier</span>
           </div>
           <span className={`font-bold text-lg ${getTextColor(rfScore)}`}>
             {rfScore}%
           </span>
         </div>
-        <div className="bg-gray-700 rounded-full h-3">
+        <div className="rounded-full h-3" style={{ backgroundColor: "var(--border)" }}>
           <div
             className={`h-3 rounded-full transition-all ${getBarColor(rfScore)}`}
             style={{ width: `${rfScore}%` }}
@@ -55,19 +55,19 @@ function AIComparison({ reactor }) {
       <div className="mb-5">
         <div className="flex items-center justify-between mb-2">
           <div>
-            <span className="text-white font-medium">LSTM Neural Network</span>
-            <span className="text-gray-500 text-xs ml-2">— time-series predictor</span>
+            <span className="font-medium" style={{ color: "var(--text)" }}>LSTM Neural Network</span>
+            <span className="text-xs ml-2" style={{ color: "var(--text-muted)" }}>— time-series predictor</span>
           </div>
           <div className="text-right">
             <span className={`font-bold text-lg ${getTextColor(lstmScore)}`}>
               {lstmScore}%
             </span>
-            <span className="text-gray-500 text-xs ml-2">
+            <span className="text-xs ml-2" style={{ color: "var(--text-muted)" }}>
               ({lstmConfidence}% conf.)
             </span>
           </div>
         </div>
-        <div className="bg-gray-700 rounded-full h-3">
+        <div className="rounded-full h-3" style={{ backgroundColor: "var(--border)" }}>
           <div
             className={`h-3 rounded-full transition-all ${getBarColor(lstmScore)}`}
             style={{ width: `${lstmScore}%` }}
@@ -76,23 +76,23 @@ function AIComparison({ reactor }) {
       </div>
 
       {/* Ensemble Score */}
-      <div className="bg-gray-700/50 rounded-lg p-4 mt-4">
+      <div className="rounded-lg p-4 mt-4" style={{ backgroundColor: "var(--border)" }}>
         <div className="flex items-center justify-between mb-2">
           <div>
-            <span className="text-white font-bold">Ensemble Score</span>
-            <span className="text-gray-400 text-xs ml-2">— RF×40% + LSTM×60%</span>
+            <span className="font-bold" style={{ color: "var(--text)" }}>Ensemble Score</span>
+            <span className="text-xs ml-2" style={{ color: "var(--text-sub)" }}>— RF×40% + LSTM×60%</span>
           </div>
           <span className={`font-bold text-2xl ${getTextColor(ensembleScore)}`}>
             {ensembleScore}%
           </span>
         </div>
-        <div className="bg-gray-600 rounded-full h-4">
+        <div className="rounded-full h-4" style={{ backgroundColor: "var(--border)" }}>
           <div
             className={`h-4 rounded-full transition-all ${getBarColor(ensembleScore)}`}
             style={{ width: `${ensembleScore}%` }}
           ></div>
         </div>
-        <p className="text-gray-400 text-xs mt-2 text-center">
+        <p className="text-xs mt-2 text-center" style={{ color: "var(--text-sub)" }}>
           Final risk score used for alerts and decisions
         </p>
       </div>
@@ -106,7 +106,7 @@ function AIComparison({ reactor }) {
             ? 'bg-yellow-500/10 border-yellow-500/30'
             : 'bg-green-500/10 border-green-500/30'
         }`}>
-          <p className="text-gray-300 text-sm inline-flex items-center gap-1.5">
+          <p className="text-sm inline-flex items-center gap-1.5" style={{ color: "var(--text)" }}>
             <FiActivity aria-hidden="true" /> LSTM time-series analysis detected:
             <span className={`font-bold ml-1 ${
               reactor.lstm_prediction === 'CRITICAL' ? 'text-red-400' :
@@ -114,7 +114,7 @@ function AIComparison({ reactor }) {
             }`}>
               {reactor.lstm_prediction}
             </span>
-            <span className="text-gray-500 text-xs ml-2">
+            <span className="text-xs ml-2" style={{ color: "var(--text-muted)" }}>
               based on last 10 readings
             </span>
           </p>

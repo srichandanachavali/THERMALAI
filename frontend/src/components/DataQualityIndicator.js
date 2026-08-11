@@ -1,55 +1,36 @@
 import React from "react";
 
-/**
- * DataQualityIndicator - Shows sensor validation status from safety layer
- * (voting + Kalman filtering). Receives enrichedReading with:
- * - data_quality: 'good' | 'degraded'
- * - temp_validation: { sensor_fault_suspected, validated_temperature, voter_spread_celsius, voters }
- * - kalman_smoothed: { temperature, pressure, cooling_efficiency, ... }
- */
-function DataQualityIndicator({ reading, compact = false }) {
-  if (!reading) return null;
+// ASM HMI data-quality chip. Renders nothing until the ML safety layer
+// returns sensor_validation; degraded reads surface as an amber chip.
+function DataQualityIndicator({ quality, sensorValidation }) {
+  if (!sensorValidation) return null;
 
-  const quality = reading.data_quality || 'good';
-  const tempVal = reading.temp_validation;
-  const kalman = reading.kalman_smoothed;
-  const isDegraded = quality === 'degraded';
-  const faultSuspected = tempVal?.sensor_fault_suspected === true;
-
-  if (compact) {
+  if (quality === "good") {
     return (
-      <span
-        className={`data-quality-indicator ${isDegraded ? 'data-quality-degraded' : 'data-quality-good'}`}
-        title={faultSuspected
-          ? `Sensor fault suspected — validated: ${tempVal?.validated_temperature?.toFixed(1)}°C (spread: ${tempVal?.voter_spread_celsius?.toFixed(1)}°C)`
-          : 'Data quality: GOOD'}
-      >
-        <span className="data-quality-indicator-dot" aria-hidden="true" />
-        <span className="sr-only">
-          {isDegraded ? 'Data quality: DEGRADED' : 'Data quality: GOOD'}
-        </span>
+      <span className="status-nominal inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold">
+        <span
+          className="w-2 h-2 rounded-full"
+          style={{ backgroundColor: "var(--hmi-text-muted)" }}
+          aria-hidden="true"
+        />
+        Data quality: Good
       </span>
     );
   }
 
   return (
-    <div className={`data-quality-indicator ${isDegraded ? 'data-quality-degraded' : 'data-quality-good'}`}>
-      <span className="data-quality-indicator-dot" aria-hidden="true" />
-      <span>
-        {isDegraded ? 'DEGRADED' : 'GOOD'}
-      </span>
-      {faultSuspected && (
-        <span className="ml-2 text-[10px]" style={{ color: "var(--warning)" }}>
-          Sensor fault suspected — median: {tempVal?.validated_temperature?.toFixed(1)}°C
-          <span className="ml-2">(spread: {tempVal?.voter_spread_celsius?.toFixed(1)}°C)</span>
-        </span>
+    <span className="status-warning inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold">
+      <span
+        className="w-2 h-2 rounded-full"
+        style={{ backgroundColor: "var(--hmi-warning)" }}
+        aria-hidden="true"
+      />
+      <span>Data quality: Degraded</span>
+      {sensorValidation.fault_note && <span>— {sensorValidation.fault_note}</span>}
+      {sensorValidation.voter_spread_celsius != null && (
+        <span>(voter spread {sensorValidation.voter_spread_celsius.toFixed(1)}°C)</span>
       )}
-      {kalman && (
-        <span className="ml-2 text-[10px]" style={{ color: "var(--text-sub)" }}>
-          Kalman smoothed: {kalman.temperature?.toFixed(1)}°C
-        </span>
-      )}
-    </div>
+    </span>
   );
 }
 

@@ -31,15 +31,15 @@ function PlantSelect() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center p-6">
+    <div className="min-h-screen flex flex-col items-center justify-center p-6" style={{ backgroundColor: "var(--bg)" }}>
       
       {/* Logo */}
       <div className="text-center mb-12">
-        <h1 className="text-5xl font-bold text-white tracking-tight">ThermalAI</h1>
-        <p className="text-gray-400 mt-3 text-lg">
+        <h1 className="text-5xl font-bold tracking-tight" style={{ color: "var(--text)" }}>ThermalAI</h1>
+        <p className="mt-3 text-lg" style={{ color: "var(--text-sub)" }}>
           Thermal Runaway Prevention Platform
         </p>
-        <p className="text-gray-500 text-sm mt-1">
+        <p className="text-sm mt-1" style={{ color: "var(--text-muted)" }}>
           Select your facility to continue
         </p>
       </div>
@@ -47,25 +47,26 @@ function PlantSelect() {
       {/* Plant Cards */}
       <div className="grid grid-cols-1 gap-6 w-full max-w-3xl">
         {plants.length === 0 ? (
-          <div className="text-gray-400 text-center">Loading plants...</div>
+          <div className="text-center" style={{ color: "var(--text-sub)" }}>Loading plants...</div>
         ) : (
           plants.map((plant) => (
             <div
               key={plant.plant_id}
               onClick={() => navigate('/login', { state: { plant } })}
-              className="bg-gray-800 border border-gray-700 hover:border-green-500 rounded-xl p-6 cursor-pointer transition-all hover:bg-gray-750 group"
+              className="border border-gray-600 hover:border-green-500 rounded-xl p-6 cursor-pointer transition-all hover-surface group"
+              style={{ backgroundColor: "var(--card)" }}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <div className="text-4xl">{getTypeIcon(plant.type)}</div>
                   <div>
-                    <h2 className="text-xl font-bold text-white group-hover:text-green-400 transition-all">
+                    <h2 className="text-xl font-bold group-hover:text-green-400 transition-all" style={{ color: "var(--text)" }}>
                       {plant.name}
                     </h2>
-                    <p className="text-gray-400 text-sm mt-1">
+                    <p className="text-sm mt-1" style={{ color: "var(--text-sub)" }}>
                       📍 {plant.city}, {plant.state}
                     </p>
-                    <p className="text-gray-500 text-xs mt-1">
+                    <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>
                       {plant.type}
                       {plant.reactors && ` · ${plant.reactors.length} Reactors`}
                       {plant.established && ` · Est. ${plant.established}`}
@@ -73,7 +74,7 @@ function PlantSelect() {
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="text-gray-400 group-hover:text-green-400 transition-all text-sm font-medium">
+                  <span className="group-hover:text-green-400 transition-all text-sm font-medium" style={{ color: "var(--text-sub)" }}>
                     Login →
                   </span>
                 </div>
@@ -85,10 +86,10 @@ function PlantSelect() {
 
       {/* Footer */}
       <div className="mt-12 text-center">
-        <p className="text-gray-600 text-xs">
+        <p className="text-xs" style={{ color: "var(--text-muted)" }}>
           ThermalAI v1.0 — Industrial Safety Intelligence
         </p>
-        <p className="text-gray-700 text-xs mt-1">
+        <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>
           Unauthorized access is prohibited
         </p>
       </div>

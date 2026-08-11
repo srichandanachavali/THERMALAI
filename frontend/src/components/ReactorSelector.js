@@ -10,10 +10,13 @@ function ReactorSelector({ reactorIds, selected, onSelect }) {
           onClick={() => onSelect(rid)}
           title={getReactorConfig(rid).name}
           className={`px-4 py-2 rounded-lg font-bold transition-all ${
-            selected === rid
-              ? "bg-green-500 text-white"
-              : "bg-gray-700 text-gray-400 hover:bg-gray-600"
+            selected === rid ? "bg-green-500" : "hover-surface"
           }`}
+          style={
+            selected === rid
+              ? { color: "var(--text)" }
+              : { backgroundColor: "var(--border)", color: "var(--text-sub)" }
+          }
         >
           {getReactorConfig(rid).tag}
         </button>

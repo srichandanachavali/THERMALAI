@@ -21,15 +21,16 @@ class ErrorBoundary extends React.Component {
           className="flex flex-col items-center justify-center h-64 text-center p-8"
         >
           <div className="text-4xl mb-4" aria-hidden="true">⚠️</div>
-          <h2 className="text-white text-xl font-bold mb-2">
+          <h2 className="text-xl font-bold mb-2" style={{ color: "var(--text)" }}>
             Something went wrong
           </h2>
-          <p className="text-gray-400 mb-4">
+          <p className="mb-4" style={{ color: "var(--text-sub)" }}>
             A component failed to render. Reload the page to continue monitoring.
           </p>
           <button
             onClick={() => window.location.reload()}
-            className="bg-green-500 hover:bg-green-400 text-white font-medium px-6 py-2 rounded-lg transition-all text-sm"
+            className="bg-green-500 hover:bg-green-400 font-medium px-6 py-2 rounded-lg transition-all text-sm"
+            style={{ color: "var(--text)" }}
           >
             Reload Dashboard
           </button>

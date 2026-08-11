@@ -12,7 +12,7 @@ function CountdownTimer({ reactor }) {
         <FiCheckCircle size={28} style={{ color: "var(--success)" }} aria-hidden="true" />
         <div>
           <p className="text-green-400 font-semibold">Reactor Safe</p>
-          <p className="text-gray-400 text-sm">Operating within normal parameters</p>
+          <p className="text-sm" style={{ color: "var(--text-sub)" }}>Operating within normal parameters</p>
         </div>
       </div>
     );
@@ -50,7 +50,7 @@ function CountdownTimer({ reactor }) {
                 ? 'THERMAL RUNAWAY IN PROGRESS'
                 : `Critical in ${minutes_to_critical} minutes`}
             </p>
-            <p className="text-gray-400 text-sm mt-1">{time_message}</p>
+            <p className="text-sm mt-1" style={{ color: "var(--text-sub)" }}>{time_message}</p>
           </div>
         </div>
         <div className="text-right">
@@ -59,14 +59,14 @@ function CountdownTimer({ reactor }) {
               ? <FiAlertOctagon aria-hidden="true" />
               : `${minutes_to_critical}m`}
           </p>
-          <p className="text-gray-500 text-xs">to critical</p>
+          <p className="text-xs" style={{ color: "var(--text-muted)" }}>to critical</p>
         </div>
       </div>
 
       {/* Progress bar */}
       {minutes_to_critical !== null && minutes_to_critical > 0 && (
         <div className="mt-3">
-          <div className="bg-gray-700 rounded-full h-2">
+          <div className="rounded-full h-2" style={{ backgroundColor: "var(--border)" }}>
             <div
               className={`h-2 rounded-full transition-all ${
                 minutes_to_critical < 5 ? 'bg-red-500' : 'bg-yellow-500'
@@ -76,7 +76,7 @@ function CountdownTimer({ reactor }) {
               }}
             ></div>
           </div>
-          <div className="flex justify-between text-xs text-gray-500 mt-1">
+          <div className="flex justify-between text-xs mt-1" style={{ color: "var(--text-muted)" }}>
             <span>Now</span>
             <span>Critical threshold</span>
           </div>

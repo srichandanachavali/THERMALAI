@@ -7,16 +7,18 @@ import { getReactorConfig, RISK_THRESHOLDS } from "../constants/reactors";
 // Compact reactor card for the Home grid: risk gauge + sensor progress rows.
 // `critical`/`degrading` enable Level-1 pinning treatments (red pulsing border +
 // IMMEDIATE ACTION banner, and amber degrading border respectively).
-function ReactorCard({ reactor, onClick, critical, degrading }) {
+function ReactorCard({ reactor, onClick, critical, degrading, statusClass }) {
   const config = getReactorConfig(reactor.reactor_id);
-  const statusClass = {
-    NOMINAL: "hmi-safe",
-    SAFE: "hmi-safe",
-    DEGRADING: "hmi-warning",
-    WARNING: "hmi-warning",
-    CRITICAL: "hmi-critical",
-    RECOVERY: "hmi-safe",
-  }[reactor.status] || "hmi-safe";
+  // Card accent comes from the parent (Home) via `statusClass`; fall back to
+  // an internal map so direct uses still get the right HMI treatment.
+  const cardClass = statusClass || {
+    NOMINAL: "reactor-card-nominal",
+    SAFE: "reactor-card-nominal",
+    DEGRADING: "reactor-card-degrading",
+    WARNING: "reactor-card-warning",
+    CRITICAL: "reactor-card-critical",
+    RECOVERY: "reactor-card-nominal",
+  }[reactor.status] || "reactor-card-nominal";
 
   const isCritical = critical ?? reactor.status === "CRITICAL";
   const isDegrading = degrading ?? reactor.status === "DEGRADING";
@@ -29,7 +31,7 @@ function ReactorCard({ reactor, onClick, critical, degrading }) {
       role="button"
       aria-label={`${config.tag} ${config.name}, status ${isCritical ? "CRITICAL" : isDegrading ? "DEGRADING" : reactor.status}, risk ${reactor.risk_score}%. Open reactor detail.`}
       onKeyDown={(e) => e.key === "Enter" && onClick()}
-      className={`p-5 cursor-pointer transition-colors relative ${statusClass}`}
+      className={`p-5 cursor-pointer transition-colors relative ${cardClass}`}
       style={{
         backgroundColor: "var(--card)",
         border: "1px solid var(--border)",
@@ -81,7 +83,7 @@ function ReactorCard({ reactor, onClick, critical, degrading }) {
         className="mt-4 pt-3"
         style={{ borderTop: "1px solid var(--border)" }}
       >
-        <p className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: "var(--textMuted)" }}>
+        <p className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: "var(--text-muted)" }}>
           Extended Sensors
         </p>
         <div className="space-y-2.5">

@@ -14,7 +14,7 @@ import { FiThermometer, FiShield, FiBarChart2, FiWind } from "react-icons/fi";
 import MetricLineChart from "../components/MetricLineChart";
 import ReactorSelector from "../components/ReactorSelector";
 import useReactorHistory from "../hooks/useReactorHistory";
-import { REACTOR_CONFIG, RISK_THRESHOLDS } from "../constants/reactors";
+import { REACTOR_CONFIG, RISK_THRESHOLDS, getReactorConfig } from "../constants/reactors";
 
 // Module-scope so the hook's format reference is stable across renders.
 const formatHistory = (d, i) => ({
@@ -62,6 +62,7 @@ function Analytics() {
   });
 
   const reactorIds = Object.keys(REACTOR_CONFIG);
+  const config = getReactorConfig(selectedReactor);
   const featured = SENSOR_TABS.find((t) => t.key === activeSensor);
 
   // Filter history by the selected time range (client-side).
@@ -97,8 +98,10 @@ function Analytics() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-white">Analytics</h1>
-          <p className="text-gray-400 mt-1">
+          <h1 className="text-3xl font-bold" style={{ color: "var(--text)" }}>
+            Viewing {config.tag} — {config.name}
+          </h1>
+          <p className="mt-1" style={{ color: "var(--text-sub)" }}>
             Historical trends and pattern analysis
           </p>
         </div>
@@ -113,7 +116,7 @@ function Analytics() {
                 className="text-[11px] font-bold px-3 py-1.5 rounded-md transition-colors"
                 style={{
                   backgroundColor: range === r ? "var(--accent)" : "transparent",
-                  color: range === r ? "#fff" : "var(--textSub)",
+                  color: range === r ? "#fff" : "var(--text-sub)",
                 }}
               >
                 {r}
@@ -153,7 +156,7 @@ function Analytics() {
             className="text-sm font-semibold px-4 py-1.5 rounded-full transition-colors"
             style={{
               backgroundColor: activeSensor === tab.key ? "var(--accent)" : "var(--card)",
-              color: activeSensor === tab.key ? "#fff" : "var(--textSub)",
+              color: activeSensor === tab.key ? "#fff" : "var(--text-sub)",
               border: `1px solid ${activeSensor === tab.key ? "var(--accent)" : "var(--border)"}`,
             }}
           >
@@ -164,9 +167,9 @@ function Analytics() {
 
       {/* Charts */}
       {filtered.length === 0 ? (
-        <div className="bg-gray-800 rounded-lg p-16 text-center">
-          <p className="text-gray-400 text-xl">No history available yet</p>
-          <p className="text-gray-500 mt-2">
+        <div className="rounded-lg p-16 text-center" style={{ backgroundColor: "var(--card)" }}>
+          <p className="text-xl" style={{ color: "var(--text-sub)" }}>No history available yet</p>
+          <p className="mt-2" style={{ color: "var(--text-muted)" }}>
             Start the data stream to see trends
           </p>
         </div>
@@ -179,7 +182,7 @@ function Analytics() {
               dataKey={featured.key}
               stroke={featured.stroke}
               title={`${featured.label} History`}
-              titleClassName="text-white font-semibold mb-4"
+              titleClassName="font-semibold mb-4"
               tickFontSize={10}
               domain={featured.domain}
               refs={featured.refs}
@@ -191,16 +194,16 @@ function Analytics() {
             className="mb-6 p-6"
             style={{ backgroundColor: "var(--card)", border: "1px solid var(--border)", borderRadius: 12 }}
           >
-            <h3 className="text-white font-semibold mb-1">
+            <h3 className="font-semibold mb-1" style={{ color: "var(--text)" }}>
               Temperature vs Cooling Efficiency
             </h3>
-            <p className="text-gray-400 text-sm mb-4">
+            <p className="text-sm mb-4" style={{ color: "var(--text-sub)" }}>
               Cooling-runaway relationship over the selected window
             </p>
             <ResponsiveContainer width="100%" height={220}>
               <ComposedChart data={filtered}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                <XAxis dataKey="time" stroke="var(--textMuted)" tick={{ fontSize: 10 }} />
+                <XAxis dataKey="time" stroke="var(--text-muted)" tick={{ fontSize: 10 }} />
                 <YAxis
                   yAxisId="temp"
                   stroke="#f97316"
@@ -232,7 +235,7 @@ function Analytics() {
               dataKey="temperature"
               stroke="#f97316"
               title={<span className="inline-flex items-center gap-2"><FiThermometer aria-hidden="true" /> Temperature History</span>}
-              titleClassName="text-white font-semibold mb-4"
+              titleClassName="font-semibold mb-4"
               tickFontSize={9}
             />
             <MetricLineChart
@@ -240,7 +243,7 @@ function Analytics() {
               dataKey="risk_score"
               stroke="#ef4444"
               title={<span className="inline-flex items-center gap-2"><FiShield aria-hidden="true" /> AI Risk Score History</span>}
-              titleClassName="text-white font-semibold mb-4"
+              titleClassName="font-semibold mb-4"
               tickFontSize={9}
               domain={[0, 100]}
             />
@@ -249,7 +252,7 @@ function Analytics() {
               dataKey="pressure"
               stroke="#60a5fa"
               title={<span className="inline-flex items-center gap-2"><FiBarChart2 aria-hidden="true" /> Pressure History</span>}
-              titleClassName="text-white font-semibold mb-4"
+              titleClassName="font-semibold mb-4"
               tickFontSize={9}
             />
             <MetricLineChart
@@ -257,7 +260,7 @@ function Analytics() {
               dataKey="cooling_efficiency"
               stroke="#22c55e"
               title={<span className="inline-flex items-center gap-2"><FiWind aria-hidden="true" /> Cooling Efficiency History</span>}
-              titleClassName="text-white font-semibold mb-4"
+              titleClassName="font-semibold mb-4"
               tickFontSize={9}
               domain={[0, 1]}
             />

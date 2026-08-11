@@ -13,18 +13,19 @@ function PlantCard({ plant, plantReactors, plantStatus, plantRiskScore }) {
 
   return (
     <div
-      className={`bg-gray-800 border-2 rounded-xl p-6 ${getStatusColor(plantStatus)}`}
+      className={`border-2 rounded-xl p-6 ${getStatusColor(plantStatus)}`}
+      style={{ backgroundColor: "var(--card)" }}
     >
       {/* Plant Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
           <FiLayers size={36} aria-hidden="true" />
           <div>
-            <h2 className="text-xl font-bold text-white">{plant.name}</h2>
-            <p className="text-gray-400 text-sm inline-flex items-center gap-1">
+            <h2 className="text-xl font-bold" style={{ color: "var(--text)" }}>{plant.name}</h2>
+            <p className="text-sm inline-flex items-center gap-1" style={{ color: "var(--text-sub)" }}>
               <FiMapPin size={13} aria-hidden="true" /> {plant.location}, {plant.city}, {plant.state}
             </p>
-            <p className="text-gray-500 text-xs mt-1">
+            <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>
               {plant.type} · Est. {plant.established}
             </p>
           </div>
@@ -33,7 +34,7 @@ function PlantCard({ plant, plantReactors, plantStatus, plantRiskScore }) {
           <div className="flex items-center gap-3 mb-2">
             <StatusBadge status={plantStatus} />
           </div>
-          <p className="text-gray-400 text-sm">
+          <p className="text-sm" style={{ color: "var(--text-sub)" }}>
             Avg Risk: <span className={`font-bold ${getRiskColor(plantRiskScore)}`}>{plantRiskScore}%</span>
           </p>
         </div>
@@ -41,7 +42,7 @@ function PlantCard({ plant, plantReactors, plantStatus, plantRiskScore }) {
 
       {/* Plant Risk Bar */}
       <div className="mb-6">
-        <div className="bg-gray-700 rounded-full h-2 mb-1">
+        <div className="rounded-full h-2 mb-1" style={{ backgroundColor: "var(--border)" }}>
           <div
             className={`h-2 rounded-full transition-all ${getRiskBarColor(plantRiskScore)}`}
             style={{ width: `${plantRiskScore}%` }}
@@ -51,11 +52,11 @@ function PlantCard({ plant, plantReactors, plantStatus, plantRiskScore }) {
 
       {/* Reactors Grid */}
       <div>
-        <p className="text-gray-400 text-xs uppercase tracking-wide mb-3">
+        <p className="text-xs uppercase tracking-wide mb-3" style={{ color: "var(--text-sub)" }}>
           Reactors — click to monitor
         </p>
         {plantReactors.length === 0 ? (
-          <div className="text-gray-500 text-sm">
+          <div className="text-sm" style={{ color: "var(--text-muted)" }}>
             Waiting for reactor data...
           </div>
         ) : (
@@ -76,13 +77,13 @@ function PlantCard({ plant, plantReactors, plantStatus, plantRiskScore }) {
                       : "bg-green-500"
                 }`}
               >
-                <p className="text-white font-bold text-lg">
+                <p className="font-bold text-lg" style={{ color: "var(--text)" }}>
                   {reactor.reactor_id}
                 </p>
-                <p className="text-white text-xs mt-1">
+                <p className="text-xs mt-1" style={{ color: "var(--text)" }}>
                   {reactor.risk_score}%
                 </p>
-                <p className="text-white text-xs opacity-80">
+                <p className="text-xs opacity-80" style={{ color: "var(--text)" }}>
                   {reactor.status}
                 </p>
               </div>
@@ -92,7 +93,7 @@ function PlantCard({ plant, plantReactors, plantStatus, plantRiskScore }) {
       </div>
 
       {/* Plant Actions */}
-      <div className="flex gap-3 mt-4 pt-4 border-t border-gray-700">
+      <div className="flex gap-3 mt-4 pt-4 border-t" style={{ borderColor: "var(--border)" }}>
         <button
           onClick={() => navigate("/analytics")}
           className="bg-blue-500/20 hover:bg-blue-500/40 text-blue-400 text-sm px-4 py-2 rounded-lg transition-all inline-flex items-center gap-1.5"

@@ -70,7 +70,7 @@ function Login() {
           >
             ThermalAI
           </h1>
-          <p className="mt-2" style={{ color: 'var(--textSub)' }}>
+          <p className="mt-2" style={{ color: 'var(--text-sub)' }}>
             Industrial Safety Intelligence
           </p>
         </div>
@@ -79,16 +79,16 @@ function Login() {
         {plant && (
           <div
             className="rounded-xl p-4 mb-6"
-            style={{ backgroundColor: 'var(--accentGlow)', border: '1px solid var(--border)' }}
+            style={{ backgroundColor: 'var(--accent-glow)', border: '1px solid var(--border)' }}
           >
             <div className="flex items-center gap-3">
               <span className="text-3xl">{getTypeIcon(plant.type)}</span>
               <div>
                 <p className="font-bold" style={{ color: 'var(--text)' }}>{plant.name}</p>
-                <p className="text-sm" style={{ color: 'var(--textSub)' }}>
+                <p className="text-sm" style={{ color: 'var(--text-sub)' }}>
                   📍 {plant.city}, {plant.state}
                 </p>
-                <p className="text-xs mt-1" style={{ color: 'var(--textMuted)' }}>{plant.type}</p>
+                <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{plant.type}</p>
               </div>
             </div>
           </div>
@@ -100,23 +100,23 @@ function Login() {
             onClick={() => setUsername('admin')}
             className="rounded-lg p-3 cursor-pointer transition-colors text-center"
             style={{
-              backgroundColor: 'var(--accentGlow)',
+              backgroundColor: 'var(--accent-glow)',
               border: '1px solid var(--accent)',
             }}
           >
-            <p className="font-bold" style={{ color: 'var(--accentLight)' }}>👑 Admin</p>
-            <p className="text-xs mt-1" style={{ color: 'var(--textMuted)' }}>Full access</p>
+            <p className="font-bold" style={{ color: 'var(--accent-light)' }}>👑 Admin</p>
+            <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Full access</p>
           </div>
           <div
             onClick={() => setUsername('operator')}
             className="rounded-lg p-3 cursor-pointer transition-colors text-center"
             style={{
-              backgroundColor: 'var(--accentGlow)',
+              backgroundColor: 'var(--accent-glow)',
               border: '1px solid var(--border)',
             }}
           >
             <p className="font-bold" style={{ color: 'var(--highlight)' }}>👷 Operator</p>
-            <p className="text-xs mt-1" style={{ color: 'var(--textMuted)' }}>Monitor access</p>
+            <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Monitor access</p>
           </div>
         </div>
 
@@ -124,7 +124,7 @@ function Login() {
         <div>
           <label
             className="text-xs uppercase tracking-wide mb-2 block"
-            style={{ color: 'var(--textSub)' }}
+            style={{ color: 'var(--text-sub)' }}
           >
             Username
           </label>
@@ -143,7 +143,7 @@ function Login() {
           />
           <label
             className="text-xs uppercase tracking-wide mb-2 block"
-            style={{ color: 'var(--textSub)' }}
+            style={{ color: 'var(--text-sub)' }}
           >
             Password
           </label>
@@ -166,7 +166,7 @@ function Login() {
             <div
               className="rounded-lg p-3 mb-4"
               style={{
-                backgroundColor: 'var(--accentGlow)',
+                backgroundColor: 'var(--accent-glow)',
                 border: '1px solid var(--danger)',
               }}
             >
@@ -184,7 +184,7 @@ function Login() {
               opacity: loading ? 0.6 : 1,
             }}
             onMouseEnter={(e) => {
-              if (!loading) e.currentTarget.style.backgroundColor = 'var(--accentLight)';
+              if (!loading) e.currentTarget.style.backgroundColor = 'var(--accent-light)';
             }}
             onMouseLeave={(e) => {
               if (!loading) e.currentTarget.style.backgroundColor = 'var(--accent)';
@@ -196,9 +196,9 @@ function Login() {
           <button
             onClick={() => navigate('/')}
             className="w-full mt-3 py-2 transition-colors text-sm"
-            style={{ color: 'var(--textSub)' }}
+            style={{ color: 'var(--text-sub)' }}
             onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text)')}
-            onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--textSub)')}
+            onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-sub)')}
           >
             ← Back to plant selection
           </button>

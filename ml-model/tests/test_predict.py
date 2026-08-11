@@ -80,3 +80,66 @@ def test_predict_includes_status_and_reactor(client):
     data = res.get_json()
     assert data['reactor_id'] == 'A'
     assert data['status'] in {'SAFE', 'WARNING', 'CRITICAL'}
+
+
+def _fake_result(risk_score, status):
+    """Shape that the /predict jsonify reads from calculate_risk_score's return."""
+    return {
+        'risk_score': float(risk_score),
+        'status': status,
+        'prediction': status,
+        'confidence': 0.9,
+        'rf_weight_used': 1.0,
+        'lstm_weight_used': 0.0,
+        'models_agree': True,
+        'probabilities': {'SAFE': 0.3, 'WARNING': 0.6, 'CRITICAL': 0.1},
+        'minutes_to_runaway': 18.0,
+        'top_risk_factors': [('temperature', 0.4)],
+    }
+
+
+def _critical_alert():
+    return [{'severity': 'CRITICAL', 'parameter': 'temperature', 'message': 'over limit'}]
+
+
+def _safe_validation():
+    """Validation dict with no suspected sensor fault, so the +20 fault boost
+    never fires and only the +15 parameter-alert boost changes the outcome."""
+    return {
+        'validated_reading': SENSOR_DATA,
+        'data_quality': 'good',
+        'sensor_faults': [],
+        'temp_validation': {
+            'voter_spread_celsius': 0.0,
+            'sensor_fault_suspected': False,
+            'fault_note': None,
+        },
+    }
+
+
+def _post_with_boost(client, monkeypatch, base_risk, base_status):
+    """POST /predict with a mocked model score, a forced CRITICAL parameter
+    alert (+15), and a voting layer that reports no sensor fault (+20 suppressed).
+    This isolates the parameter-alert boost so only it can change the outcome."""
+    import routes_risk
+    monkeypatch.setattr(routes_risk, 'calculate_risk_score',
+                        lambda d, h=None: _fake_result(base_risk, base_status))
+    monkeypatch.setattr(routes_risk, 'parameter_alerts', lambda d: _critical_alert())
+    monkeypatch.setattr(routes_risk.voting_layer, 'validate_all',
+                        lambda d: _safe_validation())
+    return client.post('/predict', json=SENSOR_DATA).get_json()
+
+
+def test_parameter_critical_boost_flips_status_safe_to_warning(client, monkeypatch):
+    # Regression: a CRITICAL alert (+15) must push 25 -> 40 and flip status to
+    # WARNING. Before the fix, status stayed SAFE (a false-safe).
+    data = _post_with_boost(client, monkeypatch, base_risk=25, base_status='SAFE')
+    assert data['risk_score'] == 40.0
+    assert data['status'] == 'WARNING'
+
+
+def test_parameter_critical_boost_flips_status_warning_to_critical(client, monkeypatch):
+    # A CRITICAL alert (+15) must push 60 -> 75 and flip status to CRITICAL.
+    data = _post_with_boost(client, monkeypatch, base_risk=60, base_status='WARNING')
+    assert data['risk_score'] == 75.0
+    assert data['status'] == 'CRITICAL'

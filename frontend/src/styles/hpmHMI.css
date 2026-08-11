@@ -1,337 +1,69 @@
 /*
- * ThermalAI — ASM Consortium High-Performance HMI Color System
- * ISA-101 / ASM: grey/low-saturation default, color only for abnormal states.
- * Colors reference CSS variables from tokens.js.
+ * ThermalAI — ASM Consortium High-Performance HMI Color System (ISA-101)
+ * Dashboards are grey/low-saturation by default. Color is reserved entirely
+ * for abnormal conditions — if an operator sees color, something is wrong.
  */
 
-/* ── Status Background Classes ────────────────────────────────────── */
-
-.hmi-safe {
-  background: var(--bg);
-  color: var(--text-sub);
-  border: 1px solid var(--border);
+/* ── HMI palette (dark default) ───────────────────────────────────── */
+:root {
+  --hmi-bg: #2d2d2d; --hmi-card: #3a3a3a; --hmi-border: #4a4a4a;
+  --hmi-text: #d0d0d0; --hmi-text-sub: #909090; --hmi-text-muted: #606060;
+  --hmi-bar-normal: #5a7a5a; --hmi-bar-bg: #404040;
+  --hmi-warning: #c8820e; --hmi-critical: #c82020;
+  --hmi-degrading: #8a6a1a; --hmi-sensor-fault: #6a3a8a;
+  --hmi-recovery: #1a5a8a; --hmi-info: #1a6a9a;
+}
+[data-theme="light"] {
+  --hmi-bg: #e8e8e8; --hmi-card: #f0f0f0; --hmi-border: #cccccc;
+  --hmi-text: #202020; --hmi-text-sub: #505050; --hmi-text-muted: #808080;
+  --hmi-bar-normal: #4a6a4a; --hmi-bar-bg: #c0c0c0;
 }
 
-.hmi-warning {
-  background: var(--warning-bg, rgba(245, 158, 11, 0.12));
-  color: var(--warning);
-  border: 1px solid var(--warning);
-}
+/* ── Sensor progress bars ── grey normal, amber elevated, red critical ─ */
+.sensor-bar-normal{background-color:var(--hmi-bar-normal)}
+.sensor-bar-warning{background-color:var(--hmi-warning)}
+.sensor-bar-critical{background-color:var(--hmi-critical)}
+.sensor-bar-degrading{background-color:var(--hmi-degrading)}
+.sensor-bar-track{background:var(--hmi-bar-bg);border-radius:9999px;height:6px;overflow:hidden}
+.sensor-bar-fill{height:100%;border-radius:9999px;transition:width .4s ease,background .3s ease}
 
-.hmi-critical {
-  background: var(--danger-bg, rgba(239, 68, 68, 0.12));
-  color: var(--danger);
-  border: 1px solid var(--danger);
-}
+/* ── Status chips / badges ── grey default, color only when abnormal ── */
+.status-nominal{color:var(--hmi-text-sub);background:var(--hmi-card);border:1px solid var(--hmi-border)}
+.status-degrading{color:var(--hmi-degrading);background:rgba(138,106,26,.15);border:1px solid var(--hmi-degrading)}
+.status-warning{color:var(--hmi-warning);background:rgba(200,130,14,.15);border:1px solid var(--hmi-warning)}
+.status-critical{color:var(--hmi-critical);background:rgba(200,32,32,.15);border:1px solid var(--hmi-critical);animation:critical-pulse 1.5s ease-in-out infinite}
+.status-recovery{color:var(--hmi-recovery);background:rgba(26,90,138,.15);border:1px solid var(--hmi-recovery)}
+@keyframes critical-pulse{0%,100%{border-color:var(--hmi-critical)}50%{border-color:transparent}}
 
-/* Text variants for inline status */
-.hmi-text-safe {
-  color: var(--text-sub);
-}
+/* ── Reactor card status strip (left accent) ──────────────────────── */
+.reactor-card-nominal{border-left:3px solid var(--hmi-border)}
+.reactor-card-degrading{border-left:3px solid var(--hmi-degrading)}
+.reactor-card-warning{border-left:3px solid var(--hmi-warning)}
+.reactor-card-critical{border-left:4px solid var(--hmi-critical);box-shadow:-2px 0 8px rgba(200,32,32,.3)}
 
-.hmi-text-warning {
-  color: var(--warning);
-}
+/* ── Alert summary chips (Home) ────────────────────────────────────── */
+.chip-strip{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:9999px;font-size:.7rem;font-weight:600;white-space:nowrap}
+.chip-safe{background:rgba(34,197,94,.1);color:var(--success);border:1px solid var(--success)}
+.chip-warning{background:rgba(200,130,14,.15);color:var(--hmi-warning);border:1px solid var(--hmi-warning)}
+.chip-critical{background:rgba(200,32,32,.15);color:var(--hmi-critical);border:1px solid var(--hmi-critical);animation:critical-pulse 1.5s ease-in-out infinite}
 
-.hmi-text-critical {
-  color: var(--danger);
-}
+/* ── Sensor Reading Table (ReactorDetail) ──────────────────────────── */
+.sensor-table{width:100%;border-collapse:collapse;font-size:.8rem}
+.sensor-table th{text-align:left;padding:8px 12px;color:var(--hmi-text-sub);font-weight:600;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--hmi-border);background:var(--hmi-bg)}
+.sensor-table td{padding:8px 12px;border-bottom:1px solid var(--hmi-border);color:var(--hmi-text)}
+.sensor-table tr:last-child td{border-bottom:none}
+.sensor-table tr:hover td{background:var(--hmi-card)}
+.sensor-table tr.latest td{font-weight:600}
+.sensor-table tr.latest td:first-child{box-shadow:inset 4px 0 0 currentColor}
 
-/* ── Sensor Progress Bar Classes ────────────────────────────────────
-   Grey for normal range, amber for elevated, red for critical. */
+/* ── Flood-suppression tag (ISA-18.2) ──────────────────────────────── */
+.alarm-flood-tag{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;background:rgba(200,32,32,.15);color:var(--hmi-critical);border:1px solid var(--hmi-critical);border-radius:9999px;font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;animation:critical-pulse 1.5s ease-in-out infinite}
 
-.sensor-bar-safe {
-  background: linear-gradient(90deg, var(--border) 0%, var(--text-muted) 100%);
-}
+/* ── Utility ───────────────────────────────────────────────────────── */
+.scrollbar-hide{-ms-overflow-style:none;scrollbar-width:none}
+.scrollbar-hide::-webkit-scrollbar{display:none}
 
-.sensor-bar-warning {
-  background: linear-gradient(90deg, var(--warning) 0%, var(--highlight) 100%);
-}
-
-.sensor-bar-critical {
-  background: linear-gradient(90deg, var(--danger) 0%, #ff6b6b 100%);
-}
-
-/* Neutral track background for all sensor bars */
-.sensor-bar-track {
-  background: var(--border);
-  border-radius: 9999px;
-  height: 6px;
-  overflow: hidden;
-}
-
-.sensor-bar-fill {
-  height: 100%;
-  border-radius: 9999px;
-  transition: width 0.5s ease, background 0.3s ease;
-}
-
-/* ── Data Quality Indicator Classes ─────────────────────────────────
-   Shows sensor validation status from safety layer (voting + Kalman). */
-
-.data-quality-good {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 2px 8px;
-  background: var(--success-bg, rgba(34, 197, 94, 0.1));
-  color: var(--success);
-  border: 1px solid var(--success);
-  border-radius: 9999px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-}
-
-.data-quality-degraded {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 2px 8px;
-  background: var(--warning-bg, rgba(245, 158, 11, 0.12));
-  color: var(--warning);
-  border: 1px solid var(--warning);
-  border-radius: 9999px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-}
-
-.data-quality-indicator-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.data-quality-good .data-quality-indicator-dot {
-  background: var(--success);
-  box-shadow: 0 0 6px var(--success);
-}
-
-.data-quality-degraded .data-quality-indicator-dot {
-  background: var(--warning);
-  box-shadow: 0 0 6px var(--warning);
-  animation: thermalai-pulse 2s infinite;
-}
-
-/* ── Alarm Priority Badge Classes ───────────────────────────────────
-   ISA-18.2 Alarm Rationalization: P1-IMMEDIATE, P2-PROMPT, P3-DELAYED. */
-
-.alarm-priority-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 3px 10px;
-  border-radius: 9999px;
-  font-size: 0.65rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  white-space: nowrap;
-}
-
-.alarm-p1 {
-  background: var(--danger-bg, rgba(239, 68, 68, 0.15));
-  color: var(--danger);
-  border: 1px solid var(--danger);
-}
-
-.alarm-p1::before {
-  content: '';
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--danger);
-  box-shadow: 0 0 8px var(--danger);
-  animation: thermalai-pulse 1s infinite;
-}
-
-.alarm-p2 {
-  background: var(--warning-bg, rgba(245, 158, 11, 0.12));
-  color: var(--warning);
-  border: 1px solid var(--warning);
-}
-
-.alarm-p2::before {
-  content: '';
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--warning);
-  box-shadow: 0 0 6px var(--warning);
-}
-
-.alarm-p3 {
-  background: var(--border);
-  color: var(--text-sub);
-  border: 1px solid var(--border);
-}
-
-.alarm-p3::before {
-  content: '';
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--text-sub);
-}
-
-/* Flood notification tag */
-.alarm-flood-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  padding: 2px 8px;
-  background: var(--danger-bg, rgba(239, 68, 68, 0.15));
-  color: var(--danger);
-  border: 1px solid var(--danger);
-  border-radius: 9999px;
-  font-size: 0.6rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  animation: thermalai-pulse 1.5s infinite;
-}
-
-/* ── Reactor Card Status Strip (Home page) ──────────────────────────
-   Thin colored strip on left edge of reactor card. */
-
-.reactor-status-strip {
-  width: 4px;
-  height: 100%;
-  border-radius: 4px 0 0 4px;
-}
-
-.reactor-status-strip-safe {
-  background: var(--border);
-}
-
-.reactor-status-strip-warning {
-  background: var(--warning);
-  box-shadow: 0 0 8px var(--warning);
-}
-
-.reactor-status-strip-critical {
-  background: var(--danger);
-  box-shadow: 0 0 12px var(--danger);
-  animation: thermalai-critical-pulse 2s infinite;
-}
-
-/* ── Chip Strip for Alert Summary (Home page) ───────────────────────
-   Replaces AlertFeed — compact horizontal chip row. */
-
-.chip-strip {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 3px 10px;
-  border-radius: 9999px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.chip-safe {
-  background: var(--success-bg, rgba(34, 197, 94, 0.1));
-  color: var(--success);
-  border: 1px solid var(--success);
-}
-
-.chip-warning {
-  background: var(--warning-bg, rgba(245, 158, 11, 0.12));
-  color: var(--warning);
-  border: 1px solid var(--warning);
-}
-
-.chip-critical {
-  background: var(--danger-bg, rgba(239, 68, 68, 0.15));
-  color: var(--danger);
-  border: 1px solid var(--danger);
-}
-
-/* ── Sensor Reading Table (ReactorDetail) ───────────────────────────
-   Clean table for last 10 readings with data quality inline. */
-
-.sensor-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.8rem;
-}
-
-.sensor-table th {
-  text-align: left;
-  padding: 8px 12px;
-  color: var(--text-sub);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  border-bottom: 1px solid var(--border);
-  background: var(--bg);
-}
-
-.sensor-table td {
-  padding: 8px 12px;
-  border-bottom: 1px solid var(--border);
-  color: var(--text);
-}
-
-.sensor-table tr:last-child td {
-  border-bottom: none;
-}
-
-.sensor-table tr:hover td {
-  background: var(--card);
-}
-
-.sensor-table .param-name {
-  color: var(--text-sub);
-  font-weight: 500;
-}
-
-.sensor-table .param-value {
-  font-variant-numeric: tabular-nums;
-  font-weight: 600;
-}
-
-.sensor-table .param-value.warning {
-  color: var(--warning);
-}
-
-.sensor-table .param-value.critical {
-  color: var(--danger);
-}
-
-/* ── Sidebar Alert Badge ────────────────────────────────────────────
-   Only place alert count badge should appear. */
-
-.sidebar-alert-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 20px;
-  height: 20px;
-  padding: 0 6px;
-  background: var(--danger);
-  color: white;
-  border-radius: 9999px;
-  font-size: 0.65rem;
-  font-weight: 700;
-  line-height: 1;
-}
-
-/* ── Utility: Hide scrollbar but keep scroll ──────────────────────── */
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
-}
+/* Neutral-surface hover lift — replaces Tailwind gray hover classes so no
+   component bypasses the theme. Inline styles can't express :hover. */
+.hover-surface:hover{background-color:var(--border)}

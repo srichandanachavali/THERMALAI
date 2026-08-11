@@ -6,9 +6,22 @@ import ReactorCard from "../components/ReactorCard";
 import { ReactorCardSkeleton } from "../components/Skeletons";
 import { getReactorConfig } from "../constants/reactors";
 
-// Level 1 (OVERVIEW) priority — CRITICAL pinned first, then DEGRADING,
-// then WARNING, then SAFE; within a band, highest risk first.
-const STATUS_ORDER = { CRITICAL: 0, DEGRADING: 1, WARNING: 2, SAFE: 3 };
+// Level 1 (OVERVIEW) priority — CRITICAL floats to top, then WARNING,
+// DEGRADING, NOMINAL/SAFE, then RECOVERY; highest risk first within band.
+const STATUS_ORDER = {
+  CRITICAL: 0, WARNING: 1, DEGRADING: 2,
+  NOMINAL: 3, SAFE: 3, RECOVERY: 4,
+};
+
+// Card-level HMI accent (left border) driven by the reactor's status.
+const CARD_STATUS_CLASS = {
+  CRITICAL: "reactor-card-critical",
+  DEGRADING: "reactor-card-degrading",
+  WARNING: "reactor-card-warning",
+  NOMINAL: "reactor-card-nominal",
+  SAFE: "reactor-card-nominal",
+  RECOVERY: "reactor-card-nominal",
+};
 
 function Home() {
   const { reactors, alerts, connected } = useSocket();
@@ -36,7 +49,7 @@ function Home() {
   const criticalCount = reactors.filter((r) => r.status === "CRITICAL").length;
 
   const statCards = [
-    { label: "Total", value: reactors.length, color: "var(--accentLight)" },
+    { label: "Total", value: reactors.length, color: "var(--accent-light)" },
     { label: "Safe", value: safeCount, color: "var(--success)" },
     { label: "Warning", value: warningCount, color: "var(--warning)" },
     { label: "Critical", value: criticalCount, color: "var(--danger)" },
@@ -82,7 +95,7 @@ function Home() {
           <h1 className="text-2xl font-bold mb-1" style={{ color: "var(--text)" }}>
             Plant Overview
           </h1>
-          <p className="text-sm mb-6" style={{ color: "var(--textSub)" }}>
+          <p className="text-sm mb-6" style={{ color: "var(--text-sub)" }}>
             Real-time thermal runaway prevention — {reactors.length} reactors monitored
           </p>
         </div>
@@ -107,7 +120,7 @@ function Home() {
           <p className="text-2xl font-bold tabular-nums" style={{ color: "var(--text)" }}>
             {now.toLocaleTimeString()}
           </p>
-          <p className="text-xs" style={{ color: "var(--textMuted)" }}>
+          <p className="text-xs" style={{ color: "var(--text-muted)" }}>
             {now.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}
           </p>
         </div>
@@ -125,7 +138,7 @@ function Home() {
               borderRadius: 12,
             }}
           >
-            <p className="text-xs uppercase tracking-wider" style={{ color: "var(--textSub)" }}>
+            <p className="text-xs uppercase tracking-wider" style={{ color: "var(--text-sub)" }}>
               {card.label}
             </p>
             <p className="text-3xl font-bold mt-2" style={{ color: card.color }}>
@@ -150,10 +163,10 @@ function Home() {
               className="p-8 col-span-full"
               style={{ backgroundColor: "var(--card)", border: "1px solid var(--border)", borderRadius: 12 }}
             >
-              <p className="font-semibold mb-1" style={{ color: "var(--textSub)" }}>
+              <p className="font-semibold mb-1" style={{ color: "var(--text-sub)" }}>
                 Waiting for reactor data...
               </p>
-              <p className="text-sm mb-4" style={{ color: "var(--textMuted)" }}>
+              <p className="text-sm mb-4" style={{ color: "var(--text-muted)" }}>
                 Make sure stream_data.py is running:
               </p>
               <pre style={{ backgroundColor: "var(--bg)", color: "var(--success)", padding: "1rem", borderRadius: 8, overflowX: "auto" }}>
@@ -163,7 +176,7 @@ function Home() {
           ) : (
             <div
               className="p-8 text-center text-sm col-span-full"
-              style={{ backgroundColor: "var(--card)", border: "1px solid var(--border)", borderRadius: 12, color: "var(--textSub)" }}
+              style={{ backgroundColor: "var(--card)", border: "1px solid var(--border)", borderRadius: 12, color: "var(--text-sub)" }}
             >
               Connecting to server...
             </div>
@@ -176,6 +189,7 @@ function Home() {
             >
               <ReactorCard
                 reactor={reactor}
+                statusClass={CARD_STATUS_CLASS[reactor.status] || "reactor-card-nominal"}
                 onClick={() => navigate(`/reactor/${reactor.reactor_id}`)}
               />
             </div>
@@ -189,7 +203,7 @@ function Home() {
           className="mt-8 p-4"
           style={{ backgroundColor: "var(--card)", border: "1px solid var(--border)", borderRadius: 12 }}
         >
-          <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: "var(--textSub)" }}>
+          <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: "var(--text-sub)" }}>
             Recent Alerts
           </p>
           <div className="chip-strip">

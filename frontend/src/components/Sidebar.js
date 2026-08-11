@@ -61,7 +61,7 @@ function Sidebar() {
       <div className="px-4 py-5" style={{ borderBottom: "1px solid var(--border)" }}>
         <div
           className="flex items-center gap-2.5 px-3 py-2 rounded-lg"
-          style={{ backgroundColor: "var(--accentGlow)" }}
+          style={{ backgroundColor: "var(--accent-glow)" }}
         >
           <span
             className="flex items-center justify-center w-8 h-8 rounded-md"
@@ -75,7 +75,7 @@ function Sidebar() {
             </p>
             <div className="flex items-center gap-1 mt-1" role="status" aria-live="polite">
               <FiActivity size={10} style={{ color: connected ? "var(--success)" : "var(--danger)" }} />
-              <span style={{ color: "var(--textMuted)", fontSize: 10 }}>
+              <span style={{ color: "var(--text-muted)", fontSize: 10 }}>
                 {connected ? "Live" : "Offline"}
               </span>
             </div>
@@ -87,7 +87,7 @@ function Sidebar() {
       <div className="px-4 py-3 space-y-2" style={{ borderBottom: "1px solid var(--border)" }}>
         {plant && (
           <div>
-            <p className="text-[10px] uppercase tracking-wider font-semibold" style={{ color: "var(--textMuted)" }}>
+            <p className="text-[10px] uppercase tracking-wider font-semibold" style={{ color: "var(--text-muted)" }}>
               Plant
             </p>
             <p className="text-sm font-semibold truncate" style={{ color: "var(--text)" }}>
@@ -97,14 +97,14 @@ function Sidebar() {
         )}
         {user && user.role && (
           <div>
-            <p className="text-[10px] uppercase tracking-wider font-semibold" style={{ color: "var(--textMuted)" }}>
+            <p className="text-[10px] uppercase tracking-wider font-semibold" style={{ color: "var(--text-muted)" }}>
               Operator
             </p>
             <p className="text-sm font-medium truncate" style={{ color: "var(--text)" }}>
               {user.name}
               <span
                 className="ml-2 text-[10px] font-bold uppercase tracking-wider"
-                style={{ color: user.role === "admin" ? "var(--accentLight)" : "var(--highlight)" }}
+                style={{ color: user.role === "admin" ? "var(--accent-light)" : "var(--highlight)" }}
               >
                 {user.role}
               </span>
@@ -125,17 +125,17 @@ function Sidebar() {
               className="flex items-center gap-3 px-3 py-2.5 rounded-md mb-1 text-sm font-medium transition-colors"
               style={{
                 borderLeft: isActive ? "3px solid var(--accent)" : "3px solid transparent",
-                backgroundColor: isActive ? "var(--accentGlow)" : "transparent",
-                color: isActive ? "var(--text)" : "var(--textSub)",
+                backgroundColor: isActive ? "var(--accent-glow)" : "transparent",
+                color: isActive ? "var(--text)" : "var(--text-sub)",
               }}
               onMouseEnter={(e) => {
                 if (!isActive) e.currentTarget.style.color = "var(--text)";
               }}
               onMouseLeave={(e) => {
-                if (!isActive) e.currentTarget.style.color = "var(--textSub)";
+                if (!isActive) e.currentTarget.style.color = "var(--text-sub)";
               }}
             >
-              <Icon size={17} style={{ color: isActive ? "var(--accentLight)" : "var(--textMuted)" }} />
+              <Icon size={17} style={{ color: isActive ? "var(--accent-light)" : "var(--text-muted)" }} />
               <span>{item.label}</span>
               {item.badge > 0 && (
                 <span
@@ -154,10 +154,10 @@ function Sidebar() {
             className="mt-4 pt-4 px-2 text-xs"
             style={{ borderTop: "1px solid var(--border)" }}
           >
-            <p className="uppercase tracking-wider mb-1" style={{ color: "var(--textMuted)" }}>
+            <p className="uppercase tracking-wider mb-1" style={{ color: "var(--text-muted)" }}>
               Admin
             </p>
-            <p style={{ color: "var(--textMuted)" }}>
+            <p style={{ color: "var(--text-muted)" }}>
               Simulate runaway on reactor pages
             </p>
           </div>
@@ -169,14 +169,14 @@ function Sidebar() {
         <button
           onClick={toggleTheme}
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors mb-1"
-          style={{ color: "var(--textSub)", backgroundColor: "transparent" }}
-          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "var(--accentGlow)")}
+          style={{ color: "var(--text-sub)", backgroundColor: "transparent" }}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "var(--accent-glow)")}
           onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
         >
           {isDark ? <FiSun size={16} style={{ color: "var(--highlight)" }} /> : <FiMoon size={16} />}
           <span>{isDark ? "Light Mode" : "Dark Mode"}</span>
         </button>
-        <p className="text-[10px] text-center mt-1" style={{ color: "var(--textMuted)" }}>
+        <p className="text-[10px] text-center mt-1" style={{ color: "var(--text-muted)" }}>
           ThermalAI v1.1.0
         </p>
       </div>

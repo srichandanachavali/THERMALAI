@@ -22,14 +22,14 @@ export const getStatusColor = (status) => {
   if (status === "CRITICAL") return "border-red-500 bg-red-500/5";
   if (status === "WARNING") return "border-yellow-500 bg-yellow-500/5";
   if (status === "SAFE") return "border-green-500 bg-green-500/5";
-  return "border-gray-600 bg-gray-700/5";
+  return "border-gray-600";
 };
 
 export const getStatusBadge = (status) => {
-  if (status === "CRITICAL") return "bg-red-500 text-white";
+  if (status === "CRITICAL") return "bg-red-500";
   if (status === "WARNING") return "bg-yellow-500 text-black";
-  if (status === "SAFE") return "bg-green-500 text-white";
-  return "bg-gray-600 text-white";
+  if (status === "SAFE") return "bg-green-500";
+  return "";
 };
 
 export const getStatusIcon = (status) => {

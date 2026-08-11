@@ -1,36 +1,24 @@
 import React from "react";
 
-/**
- * AlarmPriorityBadge - ISA-18.2 Alarm Rationalization badge
- * Priority levels:
- * - P1 (IMMEDIATE): 60s response required, red pulsing
- * - P2 (PROMPT): 5min response required, amber
- * - P3 (DELAYED): 10-30min response required, grey
- * Also shows "FLOOD" tag for flood-suppressed notifications
- */
-function AlarmPriorityBadge({ priority, isFloodNotification = false }) {
-  if (!priority && !isFloodNotification) return null;
+// ISA-18.2 Alarm Rationalization priority badge, styled with HMI status
+// classes. P1 is the only pulsing/red treatment (immediate action).
+const PRIORITY = {
+  "P1": { label: "P1 IMMEDIATE", cls: "status-critical" },
+  "P2": { label: "P2 PROMPT", cls: "status-warning" },
+  "P3": { label: "P3 DELAYED", cls: "status-nominal" },
+};
 
-  const priorityClass = {
-    P1: 'alarm-p1',
-    P2: 'alarm-p2',
-    P3: 'alarm-p3',
-  }[priority] || 'alarm-p3';
-
-  const priorityLabel = {
-    P1: 'P1 — IMMEDIATE',
-    P2: 'P2 — PROMPT',
-    P3: 'P3 — DELAYED',
-  }[priority] || 'P3 — DELAYED';
+function AlarmPriorityBadge({ priority, is_flood_notification = false }) {
+  const level = PRIORITY[priority] || PRIORITY["P3"];
 
   return (
     <div className="flex items-center gap-2">
       {priority && (
-        <span className={`alarm-priority-badge ${priorityClass}`}>
-          {priorityLabel}
+        <span className={`${level.cls} inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold`}>
+          {level.label}
         </span>
       )}
-      {isFloodNotification && (
+      {is_flood_notification && (
         <span className="alarm-flood-tag" title="Flood suppressed — >5 alarms in 5min">
           FLOOD
         </span>

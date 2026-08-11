@@ -9,7 +9,7 @@ function AlertRow({ alert, onSelect }) {
     (alert.gas_concentration ?? 0) > RISK_THRESHOLDS.GAS_TOXIC && !alert.resolved;
 
   const riskColor = () => {
-    if (alert.resolved) return "var(--textMuted)";
+    if (alert.resolved) return "var(--text-muted)";
     if (alert.alert_type === "CRITICAL") return "var(--danger)";
     return "var(--warning)";
   };
@@ -42,32 +42,32 @@ function AlertRow({ alert, onSelect }) {
         animation: gasCritical ? "thermalai-pulse 1.5s infinite" : "none",
       }}
       onMouseEnter={(e) => {
-        if (!alert.resolved) e.currentTarget.style.backgroundColor = "var(--accentGlow)";
+        if (!alert.resolved) e.currentTarget.style.backgroundColor = "var(--accent-glow)";
       }}
       onMouseLeave={(e) => {
         if (!alert.resolved) e.currentTarget.style.backgroundColor = "transparent";
       }}
     >
-      <span className="text-xs" style={{ color: "var(--textMuted)" }}>
+      <span className="text-xs" style={{ color: "var(--text-muted)" }}>
         {new Date(alert.timestamp).toLocaleString()}
       </span>
       <span
         className="font-semibold text-sm"
         style={{
-          color: alert.resolved ? "var(--textMuted)" : "var(--text)",
+          color: alert.resolved ? "var(--text-muted)" : "var(--text)",
           textDecoration: alert.resolved ? "line-through" : "none",
         }}
       >
         {getReactorConfig(alert.reactor_id).tag}
       </span>
-      <span className="hidden md:block text-sm" style={{ color: "var(--textSub)" }}>
+      <span className="hidden md:block text-sm" style={{ color: "var(--text-sub)" }}>
         {alert.plant_id || "—"}
       </span>
       <span className="flex flex-col items-start gap-1">
         <StatusBadge status={alert.alert_type} resolved={alert.resolved} />
         <AlarmPriorityBadge
           priority={alert.priority}
-          isFloodNotification={alert.is_flood_notification}
+          is_flood_notification={alert.is_flood_notification}
         />
       </span>
       <span className="font-bold text-sm" style={{ color: riskColor() }}>
@@ -80,7 +80,7 @@ function AlertRow({ alert, onSelect }) {
         {alert.pressure} bar
       </span>
       <span className="hidden md:block min-w-0">
-        <span className="block text-sm truncate" style={{ color: "var(--textSub)" }}>
+        <span className="block text-sm truncate" style={{ color: "var(--text-sub)" }}>
           {alert.message}
         </span>
         {paramSubtext() && (
