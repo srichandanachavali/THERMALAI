@@ -11,8 +11,8 @@ const DEFAULT_MAINTENANCE = {
   success: true,
   overall_health: 86,
   overall_status: 'HEALTHY',
-  overall_message: 'Fleet operating within nominal parameters',
-  next_maintenance: null,
+  overall_message: 'Equipment operating within nominal mechanical bounds',
+  next_maintenance: 14,
   components: [
     {
       component: 'Coolant Pump',
@@ -29,8 +29,8 @@ const DEFAULT_MAINTENANCE = {
       current_health: 94,
       urgency: 'NORMAL',
       rul_hours: 1120,
-      message: 'Bearing temperature and load stable.',
-      recommendation: 'No action required.',
+      message: 'Bearing temperature and mechanical load stable.',
+      recommendation: 'No immediate action required.',
     },
     {
       component: 'Valve Seal',
@@ -39,7 +39,7 @@ const DEFAULT_MAINTENANCE = {
       urgency: 'LOW',
       rul_hours: 240,
       message: 'Seal wear progressing at expected rate.',
-      recommendation: 'Plan replacement at next scheduled outage.',
+      recommendation: 'Plan replacement at next scheduled maintenance outage.',
     },
   ],
 };
@@ -48,14 +48,17 @@ function MaintenancePanel({ reactor }) {
   const [maintenance, setMaintenance] = useState(DEFAULT_MAINTENANCE);
 
   const fetchMaintenance = useCallback(async () => {
+    if (!reactor || !reactor.reactor_id) return;
     try {
       const response = await axios.get(
         `${API}/api/reactors/${reactor.reactor_id}/maintenance`
       );
-      if (response.data.success) {
+      if (response.data && response.data.success) {
         setMaintenance(response.data);
       }
-    } catch {}
+    } catch {
+      // Retain default/dynamic fallback state on error
+    }
   }, [reactor]);
 
   useEffect(() => {
@@ -65,34 +68,34 @@ function MaintenancePanel({ reactor }) {
   }, [reactor, fetchMaintenance]);
 
   const getHealthColor = (health) => {
-    if (health >= 80) return 'text-green-400';
+    if (health >= 80) return 'text-emerald-400';
     if (health >= 50) return 'text-yellow-400';
     return 'text-red-400';
   };
 
   const getHealthBg = (health) => {
-    if (health >= 80) return 'bg-green-500';
+    if (health >= 80) return 'bg-emerald-500';
     if (health >= 50) return 'bg-yellow-500';
     return 'bg-red-500';
   };
 
   const getUrgencyStyle = (urgency) => {
-    if (urgency === 'CRITICAL') return 'bg-red-500/10 border-red-500/30 text-red-400';
-    if (urgency === 'WARNING') return 'bg-yellow-500/10 border-yellow-500/30 text-yellow-400';
-    return 'bg-blue-500/10 border-blue-500/30 text-blue-400';
+    if (urgency === 'CRITICAL') return 'bg-red-500/10 border-red-500/30 text-red-300';
+    if (urgency === 'WARNING') return 'bg-yellow-500/10 border-yellow-500/30 text-yellow-300';
+    return 'bg-blue-500/10 border-blue-500/30 text-blue-300';
   };
 
   return (
-    <div className="rounded-lg p-6" style={{ backgroundColor: "var(--card)" }}>
-      <h3 className="font-semibold text-lg mb-2 inline-flex items-center gap-2" style={{ color: "var(--text)" }}>
-        <FiTool aria-hidden="true" /> Predictive Maintenance
+    <div className="rounded-xl p-6" style={{ backgroundColor: "var(--card)", border: "1px solid var(--border)" }}>
+      <h3 className="font-semibold text-lg mb-1 inline-flex items-center gap-2" style={{ color: "var(--text)" }}>
+        <FiTool aria-hidden="true" /> Predictive Maintenance & Equipment Health
       </h3>
       <p className="text-sm mb-6" style={{ color: "var(--text-sub)" }}>
-        AI-predicted equipment health based on sensor trends
+        AI-predicted component wear and Remaining Useful Life (RUL) tracking
       </p>
 
-      {/* Overall Health */}
-      <div className="rounded-lg p-4 mb-6" style={{ backgroundColor: "var(--border)" }}>
+      {/* Overall Health Card */}
+      <div className="rounded-xl p-5 mb-6" style={{ backgroundColor: "rgba(255, 255, 255, 0.03)", border: "1px solid var(--border)" }}>
         <div className="flex items-center justify-between mb-3">
           <div>
             <p className="font-bold text-lg" style={{ color: "var(--text)" }}>Overall Equipment Health</p>
@@ -103,7 +106,7 @@ function MaintenancePanel({ reactor }) {
               {maintenance.overall_health}%
             </p>
             <p className={`text-xs font-bold mt-1 ${
-              maintenance.overall_status === 'HEALTHY' ? 'text-green-400' :
+              maintenance.overall_status === 'HEALTHY' ? 'text-emerald-400' :
               maintenance.overall_status === 'WARNING' ? 'text-yellow-400' :
               maintenance.overall_status === 'CRITICAL' ? 'text-red-400' : 'text-blue-400'
             }`}>
@@ -111,15 +114,17 @@ function MaintenancePanel({ reactor }) {
             </p>
           </div>
         </div>
-        <div className="rounded-full h-3" style={{ backgroundColor: "var(--border)" }}>
+
+        <div className="rounded-full h-3 overflow-hidden" style={{ backgroundColor: "rgba(255, 255, 255, 0.08)" }}>
           <div
-            className={`h-3 rounded-full transition-all ${getHealthBg(maintenance.overall_health)}`}
-            style={{ width: `${maintenance.overall_health}%` }}
+            className={`h-3 rounded-full transition-all duration-500 ${getHealthBg(maintenance.overall_health)}`}
+            style={{ width: `${Math.min(100, Math.max(0, maintenance.overall_health))}%` }}
           ></div>
         </div>
-        {maintenance.next_maintenance !== null && maintenance.next_maintenance < 30 && (
-          <p className="text-xs mt-2 inline-flex items-center gap-1.5" style={{ color: "var(--text-sub)" }}>
-            <FiClock aria-hidden="true" /> Next maintenance recommended in{' '}
+
+        {maintenance.next_maintenance !== null && maintenance.next_maintenance !== undefined && (
+          <p className="text-xs mt-3 inline-flex items-center gap-1.5 font-medium" style={{ color: "var(--text-sub)" }}>
+            <FiClock aria-hidden="true" /> Recommended maintenance window in{' '}
             <span className="text-yellow-400 font-bold">
               {maintenance.next_maintenance} days
             </span>
@@ -127,17 +132,17 @@ function MaintenancePanel({ reactor }) {
         )}
       </div>
 
-      {/* Components */}
+      {/* Component Breakdown */}
       {maintenance.components && maintenance.components.length > 0 ? (
         <div>
-          <p className="text-xs uppercase tracking-wide mb-3" style={{ color: "var(--text-sub)" }}>
-            Components needing attention
+          <p className="text-xs uppercase tracking-wider font-semibold mb-3" style={{ color: "var(--text-sub)" }}>
+            Individual Subsystem Health & RUL
           </p>
           <div className="space-y-3">
             {maintenance.components.map((comp, index) => (
               <div
                 key={index}
-                className={`border rounded-lg p-4 ${getUrgencyStyle(comp.urgency)}`}
+                className={`border rounded-xl p-4 transition-all ${getUrgencyStyle(comp.urgency)}`}
               >
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
@@ -145,19 +150,19 @@ function MaintenancePanel({ reactor }) {
                     <span className="font-semibold" style={{ color: "var(--text)" }}>{comp.component}</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="text-sm font-bold">
+                    <span className="text-sm font-bold" style={{ color: "var(--text)" }}>
                       Health: {comp.current_health}%
                     </span>
                     {comp.rul_hours !== undefined && comp.rul_hours !== null && (
-                      <span className="text-xs font-semibold" style={{ color: "var(--text-sub)" }}>
-                        RUL ~{comp.rul_hours} hrs
+                      <span className="text-xs font-mono font-semibold" style={{ color: "var(--text-sub)" }}>
+                        RUL ~{comp.rul_hours} hrs ({Math.round(comp.rul_hours / 24)}d)
                       </span>
                     )}
                     <StatusBadge status={comp.urgency === 'NORMAL' || comp.urgency === 'LOW' ? 'NOMINAL' : comp.urgency} />
                   </div>
                 </div>
-                <p className="text-sm mb-2">{comp.message}</p>
-                <p className="text-xs" style={{ color: "var(--text-sub)" }}>
+                <p className="text-sm mb-1.5" style={{ color: "var(--text)" }}>{comp.message}</p>
+                <p className="text-xs font-medium" style={{ color: "var(--text-sub)" }}>
                   → {comp.recommendation}
                 </p>
               </div>
@@ -165,9 +170,9 @@ function MaintenancePanel({ reactor }) {
           </div>
         </div>
       ) : (
-        <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4 text-center">
-          <p className="text-green-400 font-bold inline-flex items-center justify-center gap-1.5">
-            <FiCheckCircle aria-hidden="true" /> All components healthy
+        <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4 text-center">
+          <p className="text-emerald-400 font-bold inline-flex items-center justify-center gap-1.5">
+            <FiCheckCircle aria-hidden="true" /> All mechanical subsystems healthy
           </p>
           <p className="text-sm mt-1" style={{ color: "var(--text-sub)" }}>No maintenance required at this time</p>
         </div>

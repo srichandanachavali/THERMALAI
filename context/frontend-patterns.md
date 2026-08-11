@@ -60,6 +60,7 @@ Component catalog, reusable widget list, and auth pattern live in
 If null → redirect to `/select-plant`.
 
 **Layout for protected routes**:
+
 ```
 <div flex-col>
   <MLStatusBanner />        ← red banner when mlStatus === 'down'
@@ -85,27 +86,29 @@ public pages.
 
 ### Context Shape
 
-| Property | Type | Description |
-|---|---|---|
-| `socket` | Socket \| null | raw socket.io-client instance |
-| `reactors` | EnrichedReading[] | one entry per reactor_id, updated in-place on `reactor_update` |
-| `alerts` | Alert[] | newest first, max 50 items, prepended on `new_alert` |
-| `connected` | boolean | WebSocket connection state |
-| `mlStatus` | `'ok'` \| `'down'` \| `'recovered'` | updated by `system_alert` event |
+| Property    | Type                                | Description                                                    |
+| ----------- | ----------------------------------- | -------------------------------------------------------------- |
+| `socket`    | Socket \| null                      | raw socket.io-client instance                                  |
+| `reactors`  | EnrichedReading[]                   | one entry per reactor_id, updated in-place on `reactor_update` |
+| `alerts`    | Alert[]                             | newest first, max 50 items, prepended on `new_alert`           |
+| `connected` | boolean                             | WebSocket connection state                                     |
+| `mlStatus`  | `'ok'` \| `'down'` \| `'recovered'` | updated by `system_alert` event                                |
 
 ### Event Handling
 
-| Socket event | Effect |
-|---|---|
-| `reactor_update` | Find existing reactor by `reactor_id`, replace in array; if new, append |
-| `new_alert` | Prepend to alerts, slice to 50 |
-| `system_alert` { type: 'ML_DOWN' } | Set `mlStatus = 'down'` |
-| `system_alert` { type: 'ML_RECOVERED' } | Set `mlStatus = 'ok'` |
-| `disconnect` | Set `connected = false` |
+| Socket event                            | Effect                                                                  |
+| --------------------------------------- | ----------------------------------------------------------------------- |
+| `reactor_update`                        | Find existing reactor by `reactor_id`, replace in array; if new, append |
+| `new_alert`                             | Prepend to alerts, slice to 50                                          |
+| `system_alert` { type: 'ML_DOWN' }      | Set `mlStatus = 'down'`                                                 |
+| `system_alert` { type: 'ML_RECOVERED' } | Set `mlStatus = 'ok'`                                                   |
+| `disconnect`                            | Set `connected = false`                                                 |
 
 Socket URL is derived from `REACT_APP_API_URL` with `/api` stripped:
+
 ```js
-const API = process.env.REACT_APP_API_URL?.replace('/api', '') || 'http://localhost:5000'
+const API =
+  process.env.REACT_APP_API_URL?.replace("/api", "") || "http://localhost:5000";
 ```
 
 ---
@@ -114,36 +117,40 @@ const API = process.env.REACT_APP_API_URL?.replace('/api', '') || 'http://localh
 
 All functions are async, throw on non-2xx (axios default).
 
-| Function | HTTP call | Returns |
-|---|---|---|
-| `getReactors()` | GET /api/reactors | EnrichedReading[] |
-| `getReactorById(id)` | GET /api/reactors/:id | EnrichedReading |
-| `getReactorHistory(id)` | GET /api/reactors/:id/history | ReactorDocument[] |
-| `getAlerts()` | GET /api/alerts | Alert[] |
-| `resolveAlert(id)` | PUT /api/alerts/:id/resolve | `{ success, alert }` |
+| Function                | HTTP call                     | Returns              |
+| ----------------------- | ----------------------------- | -------------------- |
+| `getReactors()`         | GET /api/reactors             | EnrichedReading[]    |
+| `getReactorById(id)`    | GET /api/reactors/:id         | EnrichedReading      |
+| `getReactorHistory(id)` | GET /api/reactors/:id/history | ReactorDocument[]    |
+| `getAlerts()`           | GET /api/alerts               | Alert[]              |
+| `resolveAlert(id)`      | PUT /api/alerts/:id/resolve   | `{ success, alert }` |
 
 ---
 
 ## Pages
 
 **SCADA information hierarchy** (one question per level, no widget on two levels):
+
 - **Level 1 OVERVIEW** (`Home`): "Is everything OK right now?" — fleet status
 - **Level 2 DETAIL** (`ReactorDetail`): "What is this reactor doing right now?" — live cockpit
 - **Level 3 HISTORY** (`Analytics`): "What happened over time?" — trend analysis
-Charts/trends live only on Level 3; live current readings live only on Level 2.
+  Charts/trends live only on Level 3; live current readings live only on Level 2.
 
 ### PlantSelect (`pages/PlantSelect.js`)
+
 - Public — accessible before login
 - Shows 3 plant cards (fetches GET /api/plants)
 - On plant select → navigates to `/login`
 
 ### Login (`pages/Login.js`)
+
 - Public
 - POST /api/auth/login → stores JWT in `localStorage` as `thermalai_token`
 - Stores `thermalai_role` and `thermalai_name` in localStorage too
 - On success → navigates to `/`
 
 ### Home (`pages/Home.js`) — LEVEL 1 OVERVIEW
+
 - Reads `reactors`/`alerts`/`connected` from `useSocket()`
 - 4 MetricCards (Total/Safe/Warning/Critical) + live clock
 - Reactor grid: **CRITICAL pinned to top as full-width cards** (pulsing red left
@@ -156,6 +163,7 @@ Charts/trends live only on Level 3; live current readings live only on Level 2.
   No charts here (Level 3 owns trends).
 
 ### ReactorDetail (`pages/ReactorDetail.js`) — LEVEL 2 DETAIL
+
 - Route param `:id` is reactor_id (e.g. `"A"`)
 - Reads from `useSocket()` reactors array to find live reading
 - Identity header from `getReactorConfig` (tag/name/process/plant/location + colored
@@ -167,11 +175,13 @@ Charts/trends live only on Level 3; live current readings live only on Level 2.
 - No trend charts (Level 3 owns them)
 
 ### Alerts (`pages/Alerts.js`)
+
 - Reads `alerts` from `useSocket()` (live) + initial fetch via `getAlerts()`
 - Resolved alerts shown with gray/strikethrough styling
 - Resolve button calls `resolveAlert(id)` then updates local state
 
 ### Analytics (`pages/Analytics.js`) — LEVEL 3 HISTORY
+
 - Can operate with or without `:id` param
 - Historical charts only — no live/current values (CurrentStatusCard removed)
 - Sensor tabs for all 9 parameters (Risk/Temp/Pressure/Reaction/Cooling/Flow/Level/Gas/pH/CO₂)
@@ -183,10 +193,11 @@ Charts/trends live only on Level 3; live current readings live only on Level 2.
 - Embeds `<AIComparison reactor={latestReading} />` (last reading in the filtered window) at the
   top, above the featured sensor chart — the 4-model bench (Physics/Arrhenius, XGBoost, Random
   Forest, LSTM) + the RF×40%/LSTM×60% ensemble score
-- Export CSV button (Blob + object URL of filtered history)
+- Audit Telemetry button (Blob + object URL of filtered history)
 - Time-range selector (30m/2h/8h/24h) filters loaded history client-side by timestamp
   (no re-fetch)
 
 ### MultiPlant (`pages/MultiPlant.js`)
+
 - Fetches GET /api/plants
 - Shows all plants with their reactors' current status

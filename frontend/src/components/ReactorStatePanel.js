@@ -11,7 +11,9 @@ const confidenceStyle = (level) => {
 
 // Left cockpit column: risk gauge + model confidence + physics context +
 // active IEC 61511 parameter alerts.
-function ReactorStatePanel({ reactor, config }) {
+function ReactorStatePanel({ reactor = {}, config = {} }) {
+  if (!reactor) return null;
+
   const confidence =
     reactor.confidence ||
     (reactor.lstm_confidence != null
@@ -21,27 +23,52 @@ function ReactorStatePanel({ reactor, config }) {
           ? "MEDIUM"
           : "LOW"
       : "MEDIUM");
+
   const rfW = reactor.rf_weight_used ?? 40;
   const lstmW = reactor.lstm_weight_used ?? 60;
   const conf = confidenceStyle(confidence);
   const ConfIcon = conf.Icon;
 
-  const margin = config.runaway_temp - (reactor.temperature || 0);
-  const marginColor = margin > 30 ? "var(--success)" : margin >= 10 ? "var(--warning)" : "var(--danger)";
+  const runawayTemp = config.runaway_temp ?? 200;
+  const runawayPress = config.runaway_pressure ?? 10.0;
+
+  const tempMargin = runawayTemp - (reactor.temperature || 0);
+  const tempMarginColor =
+    tempMargin > 30
+      ? "var(--success)"
+      : tempMargin >= 10
+        ? "var(--warning)"
+        : "var(--danger)";
+
+  const pressMargin = runawayPress - (reactor.pressure || 0);
+  const pressMarginColor =
+    pressMargin > 2.0
+      ? "var(--success)"
+      : pressMargin >= 0.5
+        ? "var(--warning)"
+        : "var(--danger)";
+
   const paramAlerts = reactor.parameter_alerts || [];
 
   return (
     <div className="col-span-5 lg:col-span-2 space-y-6">
       <div
         className="p-5"
-        style={{ backgroundColor: "var(--card)", border: "1px solid var(--border)", borderRadius: 12 }}
+        style={{
+          backgroundColor: "var(--card)",
+          border: "1px solid var(--border)",
+          borderRadius: 12,
+        }}
       >
         <RiskGauge score={reactor.risk_score || 0} status={reactor.status || "SAFE"} />
         <div className="mt-4 text-center">
           <p className="text-[10px] uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
-            Model confidence
+            Model Confidence
           </p>
-          <p className="flex items-center justify-center gap-1.5 text-lg font-bold mt-1" style={{ color: conf.color }}>
+          <p
+            className="flex items-center justify-center gap-1.5 text-lg font-bold mt-1"
+            style={{ color: conf.color }}
+          >
             <ConfIcon aria-hidden="true" />
             {confidence}
           </p>
@@ -53,38 +80,54 @@ function ReactorStatePanel({ reactor, config }) {
 
       <div
         className="p-5"
-        style={{ backgroundColor: "var(--card)", border: "1px solid var(--border)", borderRadius: 12 }}
+        style={{
+          backgroundColor: "var(--card)",
+          border: "1px solid var(--border)",
+          borderRadius: 12,
+        }}
       >
         <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: "var(--text-sub)" }}>
-          Physics Context
+          Physics & Safety Margins
         </p>
-        <p className="text-sm" style={{ color: "var(--text)" }}>
-          Runaway threshold: <span className="font-bold">{config.runaway_temp}°C</span> /{" "}
-          <span className="font-bold">{config.runaway_pressure} bar</span>
-        </p>
-        <p className="text-sm mt-1" style={{ color: "var(--text)" }}>
-          Current margin:{" "}
-          <span className="font-bold" style={{ color: marginColor }}>
-            {margin.toFixed(1)}°C
-          </span>{" "}
-          to runaway
-        </p>
+        <div className="space-y-2 text-sm" style={{ color: "var(--text)" }}>
+          <p>
+            Runaway Limits: <span className="font-bold">{runawayTemp}°C</span> /{" "}
+            <span className="font-bold">{runawayPress} bar</span>
+          </p>
+          <p>
+            Temp Margin:{" "}
+            <span className="font-bold" style={{ color: tempMarginColor }}>
+              {tempMargin.toFixed(1)}°C
+            </span>
+          </p>
+          <p>
+            Pressure Margin:{" "}
+            <span className="font-bold" style={{ color: pressMarginColor }}>
+              {pressMargin.toFixed(2)} bar
+            </span>
+          </p>
+        </div>
       </div>
 
       {paramAlerts.length > 0 && (
         <div
           className="p-5"
-          style={{ backgroundColor: "var(--card)", border: "1px solid var(--border)", borderLeft: "3px solid var(--danger)", borderRadius: 12 }}
+          style={{
+            backgroundColor: "var(--card)",
+            border: "1px solid var(--border)",
+            borderLeft: "3px solid var(--danger)",
+            borderRadius: 12,
+          }}
         >
           <p className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: "var(--danger)" }}>
-            Active Parameter Alerts
+            Active Parameter Alerts ({paramAlerts.length})
           </p>
           <div className="space-y-3">
             {paramAlerts.map((p, i) => (
               <div key={i} className="text-sm" style={{ color: "var(--text)" }}>
                 <div className="flex items-center justify-between">
-                  <span className="font-semibold">
-                    {p.param.replace(/_/g, " ")}
+                  <span className="font-semibold capitalize">
+                    {(p.param || "").replace(/_/g, " ")}
                   </span>
                   <StatusBadge status={p.severity} />
                 </div>
