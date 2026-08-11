@@ -1,0 +1,337 @@
+/*
+ * ThermalAI — ASM Consortium High-Performance HMI Color System
+ * ISA-101 / ASM: grey/low-saturation default, color only for abnormal states.
+ * Colors reference CSS variables from tokens.js.
+ */
+
+/* ── Status Background Classes ────────────────────────────────────── */
+
+.hmi-safe {
+  background: var(--bg);
+  color: var(--text-sub);
+  border: 1px solid var(--border);
+}
+
+.hmi-warning {
+  background: var(--warning-bg, rgba(245, 158, 11, 0.12));
+  color: var(--warning);
+  border: 1px solid var(--warning);
+}
+
+.hmi-critical {
+  background: var(--danger-bg, rgba(239, 68, 68, 0.12));
+  color: var(--danger);
+  border: 1px solid var(--danger);
+}
+
+/* Text variants for inline status */
+.hmi-text-safe {
+  color: var(--text-sub);
+}
+
+.hmi-text-warning {
+  color: var(--warning);
+}
+
+.hmi-text-critical {
+  color: var(--danger);
+}
+
+/* ── Sensor Progress Bar Classes ────────────────────────────────────
+   Grey for normal range, amber for elevated, red for critical. */
+
+.sensor-bar-safe {
+  background: linear-gradient(90deg, var(--border) 0%, var(--text-muted) 100%);
+}
+
+.sensor-bar-warning {
+  background: linear-gradient(90deg, var(--warning) 0%, var(--highlight) 100%);
+}
+
+.sensor-bar-critical {
+  background: linear-gradient(90deg, var(--danger) 0%, #ff6b6b 100%);
+}
+
+/* Neutral track background for all sensor bars */
+.sensor-bar-track {
+  background: var(--border);
+  border-radius: 9999px;
+  height: 6px;
+  overflow: hidden;
+}
+
+.sensor-bar-fill {
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 0.5s ease, background 0.3s ease;
+}
+
+/* ── Data Quality Indicator Classes ─────────────────────────────────
+   Shows sensor validation status from safety layer (voting + Kalman). */
+
+.data-quality-good {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  background: var(--success-bg, rgba(34, 197, 94, 0.1));
+  color: var(--success);
+  border: 1px solid var(--success);
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.data-quality-degraded {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  background: var(--warning-bg, rgba(245, 158, 11, 0.12));
+  color: var(--warning);
+  border: 1px solid var(--warning);
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.data-quality-indicator-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.data-quality-good .data-quality-indicator-dot {
+  background: var(--success);
+  box-shadow: 0 0 6px var(--success);
+}
+
+.data-quality-degraded .data-quality-indicator-dot {
+  background: var(--warning);
+  box-shadow: 0 0 6px var(--warning);
+  animation: thermalai-pulse 2s infinite;
+}
+
+/* ── Alarm Priority Badge Classes ───────────────────────────────────
+   ISA-18.2 Alarm Rationalization: P1-IMMEDIATE, P2-PROMPT, P3-DELAYED. */
+
+.alarm-priority-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.alarm-p1 {
+  background: var(--danger-bg, rgba(239, 68, 68, 0.15));
+  color: var(--danger);
+  border: 1px solid var(--danger);
+}
+
+.alarm-p1::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--danger);
+  box-shadow: 0 0 8px var(--danger);
+  animation: thermalai-pulse 1s infinite;
+}
+
+.alarm-p2 {
+  background: var(--warning-bg, rgba(245, 158, 11, 0.12));
+  color: var(--warning);
+  border: 1px solid var(--warning);
+}
+
+.alarm-p2::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--warning);
+  box-shadow: 0 0 6px var(--warning);
+}
+
+.alarm-p3 {
+  background: var(--border);
+  color: var(--text-sub);
+  border: 1px solid var(--border);
+}
+
+.alarm-p3::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-sub);
+}
+
+/* Flood notification tag */
+.alarm-flood-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 8px;
+  background: var(--danger-bg, rgba(239, 68, 68, 0.15));
+  color: var(--danger);
+  border: 1px solid var(--danger);
+  border-radius: 9999px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  animation: thermalai-pulse 1.5s infinite;
+}
+
+/* ── Reactor Card Status Strip (Home page) ──────────────────────────
+   Thin colored strip on left edge of reactor card. */
+
+.reactor-status-strip {
+  width: 4px;
+  height: 100%;
+  border-radius: 4px 0 0 4px;
+}
+
+.reactor-status-strip-safe {
+  background: var(--border);
+}
+
+.reactor-status-strip-warning {
+  background: var(--warning);
+  box-shadow: 0 0 8px var(--warning);
+}
+
+.reactor-status-strip-critical {
+  background: var(--danger);
+  box-shadow: 0 0 12px var(--danger);
+  animation: thermalai-critical-pulse 2s infinite;
+}
+
+/* ── Chip Strip for Alert Summary (Home page) ───────────────────────
+   Replaces AlertFeed — compact horizontal chip row. */
+
+.chip-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.chip-safe {
+  background: var(--success-bg, rgba(34, 197, 94, 0.1));
+  color: var(--success);
+  border: 1px solid var(--success);
+}
+
+.chip-warning {
+  background: var(--warning-bg, rgba(245, 158, 11, 0.12));
+  color: var(--warning);
+  border: 1px solid var(--warning);
+}
+
+.chip-critical {
+  background: var(--danger-bg, rgba(239, 68, 68, 0.15));
+  color: var(--danger);
+  border: 1px solid var(--danger);
+}
+
+/* ── Sensor Reading Table (ReactorDetail) ───────────────────────────
+   Clean table for last 10 readings with data quality inline. */
+
+.sensor-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+.sensor-table th {
+  text-align: left;
+  padding: 8px 12px;
+  color: var(--text-sub);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.sensor-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+
+.sensor-table tr:last-child td {
+  border-bottom: none;
+}
+
+.sensor-table tr:hover td {
+  background: var(--card);
+}
+
+.sensor-table .param-name {
+  color: var(--text-sub);
+  font-weight: 500;
+}
+
+.sensor-table .param-value {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.sensor-table .param-value.warning {
+  color: var(--warning);
+}
+
+.sensor-table .param-value.critical {
+  color: var(--danger);
+}
+
+/* ── Sidebar Alert Badge ────────────────────────────────────────────
+   Only place alert count badge should appear. */
+
+.sidebar-alert-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  background: var(--danger);
+  color: white;
+  border-radius: 9999px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* ── Utility: Hide scrollbar but keep scroll ──────────────────────── */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}

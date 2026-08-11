@@ -1,5 +1,6 @@
 import React from "react";
 import StatusBadge from "./StatusBadge";
+import AlarmPriorityBadge from "./AlarmPriorityBadge";
 import { getReactorConfig, RISK_THRESHOLDS } from "../constants/reactors";
 
 // One alert as a row in the Alerts audit-log table.
@@ -62,8 +63,12 @@ function AlertRow({ alert, onSelect }) {
       <span className="hidden md:block text-sm" style={{ color: "var(--textSub)" }}>
         {alert.plant_id || "—"}
       </span>
-      <span>
+      <span className="flex flex-col items-start gap-1">
         <StatusBadge status={alert.alert_type} resolved={alert.resolved} />
+        <AlarmPriorityBadge
+          priority={alert.priority}
+          isFloodNotification={alert.is_flood_notification}
+        />
       </span>
       <span className="font-bold text-sm" style={{ color: riskColor() }}>
         {alert.risk_score}%

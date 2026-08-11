@@ -101,27 +101,7 @@ frontend/src/App.js  -> MLStatusBanner shown (red banner)
 
 ### context/frontend-patterns.md
   - `frontend/src/App.js`
-  - `frontend/src/components/AIComparison.js`
-  - `frontend/src/components/AlertFeed.js`
-  - `frontend/src/components/AlertRow.js`
-  - `frontend/src/components/CountdownTimer.js`
-  - `frontend/src/components/CurrentStatusCard.js`
-  - `frontend/src/components/EnterpriseSummary.js`
-  - `frontend/src/components/ErrorBoundary.js`
-  - `frontend/src/components/ExplainPanel.js`
-  - `frontend/src/components/MaintenancePanel.js`
-  - `frontend/src/components/MetricCard.js`
-  - `frontend/src/components/MetricLineChart.js`
-  - `frontend/src/components/PlantCard.js`
-  - `frontend/src/components/PredictionTimeline.js`
-  - `frontend/src/components/ReactorCard.js`
-  - `frontend/src/components/ReactorHeatmap.js`
-  - `frontend/src/components/ReactorSelector.js`
-  - `frontend/src/components/ReactorStats.js`
-  - `frontend/src/components/RiskGauge.js`
   - `frontend/src/components/Sidebar.js`
-  - `frontend/src/components/Skeletons.js`
-  - `frontend/src/components/StatusBadge.js`
   - `frontend/src/config.js`
   - `frontend/src/constants/reactors.js`
   - `frontend/src/context/ThemeContext.js`
@@ -138,6 +118,34 @@ frontend/src/App.js  -> MLStatusBanner shown (red banner)
   - `frontend/src/reportWebVitals.js`
   - `frontend/src/styles/tokens.js`
   - `frontend/src/utils/plantStatus.js`
+
+### context/frontend-widgets.md
+  - `frontend/src/components/AIComparison.js`
+  - `frontend/src/components/AlarmPriorityBadge.js`
+  - `frontend/src/components/AlertFeed.js`
+  - `frontend/src/components/AlertRow.js`
+  - `frontend/src/components/CountdownTimer.js`
+  - `frontend/src/components/CurrentStatusCard.js`
+  - `frontend/src/components/DataQualityIndicator.js`
+  - `frontend/src/components/EnterpriseSummary.js`
+  - `frontend/src/components/ErrorBoundary.js`
+  - `frontend/src/components/ExplainPanel.js`
+  - `frontend/src/components/MaintenancePanel.js`
+  - `frontend/src/components/MetricCard.js`
+  - `frontend/src/components/MetricLineChart.js`
+  - `frontend/src/components/PlantCard.js`
+  - `frontend/src/components/PredictionTimeline.js`
+  - `frontend/src/components/ReactorCard.js`
+  - `frontend/src/components/ReactorHeatmap.js`
+  - `frontend/src/components/ReactorSelector.js`
+  - `frontend/src/components/ReactorSensors.js`
+  - `frontend/src/components/ReactorStatePanel.js`
+  - `frontend/src/components/ReactorStats.js`
+  - `frontend/src/components/RiskGauge.js`
+  - `frontend/src/components/SensorReadingTable.js`
+  - `frontend/src/components/SensorTicker.js`
+  - `frontend/src/components/Skeletons.js`
+  - `frontend/src/components/StatusBadge.js`
 
 ### context/known-issues.md
   *(no source files -- meta doc)*

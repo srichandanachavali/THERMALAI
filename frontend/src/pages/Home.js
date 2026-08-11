@@ -50,8 +50,6 @@ function Home() {
   });
 
   // Data-source pill — Live Sensors / Simulation Mode / No Data.
-  // Live sensors aren't integrated yet, so a connected, data-bearing socket is
-  // reported as simulation; extend the branch when real telemetry lands.
   const dataSource = (() => {
     if (!connected || reactors.length === 0) {
       return { Icon: FiAlertCircle, label: "No Data", color: "var(--danger)" };
@@ -81,10 +79,10 @@ function Home() {
       {/* Header — command center */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-white mb-1">
+          <h1 className="text-2xl font-bold mb-1" style={{ color: "var(--text)" }}>
             Plant Overview
           </h1>
-          <p className="text-gray-400 text-sm mb-6">
+          <p className="text-sm mb-6" style={{ color: "var(--textSub)" }}>
             Real-time thermal runaway prevention — {reactors.length} reactors monitored
           </p>
         </div>
@@ -152,13 +150,13 @@ function Home() {
               className="p-8 col-span-full"
               style={{ backgroundColor: "var(--card)", border: "1px solid var(--border)", borderRadius: 12 }}
             >
-              <p className="text-gray-300 font-semibold mb-1">
+              <p className="font-semibold mb-1" style={{ color: "var(--textSub)" }}>
                 Waiting for reactor data...
               </p>
-              <p className="text-gray-400 text-sm mb-4">
+              <p className="text-sm mb-4" style={{ color: "var(--textMuted)" }}>
                 Make sure stream_data.py is running:
               </p>
-              <pre className="bg-black text-green-400 text-sm p-4 rounded-lg overflow-x-auto">
+              <pre style={{ backgroundColor: "var(--bg)", color: "var(--success)", padding: "1rem", borderRadius: 8, overflowX: "auto" }}>
                 python stream_data.py
               </pre>
             </div>
@@ -194,18 +192,12 @@ function Home() {
           <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: "var(--textSub)" }}>
             Recent Alerts
           </p>
-          <div className="flex gap-2 overflow-x-auto pb-1">
+          <div className="chip-strip">
             {alertChips.map((chip) => (
               <button
                 key={chip._id}
                 onClick={() => navigate(`/reactor/${chip.reactor_id}`)}
-                className="shrink-0 text-[11px] font-bold px-2.5 py-1.5 rounded-md transition-transform hover:scale-105"
-                style={{
-                  backgroundColor: "var(--bg)",
-                  border: "1px solid var(--border)",
-                  borderLeft: `3px solid ${chip.severity === "CRITICAL" ? "var(--danger)" : "var(--warning)"}`,
-                  color: "var(--text)",
-                }}
+                className={`chip ${chip.severity === "CRITICAL" ? "chip-critical" : "chip-warning"}`}
                 title={`${chip.tag} ${chip.severity} ${chip.risk}%`}
               >
                 {chip.tag} {chip.severity} {chip.risk}% {chip.ageMin}m

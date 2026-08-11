@@ -46,6 +46,8 @@ for f in $(git diff --cached --name-only); do
       continue ;;
     node_modules/*|dist/*|build/*|coverage/*|ml-model/venv/*|.venv/*)
       continue ;;
+    context/_doc_manifest.json|context/code_map.md)
+      continue ;;
   esac
   SIZE=$(wc -c < "$f" 2>/dev/null || echo 0)
   if [ "$SIZE" -gt "$SIZE_LIMIT" ]; then

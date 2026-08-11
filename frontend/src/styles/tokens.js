@@ -15,6 +15,10 @@ export const dark = {
   success: '#22c55e',
   warning: '#f59e0b',
   danger: '#ef4444',
+  // ASM HMI additional variables
+  successBg: 'rgba(34, 197, 94, 0.1)',
+  warningBg: 'rgba(245, 158, 11, 0.12)',
+  dangerBg: 'rgba(239, 68, 68, 0.12)',
 };
 
 export const light = {
@@ -31,21 +35,29 @@ export const light = {
   success: '#16a34a',
   warning: '#d97706',
   danger: '#dc2626',
+  // ASM HMI additional variables
+  successBg: 'rgba(22, 163, 74, 0.1)',
+  warningBg: 'rgba(217, 119, 6, 0.12)',
+  dangerBg: 'rgba(220, 38, 38, 0.12)',
 };
 
 // Maps each palette key to the CSS variable name applied on :root.
+// Use kebab-case to match global.css references.
 export const themeCssVars = {
   bg: '--bg',
   card: '--card',
   border: '--border',
   accent: '--accent',
-  accentLight: '--accentLight',
-  accentGlow: '--accentGlow',
+  accentLight: '--accent-light',
+  accentGlow: '--accent-glow',
   highlight: '--highlight',
   text: '--text',
-  textSub: '--textSub',
-  textMuted: '--textMuted',
+  textSub: '--text-sub',
+  textMuted: '--text-muted',
   success: '--success',
   warning: '--warning',
   danger: '--danger',
+  successBg: '--success-bg',
+  warningBg: '--warning-bg',
+  dangerBg: '--danger-bg',
 };
