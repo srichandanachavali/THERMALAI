@@ -19,7 +19,7 @@ const processColor = (process) => {
   if (p.includes("nitration")) return "#f97316"; // orange
   if (p.includes("hydrogen")) return "#3b82f6"; // blue
   if (p.includes("polymer")) return "#a855f7"; // purple
-  return "var(--text-sub)";
+  return "var(--text-sub, #94a3b8)";
 };
 
 function ReactorDetail() {
@@ -34,72 +34,49 @@ function ReactorDetail() {
     user = {};
   }
 
-  const reactor = reactors.find((r) => r.reactor_id === reactorId);
+  const liveReactor = reactors.find((r) => r.reactor_id === reactorId);
   const config = getReactorConfig(reactorId);
-  const { history } = useReactorHistory(reactorId, { liveReactor: reactor });
   const reactorIds = Object.keys(REACTOR_CONFIG);
 
-  if (!reactor) {
-    return (
-      <div>
-        {/* Reactor Switcher Bar */}
-        <div
-          className="flex items-center gap-2 mb-6 p-2 rounded-xl"
-          style={{
-            backgroundColor: "var(--card)",
-            border: "1px solid var(--border)",
-          }}
-        >
-          <span
-            className="text-xs font-bold uppercase tracking-wider px-3"
-            style={{ color: "var(--text-sub)" }}
-          >
-            Select Reactor:
-          </span>
-          {reactorIds.map((rId) => (
-            <button
-              key={rId}
-              onClick={() => navigate(`/reactor/${rId}`)}
-              className="text-xs font-bold px-4 py-2 rounded-lg transition-all"
-              style={{
-                backgroundColor:
-                  reactorId === rId ? "var(--accent)" : "transparent",
-                color: reactorId === rId ? "#fff" : "var(--text-sub)",
-                border:
-                  reactorId === rId ? "none" : "1px solid var(--border)",
-              }}
-            >
-              {rId}
-            </button>
-          ))}
-        </div>
+  // Fallback reactor object if live telemetry packet hasn't arrived yet
+  const reactor = liveReactor || {
+    reactor_id: reactorId,
+    name: config.name,
+    plant_id: config.plant_id,
+    tag: config.tag,
+    temperature: config.baseline_temp ?? 65.0,
+    pressure: config.baseline_pressure ?? 1.2,
+    cooling_efficiency: config.baseline_cooling ?? 0.95,
+    reaction_rate: 0.5,
+    flow_rate: config.baseline_flow ?? 150.0,
+    material_level: config.baseline_level ?? 75.0,
+    gas_concentration: 0.0,
+    ph_level: config.baseline_ph ?? 7.0,
+    emissions_co2_ppm: config.baseline_co2 ?? 400.0,
+    risk_score: 5.0,
+    rf_score: 5.0,
+    lstm_score: 5.0,
+    xgb_score: 5.0,
+    physics_score: 5.0,
+    status: "SAFE",
+    data_quality: "good",
+    timestamp: new Date(),
+  };
 
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <p className="text-xl" style={{ color: "var(--text-sub)" }}>
-              Waiting for {config.tag} telemetry data...
-            </p>
-            <p className="text-sm mt-2" style={{ color: "var(--text-muted)" }}>
-              Ensure backend server and data streamer are active.
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const { history } = useReactorHistory(reactorId, { liveReactor: reactor });
 
   return (
     <div>
       {/* Reactor Switcher Bar */}
       <div
-        className="flex items-center gap-2 mb-6 p-2 rounded-xl"
+        className="flex items-center gap-2 mb-6 p-2 rounded-xl overflow-x-auto"
         style={{
           backgroundColor: "var(--card)",
           border: "1px solid var(--border)",
         }}
       >
         <span
-          className="text-xs font-bold uppercase tracking-wider px-3"
+          className="text-xs font-bold uppercase tracking-wider px-3 whitespace-nowrap"
           style={{ color: "var(--text-sub)" }}
         >
           Select Reactor:
@@ -108,13 +85,12 @@ function ReactorDetail() {
           <button
             key={rId}
             onClick={() => navigate(`/reactor/${rId}`)}
-            className="text-xs font-bold px-4 py-2 rounded-lg transition-all"
+            className="text-xs font-bold px-4 py-2 rounded-lg transition-all whitespace-nowrap"
             style={{
               backgroundColor:
                 reactorId === rId ? "var(--accent)" : "transparent",
               color: reactorId === rId ? "#fff" : "var(--text-sub)",
-              border:
-                reactorId === rId ? "none" : "1px solid var(--border)",
+              border: reactorId === rId ? "none" : "1px solid var(--border)",
             }}
           >
             {rId}
@@ -123,7 +99,7 @@ function ReactorDetail() {
       </div>
 
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <div>
           <button
             onClick={() => navigate("/")}
@@ -180,11 +156,13 @@ function ReactorDetail() {
       </div>
 
       {/* Two-column cockpit layout */}
-      <div className="grid grid-cols-5 gap-6 mb-8">
-        <ReactorStatePanel reactor={reactor} config={config} />
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-8">
+        <div className="lg:col-span-2">
+          <ReactorStatePanel reactor={reactor} config={config} />
+        </div>
 
-        {/* Right Column (60%) */}
-        <div className="col-span-5 lg:col-span-3 space-y-6">
+        {/* Right Column */}
+        <div className="lg:col-span-3 space-y-6">
           <CountdownTimer reactor={reactor} />
           <SensorTicker reactor={reactor} />
 

@@ -256,7 +256,7 @@ const RANGES = {
 
 const formatHistory = (d, i) => ({
   ...d,
-  time: new Date(d.timestamp).toLocaleTimeString(),
+  time: d.timestamp ? new Date(d.timestamp).toLocaleTimeString() : `${i}s`,
   index: i,
 });
 
@@ -286,7 +286,7 @@ function Analytics() {
     CORRELATION_MAP[activeSensor] || CORRELATION_MAP.temperature;
 
   const cutoffMs = Date.now() - (RANGES[range] || 120) * 60000;
-  const filtered = history.filter((d) => {
+  const filtered = (history || []).filter((d) => {
     const timestamp = new Date(d.timestamp).getTime();
     return Number.isNaN(timestamp) || timestamp >= cutoffMs;
   });
@@ -296,7 +296,7 @@ function Analytics() {
   // Calculate KPI Band Statistics over selected window
   const getKpiStats = () => {
     if (!filtered || filtered.length === 0)
-      return { current: 0, peak: 0, stdDev: 0, safetyMargin: 0 };
+      return { current: "0.0", peak: "0.0", stdDev: "0.00", safetyMargin: "0.0" };
     const values = filtered.map((d) => Number(d[activeSensor]) || 0);
     const current = values[values.length - 1];
     const peak = Math.max(...values);
@@ -336,7 +336,7 @@ function Analytics() {
 
     const header = cols.join(",");
     const rows = filtered.map((d) =>
-      cols.map((column) => d[column] ?? "").join(","),
+      cols.map((column) => d[column] ?? "").join(",")
     );
     const csv = [header, ...rows].join("\n");
 
@@ -356,23 +356,23 @@ function Analytics() {
     <div>
       {/* Top Reactor Selector Buttons */}
       <div
-        className="flex items-center gap-2 mb-6 p-2 rounded-xl"
+        className="flex items-center gap-2 mb-6 p-2 rounded-xl overflow-x-auto"
         style={{
           backgroundColor: "var(--card)",
           border: "1px solid var(--border)",
         }}
       >
         <span
-          className="text-xs font-bold uppercase tracking-wider px-3"
+          className="text-xs font-bold uppercase tracking-wider px-3 whitespace-nowrap"
           style={{ color: "var(--text-sub)" }}
         >
           Select Reactor:
         </span>
-        {["R-101", "R-102", "R-201", "R-202", "R-301"].map((rId) => (
+        {reactorIds.map((rId) => (
           <button
             key={rId}
             onClick={() => setSelectedReactor(rId)}
-            className="text-xs font-bold px-4 py-2 rounded-lg transition-all"
+            className="text-xs font-bold px-4 py-2 rounded-lg transition-all whitespace-nowrap"
             style={{
               backgroundColor:
                 selectedReactor === rId ? "var(--accent)" : "transparent",
@@ -386,17 +386,17 @@ function Analytics() {
         ))}
       </div>
 
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-bold" style={{ color: "var(--text)" }}>
             Viewing {config.tag} — {config.name}
           </h1>
-          <p className="mt-1" style={{ color: "var(--text-sub)" }}>
-            Historical trends and pattern analysis
+          <p className="mt-1 text-sm" style={{ color: "var(--text-sub)" }}>
+            Historical trends and multi-parameter analysis ({config.plant_name})
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <div
             className="flex gap-1 p-1 rounded-lg"
             style={{
@@ -464,14 +464,14 @@ function Analytics() {
 
       {filtered.length === 0 ? (
         <div
-          className="rounded-lg p-16 text-center"
-          style={{ backgroundColor: "var(--card)" }}
+          className="rounded-xl p-16 text-center"
+          style={{ backgroundColor: "var(--card)", border: "1px solid var(--border)" }}
         >
-          <p className="text-xl" style={{ color: "var(--text-sub)" }}>
-            No history available yet
+          <p className="text-xl font-semibold" style={{ color: "var(--text-sub)" }}>
+            No history available yet for {selectedReactor}
           </p>
-          <p className="mt-2" style={{ color: "var(--text-muted)" }}>
-            Start the data stream to see trends
+          <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>
+            Start the python telemetry stream to view trend telemetry (`python stream_data.py`)
           </p>
         </div>
       ) : (
@@ -568,11 +568,10 @@ function Analytics() {
           </div>
 
           <div
-            className="mb-6 p-6"
+            className="mb-6 p-6 rounded-xl"
             style={{
               backgroundColor: "var(--card)",
               border: "1px solid var(--border)",
-              borderRadius: 12,
             }}
           >
             <h3 className="font-semibold mb-1" style={{ color: "var(--text)" }}>
@@ -664,7 +663,7 @@ function Analytics() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <MetricLineChart
               data={filtered}
               dataKey="temperature"
