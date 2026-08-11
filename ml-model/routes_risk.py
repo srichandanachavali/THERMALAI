@@ -109,7 +109,7 @@ def predict_lstm():
             'success': True, 'reactor_id': reactor_id,
             'lstm_prediction': result['prediction'],
             'lstm_risk_score': result['risk_score'],
-            'lstm_confidence': max(probs['safe'], probs['warning'], probs['critical']),
+            'lstm_confidence': max(probs['nominal'], probs['warning'], probs['critical']),
             'lstm_probabilities': probs,
             'sequence_length': len(reactor_buffers.get(reactor_id, []))
         })
